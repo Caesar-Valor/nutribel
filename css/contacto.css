@@ -1,0 +1,33 @@
+/* =========================================================
+   contacto.html — Visítanos
+   ========================================================= */
+.visit{display:grid;grid-template-columns:1fr 1fr;gap:20px;align-items:stretch}
+.openstate{display:flex;align-items:center;gap:10px;font-weight:600;margin:0 0 6px}
+.hours{width:100%;border-collapse:collapse;margin:4px 0 16px;font-size:16px}
+.hours td{padding:8px 0;border-bottom:1px solid var(--line)}
+.hours td:last-child{text-align:right;font-weight:600}
+.hours tr.cur td{color:var(--olive);font-weight:700}
+.addr{display:flex;gap:10px;align-items:center;font-weight:600;padding:10px 12px;background:var(--cream);border-radius:12px;margin:0 0 12px}
+.addr address{font-style:normal}
+.gallery{display:grid;grid-template-columns:1.4fr 1fr;gap:10px}
+.gallery img{width:100%;height:100%;object-fit:cover;border-radius:18px;min-height:170px}
+.gallery img:first-child{object-position:12% 45%}
+@media (max-width:820px){.visit{grid-template-columns:1fr}}
+@media (max-width:520px){.gallery{grid-template-columns:1fr}}
+
+/* ---------- Animación de entrada: el pin cae sobre la dirección, las
+   fotos se abren como puertas y el indicador de abierto late ---------- */
+.pin{flex:none;width:22px;height:30px;overflow:visible;animation:vDrop .8s .55s cubic-bezier(.3,1.5,.6,1) both;transform-origin:50% 100%}
+.pin path{fill:var(--cta)}
+.pin circle{fill:#fff}
+:root[data-mode="dark"] .pin circle{fill:#161a11}
+.visit .panelbox{animation:vRise .6s .05s cubic-bezier(.2,.8,.2,1) both}
+.gallery img{animation:vDoors 1s .25s cubic-bezier(.7,0,.2,1) both}
+.gallery img:last-child{animation-delay:.45s}
+.openstate .dot{position:relative}
+.openstate .dot.on::after{content:"";position:absolute;inset:0;border-radius:50%;border:2px solid #57a33a;animation:vPing 1.2s .6s ease-out 3 both}
+@keyframes vDrop{0%{transform:translateY(-38px) scaleY(1.1);opacity:0}60%{opacity:1}80%{transform:translateY(0) scaleY(.85)}100%{transform:none}}
+@keyframes vRise{from{transform:translateY(16px);opacity:0}}
+@keyframes vDoors{from{clip-path:inset(0 50% 0 50% round 18px)}to{clip-path:inset(0 0 0 0 round 18px)}}
+@keyframes vPing{from{transform:scale(1);opacity:.9}to{transform:scale(3.2);opacity:0}}
+@media (prefers-reduced-motion:reduce){.pin,.visit .panelbox,.gallery img,.openstate .dot.on::after{animation:none!important}.openstate .dot.on::after{display:none}}

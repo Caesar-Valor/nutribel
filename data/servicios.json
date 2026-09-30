@@ -1,0 +1,74 @@
+{
+  "nutricion_y_bienestar": [
+    "Orientación nutricional",
+    "Control de peso y obesidad",
+    "Aumento de peso",
+    "Nutrición deportiva",
+    "Evaluación con prueba InBody",
+    "Nutrición pediátrica",
+    "Nutrición geriátrica",
+    "Seguimiento post-operatorio estético",
+    "Planes alimenticios personalizados",
+    "Educación en alimentación saludable"
+  ],
+  "seguimiento_condiciones": [
+    "Diabetes",
+    "Triglicéridos elevados",
+    "Enfermedades tiroideas",
+    "Hipertensión",
+    "Colon irritable",
+    "Enfermedad celíaca",
+    "Anorexia y bulimia",
+    "Pacientes oncológicos"
+  ],
+  "metodo_1_al_6": [
+    {
+      "paso": 1,
+      "titulo": "Rompe ayuno",
+      "texto": "Sorpréndete con nuestras infusiones artesanales.",
+      "color": "#932F15",
+      "icono": "assets/img/metodo/paso-1.png"
+    },
+    {
+      "paso": 2,
+      "titulo": "Carga de vitaminas",
+      "texto": "Batidos detox: frutas y vegetales en combinación estratégica.",
+      "color": "#9EB23B",
+      "icono": "assets/img/metodo/paso-2.png"
+    },
+    {
+      "paso": 3,
+      "titulo": "Balancea tus mañanas",
+      "texto": "Preparados nutritivos para que tu día siga con energía.",
+      "color": "#FCD15A",
+      "icono": "assets/img/metodo/paso-3.png"
+    },
+    {
+      "paso": 4,
+      "titulo": "Mediodía con medida",
+      "texto": "Las porciones exactas que tu cuerpo necesita.",
+      "color": "#DF8627",
+      "icono": "assets/img/metodo/paso-4.png"
+    },
+    {
+      "paso": 5,
+      "titulo": "Equilibra tus tardes",
+      "texto": "Meriendas que sacian tu apetito.",
+      "color": "#43542A",
+      "icono": "assets/img/metodo/paso-5.png"
+    },
+    {
+      "paso": 6,
+      "titulo": "Cena sin excesos",
+      "texto": "Ligera, fresca y nutritiva, con las calorías justas.",
+      "color": "#4A256B",
+      "icono": "assets/img/metodo/paso-6.png"
+    }
+  ],
+  "nos_encargamos": [
+    "Análisis de composición corporal",
+    "Ajuste de macro y micronutrientes",
+    "Conteo calórico",
+    "Cantidades justas a tus medidas"
+  ]
+}

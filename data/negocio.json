@@ -1,0 +1,73 @@
+{
+  "nombre": "NutriBEL",
+  "lema": "Nutrición personalizada y bienestar integral",
+  "doctora": {
+    "nombre": "Dra. Bielka Eusebio",
+    "titulos": [
+      "Doctora en Medicina — UCATECI",
+      "Especialidad en Nutrición Clínica — INTEC"
+    ],
+    "foto": "assets/img/doctora/dra-bielka-eusebio-recorte.webp",
+    "alt": "Dra. Bielka Eusebio con bata blanca y estetoscopio"
+  },
+  "quienes_somos": "Somos un centro de nutrición que promueve y asiste en el mejoramiento de la salud. Conjugamos lo natural con la ciencia, mediante asesoría, consultoría nutricional y venta de alimentos saludables, bajo la supervisión y el manejo de nuestra fundadora. Nuestra misión es mejorar la calidad de vida de quienes confían en nosotros.",
+  "biografia": [
+    "La Dra. Bielka Eusebio demostró desde muy joven una profunda pasión por la salud. Estudió medicina en la Universidad Católica Tecnológica del Cibao (UCATECI), donde obtuvo el título de Doctora en Medicina.",
+    "Impulsada por su interés en la medicina preventiva, continuó su formación en el departamento de postgrado de ciencias de la salud del Instituto Tecnológico de Santo Domingo (INTEC), donde se especializó en Nutrición Clínica.",
+    "Su vocación por la medicina profiláctica la llevó a crear NutriBEL: más que una marca, un estilo de vida. Lo más significativo para ella es que cada persona haga suyo ese estilo de vida y lo comparta en familia, para mejorar su calidad de vida y su longevidad."
+  ],
+  "pasos_servicio": [
+    {
+      "n": 1,
+      "titulo": "Definimos tus metas",
+      "texto": "Consulta y evaluación de tu composición corporal.",
+      "color": "#D9822B",
+      "imagen": "assets/img/pasos/1-definimos-tus-metas.webp",
+      "alt": "Doctora tomando notas en consulta"
+    },
+    {
+      "n": 2,
+      "titulo": "Diseñamos tu menú",
+      "texto": "Con las cantidades justas para ti.",
+      "color": "#E6B422",
+      "imagen": "assets/img/pasos/2-disenamos-tu-menu.webp",
+      "alt": "Doctora y chef revisando un plan en una tableta"
+    },
+    {
+      "n": 3,
+      "titulo": "Acordamos tu entrega",
+      "texto": "Lo recoges o te lo llevamos.",
+      "color": "#8FAE36",
+      "imagen": "assets/img/pasos/3-acordamos-tu-entrega.webp",
+      "alt": "Entrega de pedido en bolsa de papel"
+    },
+    {
+      "n": 4,
+      "titulo": "Seguimos tu proceso",
+      "texto": "Medimos tu avance en cada control.",
+      "color": "#5B3480",
+      "imagen": "assets/img/pasos/4-seguimos-tu-proceso.webp",
+      "alt": "Plan de seguimiento sobre la mesa"
+    }
+  ],
+  "whatsapp": "18097357036",
+  "instagram": "https://www.instagram.com/nutribelnutriclinic/",
+  "direccion": "C. José Horacio Rodríguez #30, frente al Country Club, La Vega",
+  "google_maps": null,
+  "horario": {
+    "lunes_a_viernes": "8:00 am – 8:00 pm",
+    "sabado": "9:00 am – 6:00 pm",
+    "domingo": "Cerrado"
+  },
+  "delivery": {
+    "cercano": 75,
+    "zona_retirada": 150,
+    "moneda": "RD$"
+  },
+  "pendiente": [
+    "Enlace exacto de Google Maps",
+    "Precios de bebidas y de los 13 planes",
+    "Validar etiquetas keto/sin gluten/ligero/alto en proteína con la doctora",
+    "Información nutricional por plato (la completa la doctora desde el panel)"
+  ]
+}

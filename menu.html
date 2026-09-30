@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>NutriBEL · Menú</title>
+<meta name="description" content="Menú de comida saludable de NutriBEL: plato del día, power-bowl y pedidos por WhatsApp.">
+<script>try{if(localStorage.getItem("nutribel-mode")==="dark")document.documentElement.setAttribute("data-mode","dark")}catch(e){}</script>
+<link rel="icon" href="assets/img/marca/logo-circulo.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght,SOFT@0,9..144,400..700,0..100;1,9..144,400..700,0..100&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/base.css">
+<link rel="stylesheet" href="css/menu.css">
+<script src="js/common.js" defer></script>
+<script src="js/menu.js" defer></script>
+</head>
+<body data-page="menu">
+<header class="top" id="cabecera"></header>
+
+<main class="wrap">
+  <h1 class="sr-only">Menú NutriBEL</h1>
+
+  <section class="today" id="today" aria-label="Plato del día"></section>
+
+  <section id="menu" aria-labelledby="menuTitle">
+    <h2 class="big" id="menuTitle">Desayuno</h2>
+    <div class="tabs" role="tablist" aria-label="Secciones del menú" id="tabs"></div>
+    <div class="filters" id="filters" role="group" aria-label="Filtrar por etiqueta"></div>
+    <div id="menuBody" role="tabpanel"></div>
+  </section>
+</main>
+
+</body>
+</html>

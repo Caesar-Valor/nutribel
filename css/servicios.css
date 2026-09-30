@@ -1,0 +1,32 @@
+/* =========================================================
+   servicios.html — servicios de consulta (banda lavanda del demo)
+   ========================================================= */
+.svc-page .title{color:var(--plum)}
+.svc{display:grid;grid-template-columns:1.2fr 1fr;gap:20px}
+.svc .col{background:var(--paper);border:1.5px solid var(--line);border-top:6px solid var(--olive);border-radius:24px;padding:22px}
+.svc .col.alt{border-top-color:var(--plum)}
+.svc h2{font:600 24px/1 var(--cond);color:var(--olive);margin:0 0 12px}
+.svc .col.alt h2{color:var(--plum)}
+.svc ul{margin:0;padding:0;list-style:none;columns:2;column-gap:20px}
+.svc li{break-inside:avoid;padding:7px 0;border-bottom:1px solid var(--line);font-weight:500}
+.svcfoot{display:flex;flex-wrap:wrap;gap:10px;align-items:center;justify-content:space-between;margin-top:16px}
+.svcfoot small{color:var(--muted);max-width:44ch}
+@media (max-width:820px){
+  .svc{grid-template-columns:1fr}
+  .svc ul{columns:1}
+}
+
+/* ---------- Animación de entrada: una línea de latido bajo el título y
+   la lista que se va "marcando" punto por punto ---------- */
+.pulse{display:block;width:min(320px,70%);height:36px;margin:2px 0 12px;overflow:visible}
+.pulse path{fill:none;stroke:var(--plum);stroke-width:2.5;stroke-linecap:round;stroke-linejoin:round;stroke-dasharray:100;stroke-dashoffset:100;animation:sDraw 1.3s .2s cubic-bezier(.5,0,.3,1) forwards}
+.svc .col{animation:sRise .6s .25s cubic-bezier(.2,.8,.2,1) both}
+.svc .col.alt{animation-delay:.4s}
+.svc li{--i:0;position:relative;animation:sItem .45s calc(.55s + var(--i) * 60ms) cubic-bezier(.2,.8,.2,1) both}
+.svc li::after{content:"";position:absolute;left:0;bottom:-1px;height:2px;width:100%;background:var(--plum);transform:scaleX(0);transform-origin:left;opacity:.55;animation:sTick .7s calc(.7s + var(--i) * 60ms) ease-out both}
+.svc .col:not(.alt) li::after{background:var(--olive)}
+@keyframes sDraw{to{stroke-dashoffset:0}}
+@keyframes sRise{from{transform:translateY(16px);opacity:0}}
+@keyframes sItem{from{transform:translateX(-10px);opacity:0}}
+@keyframes sTick{0%{transform:scaleX(0);opacity:.55}70%{transform:scaleX(1);opacity:.55}100%{transform:scaleX(1);opacity:0}}
+@media (prefers-reduced-motion:reduce){.pulse path{animation:none;stroke-dashoffset:0}.svc .col,.svc li,.svc li::after{animation:none!important}.svc li::after{display:none}}

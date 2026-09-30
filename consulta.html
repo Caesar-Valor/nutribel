@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>NutriBEL · Consulta nutricional</title>
+<meta name="description" content="Pide tu cita con la Dra. Bielka Eusebio por WhatsApp.">
+<script>try{if(localStorage.getItem("nutribel-mode")==="dark")document.documentElement.setAttribute("data-mode","dark")}catch(e){}</script>
+<link rel="icon" href="assets/img/marca/logo-circulo.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght,SOFT@0,9..144,400..700,0..100;1,9..144,400..700,0..100&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/base.css">
+<link rel="stylesheet" href="css/consulta.css">
+<script src="js/common.js" defer></script>
+<script src="js/consulta.js" defer></script>
+</head>
+<body data-page="consulta">
+<header class="top" id="cabecera"></header>
+
+<main class="wrap">
+  <section class="band sage">
+    <div class="consulta">
+      <div class="panelbox" id="consulta">
+        <h1>Consulta nutricional</h1>
+        <svg class="cal" viewBox="0 0 48 48" aria-hidden="true"><rect x="5" y="9" width="38" height="34" rx="7"/><path d="M5 19 H43 M15 4 V13 M33 4 V13"/><path class="ok" pathLength="100" d="M16 31 L22 37 L33 25"/></svg>
+        <div class="docmini"><img id="docImg" alt="" width="58" height="58"><div><b id="docName">Dra. Bielka Eusebio</b><small>Te atiende personalmente</small></div></div>
+        <p>Elige el día y la hora que te conviene. Te confirmamos la cita por WhatsApp.</p>
+        <form class="form" id="bookForm" novalidate>
+          <label class="fld">Nombre<input id="cName" autocomplete="name" placeholder="Tu nombre"></label>
+          <label class="fld">Motivo<select id="cReason"></select></label>
+          <div class="row2">
+            <label class="fld">Fecha<input type="date" id="cDate" aria-describedby="dateNote"></label>
+            <label class="fld">Hora<select id="cTime"></select></label>
+          </div>
+          <small class="fldnote privacy" id="dateNote" role="status"></small>
+          <label class="fld">Pregunta o comentario (opcional)<textarea id="cNote" rows="2" autocomplete="off"></textarea></label>
+          <p class="privacy">No escribas aquí diagnósticos ni resultados médicos: la doctora los revisará contigo en la consulta.</p>
+          <button class="btn fill" type="submit">Pedir cita por WhatsApp</button>
+        </form>
+      </div>
+    </div>
+  </section>
+</main>
+
+</body>
+</html>

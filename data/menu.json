@@ -1,0 +1,1185 @@
+{
+  "fuente": "MENU_COND_V12.pdf (precios) + NUTRIBEL_MENU_V6.pdf (bebidas, sin precio)",
+  "secciones": [
+    {
+      "id": "desayuno",
+      "nombre": "Desayuno",
+      "color": "olive"
+    },
+    {
+      "id": "hiper",
+      "nombre": "Hiperproteico",
+      "color": "olive"
+    },
+    {
+      "id": "almuerzo",
+      "nombre": "Almuerzo",
+      "color": "orange"
+    },
+    {
+      "id": "bowl",
+      "nombre": "Arma tu power-bowl",
+      "color": "orange"
+    },
+    {
+      "id": "cena",
+      "nombre": "Cena",
+      "color": "plum"
+    },
+    {
+      "id": "antojos",
+      "nombre": "Antojos inteligentes",
+      "color": "plum"
+    },
+    {
+      "id": "bebidas",
+      "nombre": "Shots y bebidas",
+      "color": "olive"
+    }
+  ],
+  "etiquetas": {
+    "proteina": "Alto en proteína",
+    "keto": "Keto",
+    "singluten": "Sin gluten",
+    "ligero": "Ligero"
+  },
+  "platos": [
+    {
+      "id": "wrap-d",
+      "seccion": "desayuno",
+      "nombre": "Wraps",
+      "descripcion": "Tortilla integral enrollada con el relleno que prefieras.",
+      "opciones": [
+        "Pollo",
+        "Tuna",
+        "Cerdo",
+        "Res",
+        "Vegetales",
+        "Huevo",
+        "Jamón y queso"
+      ],
+      "precios": [
+        {
+          "tamano": "S",
+          "precio": 475
+        },
+        {
+          "tamano": "M",
+          "precio": 575
+        },
+        {
+          "tamano": "L",
+          "precio": 675
+        }
+      ],
+      "etiquetas": [],
+      "imagen": "assets/img/platos/wraps.webp"
+    },
+    {
+      "id": "sandwich",
+      "seccion": "desayuno",
+      "nombre": "Sándwiches",
+      "descripcion": "Dos rebanadas de pan integral multigranos.",
+      "opciones": [
+        "Pollo",
+        "Tuna",
+        "Jamón y queso",
+        "Completo",
+        "Huevo"
+      ],
+      "precios": [
+        {
+          "tamano": "S",
+          "precio": 425
+        },
+        {
+          "tamano": "M",
+          "precio": 575
+        }
+      ],
+      "etiquetas": [],
+      "imagen": null
+    },
+    {
+      "id": "poder",
+      "seccion": "desayuno",
+      "nombre": "Poder Dominicano (los tres golpes)",
+      "descripcion": "Tu base con queso, huevo y jamón a la plancha. Cebolla o aguacate opcional.",
+      "opciones": [
+        "Mangú de plátano",
+        "Mangú de guineíto",
+        "Puré de yautía",
+        "Puré de apio"
+      ],
+      "precios": [
+        {
+          "tamano": "S",
+          "precio": 325
+        },
+        {
+          "tamano": "M",
+          "precio": 425
+        },
+        {
+          "tamano": "L",
+          "precio": 525
+        }
+      ],
+      "etiquetas": [],
+      "imagen": "assets/img/platos/poder-dominicano.webp"
+    },
+    {
+      "id": "fritaca",
+      "seccion": "desayuno",
+      "nombre": "Fritaca / Omelette",
+      "descripcion": "Empanadilla de huevo con verduras, jamón y queso. Con pan multigrano, casabe, tarta de arroz o puré de víveres blancos.",
+      "opciones": [],
+      "precios": [
+        {
+          "tamano": "S",
+          "precio": 375
+        },
+        {
+          "tamano": "M",
+          "precio": 425
+        },
+        {
+          "tamano": "L",
+          "precio": 550
+        }
+      ],
+      "etiquetas": [
+        "proteina"
+      ],
+      "imagen": "assets/img/platos/fritaca-omelette.webp"
+    },
+    {
+      "id": "pita",
+      "seccion": "desayuno",
+      "nombre": "Pita pizza / Bolsillitos de pita",
+      "descripcion": "Pan pita relleno o estilo pizza con huevo, atún, jamón, queso, pollo y vegetales frescos.",
+      "opciones": [],
+      "precios": [
+        {
+          "tamano": "Único",
+          "precio": 425
+        }
+      ],
+      "etiquetas": [],
+      "imagen": null
+    },
+    {
+      "id": "quesa-d",
+      "seccion": "desayuno",
+      "nombre": "Quesadilla",
+      "descripcion": "Tortilla integral doblada con relleno variado, con pico de gallo o guacamole.",
+      "opciones": [],
+      "precios": [
+        {
+          "tamano": "Único",
+          "precio": 525
+        }
+      ],
+      "etiquetas": [],
+      "imagen": null
+    },
+    {
+      "id": "avena",
+      "seccion": "desayuno",
+      "nombre": "Nutriavena / Trigobel",
+      "descripcion": "Hojuelas de avena y trigo en extracto de almendras.",
+      "opciones": [],
+      "precios": [
+        {
+          "tamano": "Único",
+          "precio": 325
+        }
+      ],
+      "etiquetas": [
+        "ligero"
+      ],
+      "imagen": null
+    },
+    {
+      "id": "montaditos",
+      "seccion": "desayuno",
+      "nombre": "Montaditos",
+      "descripcion": "Dulce: pan integral o tortilla de arroz con mantequilla de maní y frutos secos. Salado: crema de aguacate o queso crema, tomate cherry, jamón de pavo, queso y huevo pochado.",
+      "opciones": [],
+      "precios": [
+        {
+          "tamano": "Dulce",
+          "precio": 225
+        },
+        {
+          "tamano": "Salado",
+          "precio": 375
+        }
+      ],
+      "etiquetas": [],
+      "imagen": null
+    },
+    {
+      "id": "yogurtbel",
+      "seccion": "desayuno",
+      "nombre": "Yogurtbel",
+      "descripcion": "Yogurt, cereal, granola y frutas de temporada.",
+      "opciones": [],
+      "precios": [
+        {
+          "tamano": "S",
+          "precio": 275
+        },
+        {
+          "tamano": "M",
+          "precio": 375
+        }
+      ],
+      "etiquetas": [
+        "ligero"
+      ],
+      "imagen": "assets/img/platos/yogurtbel.webp"
+    },
+    {
+      "id": "rancheros",
+      "seccion": "hiper",
+      "nombre": "Huevos rancheros",
+      "descripcion": "Huevos gratinados con mozzarella sobre queso cottage y guacamole, salsa de tomate artesanal, con pan tostado o casabe.",
+      "opciones": [],
+      "precios": [
+        {
+          "tamano": "S",
+          "precio": 450
+        },
+        {
+          "tamano": "M",
+          "precio": 650
+        }
+      ],
+      "etiquetas": [
+        "proteina"
+      ],
+      "imagen": "assets/img/platos/huevos-rancheros.webp"
+    },
+    {
+      "id": "bomba",
+      "seccion": "hiper",
+      "nombre": "Bomba de huevo",
+      "descripcion": "Huevos al horno en molde con jamón, queso y vegetales frescos. Aguacate, pan o casabe opcional.",
+      "opciones": [],
+      "precios": [
+        {
+          "tamano": "S",
+          "precio": 425
+        },
+        {
+          "tamano": "M",
+          "precio": 475
+        }
+      ],
+      "etiquetas": [
+        "proteina"
+      ],
+      "imagen": null
+    },
+    {
+      "id": "waffles",
+      "seccion": "hiper",
+      "nombre": "Waffles / Pancakes",
+      "descripcion": "Masa de avena, guineo, clara de huevo, leche, vainilla, canela y proteína de soya. Con yogurt, huevos, tocino o frutas.",
+      "opciones": [],
+      "precios": [
+        {
+          "tamano": "S",
+          "precio": 450
+        },
+        {
+          "tamano": "M",
+          "precio": 525
+        }
+      ],
+      "etiquetas": [
+        "proteina"
+      ],
+      "imagen": "assets/img/platos/waffles-pancakes.webp"
+    },
+    {
+      "id": "rollo",
+      "seccion": "hiper",
+      "nombre": "Rollo de huevos",
+      "descripcion": "Tortilla de huevos rellena de tuna, pollo mechado o combinaciones de la casa, con queso feta.",
+      "opciones": [],
+      "precios": [
+        {
+          "tamano": "S",
+          "precio": 575
+        },
+        {
+          "tamano": "M",
+          "precio": 650
+        }
+      ],
+      "etiquetas": [
+        "proteina"
+      ],
+      "imagen": null
+    },
+    {
+      "id": "nutrialmuerzo",
+      "seccion": "almuerzo",
+      "nombre": "Nutrialmuerzo (opción del día)",
+      "descripcion": "El plato del día. Mira arriba qué toca hoy.",
+      "opciones": [],
+      "precios": [
+        {
+          "tamano": "Único",
+          "precio": 475
+        }
+      ],
+      "etiquetas": [],
+      "imagen": null
+    },
+    {
+      "id": "tomatina",
+      "seccion": "almuerzo",
+      "nombre": "Pasta Tomatina",
+      "descripcion": "Penne integral en salsa de tomate artesanal con albóndigas horneadas de res o pollo.",
+      "opciones": [
+        "Albóndigas de res",
+        "Albóndigas de pollo"
+      ],
+      "precios": [
+        {
+          "tamano": "S",
+          "precio": 525
+        },
+        {
+          "tamano": "M",
+          "precio": 675
+        }
+      ],
+      "etiquetas": [],
+      "imagen": null
+    },
+    {
+      "id": "pesto",
+      "seccion": "almuerzo",
+      "nombre": "Pasta Pesto",
+      "descripcion": "Linguine integral con vegetales en salsa pesto y pechuga de pollo tronchada.",
+      "opciones": [],
+      "precios": [
+        {
+          "tamano": "S",
+          "precio": 675
+        },
+        {
+          "tamano": "M",
+          "precio": 975
+        }
+      ],
+      "etiquetas": [],
+      "imagen": "assets/img/platos/pasta-pesto.webp"
+    },
+    {
+      "id": "patacon",
+      "seccion": "almuerzo",
+      "nombre": "Patacón maduro",
+      "descripcion": "Plátano maduro al grill relleno de lechuga, tomate y cebolla, con aguacate y queso.",
+      "opciones": [
+        "Pechuga de pollo desmechada",
+        "Tuna",
+        "Carne de res",
+        "Cerdo magro"
+      ],
+      "precios": [
+        {
+          "tamano": "Único",
+          "precio": 675
+        }
+      ],
+      "etiquetas": [],
+      "imagen": null
+    },
+    {
+      "id": "dominicanisimo",
+      "seccion": "almuerzo",
+      "nombre": "Dominicanísimo",
+      "descripcion": "Arroz blanco, pechuga de pollo, plátano maduro al grill, ensalada verde y aguacate.",
+      "opciones": [],
+      "precios": [
+        {
+          "tamano": "S",
+          "precio": 425
+        },
+        {
+          "tamano": "M",
+          "precio": 525
+        }
+      ],
+      "etiquetas": [],
+      "imagen": null
+    },
+    {
+      "id": "canasta",
+      "seccion": "almuerzo",
+      "nombre": "Canasta de plátano maduro",
+      "descripcion": "Cestita de plátano amarillo rellena de tu proteína, con aguacate y ensalada verde.",
+      "opciones": [
+        "Carne",
+        "Tuna"
+      ],
+      "precios": [
+        {
+          "tamano": "Único",
+          "precio": 575
+        }
+      ],
+      "etiquetas": [],
+      "imagen": null
+    },
+    {
+      "id": "nutriesfera",
+      "seccion": "almuerzo",
+      "nombre": "Nutriesfera",
+      "descripcion": "Bola de batata horneada con centro de queso y almendras fileteadas.",
+      "opciones": [],
+      "precios": [
+        {
+          "tamano": "Único",
+          "precio": 200
+        }
+      ],
+      "etiquetas": [],
+      "imagen": "assets/img/platos/nutriesfera.webp"
+    },
+    {
+      "id": "nutriovalado",
+      "seccion": "almuerzo",
+      "nombre": "Nutriovalado",
+      "descripcion": "Óvalo de masa de plátano maduro horneado, relleno de pollo mechado y queso, con ensalada y fajitas de pollo.",
+      "opciones": [],
+      "precios": [
+        {
+          "tamano": "Único",
+          "precio": 575
+        }
+      ],
+      "etiquetas": [
+        "proteina"
+      ],
+      "imagen": null
+    },
+    {
+      "id": "pastelbbq",
+      "seccion": "almuerzo",
+      "nombre": "Pastel BBQ",
+      "descripcion": "Pastelón de berenjena asada y plátano maduro con pechuga desmenuzada y queso fundido, con ensalada.",
+      "opciones": [],
+      "precios": [
+        {
+          "tamano": "Único",
+          "precio": 650
+        }
+      ],
+      "etiquetas": [],
+      "imagen": "assets/img/platos/pastel-bbq.webp"
+    },
+    {
+      "id": "bowlbel",
+      "seccion": "almuerzo",
+      "nombre": "Bowl Bel",
+      "descripcion": "Croqueta gigante de pollo y quinoa al horno, rellena de queso y maduro, con mix de hojas verdes.",
+      "opciones": [],
+      "precios": [
+        {
+          "tamano": "Único",
+          "precio": 625
+        }
+      ],
+      "etiquetas": [
+        "proteina"
+      ],
+      "imagen": null
+    },
+    {
+      "id": "sopas-a",
+      "seccion": "almuerzo",
+      "nombre": "Sopas y cremas",
+      "descripcion": "Hechas en casa con ingredientes frescos de nuestra tierra.",
+      "opciones": [],
+      "precios": [
+        {
+          "tamano": "Lentejas y pollo",
+          "precio": 575
+        },
+        {
+          "tamano": "Fideos y huevos",
+          "precio": 275
+        },
+        {
+          "tamano": "Pescado y vegetales mixtos",
+          "precio": 625
+        },
+        {
+          "tamano": "Pollo",
+          "precio": 525
+        },
+        {
+          "tamano": "Colágeno (patitas de cerdo)",
+          "precio": 675
+        },
+        {
+          "tamano": "Nutrisancocho",
+          "precio": 625
+        },
+        {
+          "tamano": "Chili fit",
+          "precio": 525
+        },
+        {
+          "tamano": "Crema de auyama",
+          "precio": 325
+        },
+        {
+          "tamano": "Crema de vegetales",
+          "precio": 375
+        }
+      ],
+      "etiquetas": [],
+      "imagen": "assets/img/platos/sopas-y-cremas.webp"
+    },
+    {
+      "id": "tacosalad",
+      "seccion": "cena",
+      "nombre": "Taco salad",
+      "descripcion": "Lechugas, guacamole artesanal, pico de gallo y maíz tierno.",
+      "opciones": [
+        "Pollo mechado",
+        "Res molida",
+        "Atún"
+      ],
+      "precios": [
+        {
+          "tamano": "Único",
+          "precio": 575
+        }
+      ],
+      "etiquetas": [
+        "ligero"
+      ],
+      "imagen": "assets/img/platos/taco-salad.webp"
+    },
+    {
+      "id": "pastaketo",
+      "seccion": "cena",
+      "nombre": "Pasta keto",
+      "descripcion": "Repollo estilo fettuccine salteado con tocineta, ajo y cebolla en salsa blanca fit.",
+      "opciones": [
+        "Pollo",
+        "Cerdo",
+        "Camarones",
+        "Pescado",
+        "Huevo"
+      ],
+      "precios": [
+        {
+          "tamano": "S",
+          "precio": 675
+        },
+        {
+          "tamano": "M",
+          "precio": 950
+        }
+      ],
+      "etiquetas": [
+        "keto"
+      ],
+      "imagen": null
+    },
+    {
+      "id": "ensaladas",
+      "seccion": "cena",
+      "nombre": "Bowl de ensaladas",
+      "descripcion": "Elige tu combinación.",
+      "opciones": [
+        "Granos mixtos",
+        "Capresa",
+        "Tipile",
+        "Frutas",
+        "Sinfonía de quinoa tricolor"
+      ],
+      "precios": [
+        {
+          "tamano": "Único",
+          "precio": 375
+        }
+      ],
+      "etiquetas": [
+        "ligero"
+      ],
+      "imagen": "assets/img/platos/bowl-de-ensaladas.webp"
+    },
+    {
+      "id": "zuchinie",
+      "seccion": "cena",
+      "nombre": "Pasta zuchinie",
+      "descripcion": "Espaguetis de calabacín sin gluten con salsa de tomate o pesto artesanal y la proteína que prefieras.",
+      "opciones": [
+        "Salsa de tomate",
+        "Pesto"
+      ],
+      "precios": [
+        {
+          "tamano": "S",
+          "precio": 475
+        },
+        {
+          "tamano": "M",
+          "precio": 675
+        }
+      ],
+      "etiquetas": [
+        "singluten",
+        "ligero"
+      ],
+      "imagen": null
+    },
+    {
+      "id": "triotacos",
+      "seccion": "cena",
+      "nombre": "Trío de tacos",
+      "descripcion": "Camarón al grill, fajitas de cerdo o pollo, guacamole y queso feta en tortillas de maíz.",
+      "opciones": [],
+      "precios": [
+        {
+          "tamano": "Único",
+          "precio": 675
+        }
+      ],
+      "etiquetas": [],
+      "imagen": null
+    },
+    {
+      "id": "brocolibel",
+      "seccion": "cena",
+      "nombre": "Brócolibel",
+      "descripcion": "Brócoli con cubos de pechuga y semillas de cajuil en salsa de mostaza.",
+      "opciones": [],
+      "precios": [
+        {
+          "tamano": "S",
+          "precio": 650
+        },
+        {
+          "tamano": "M",
+          "precio": 925
+        }
+      ],
+      "etiquetas": [
+        "ligero"
+      ],
+      "imagen": null
+    },
+    {
+      "id": "salmon",
+      "seccion": "cena",
+      "nombre": "Bowl salmón",
+      "descripcion": "Salmón sobre lechugas, tomate cherry, maíz, cebolla y aguacate.",
+      "opciones": [],
+      "precios": [
+        {
+          "tamano": "Único",
+          "precio": 525
+        }
+      ],
+      "etiquetas": [
+        "ligero"
+      ],
+      "imagen": null
+    },
+    {
+      "id": "crotones",
+      "seccion": "cena",
+      "nombre": "Ensalada de pollo con crotones",
+      "descripcion": "Lechuga romana, pollo a la plancha, crotones dorados y aderezo.",
+      "opciones": [],
+      "precios": [
+        {
+          "tamano": "Único",
+          "precio": 675
+        }
+      ],
+      "etiquetas": [],
+      "imagen": null
+    },
+    {
+      "id": "brochetas",
+      "seccion": "cena",
+      "nombre": "Brochetas mixtas Nutribel",
+      "descripcion": "Pinchos de pollo o cerdo con vegetales asados.",
+      "opciones": [
+        "Pollo",
+        "Cerdo"
+      ],
+      "precios": [
+        {
+          "tamano": "Único",
+          "precio": 675
+        }
+      ],
+      "etiquetas": [
+        "proteina"
+      ],
+      "imagen": null
+    },
+    {
+      "id": "sopas-c",
+      "seccion": "cena",
+      "nombre": "Sopas y cremas",
+      "descripcion": "Hechas en casa con ingredientes frescos de nuestra tierra.",
+      "opciones": [],
+      "precios": [
+        {
+          "tamano": "Lentejas y pollo",
+          "precio": 575
+        },
+        {
+          "tamano": "Fideos y huevos",
+          "precio": 275
+        },
+        {
+          "tamano": "Pescado y vegetales mixtos",
+          "precio": 625
+        },
+        {
+          "tamano": "Pollo",
+          "precio": 525
+        },
+        {
+          "tamano": "Colágeno (patitas de cerdo)",
+          "precio": 675
+        },
+        {
+          "tamano": "Nutrisancocho",
+          "precio": 625
+        },
+        {
+          "tamano": "Chili fit",
+          "precio": 525
+        },
+        {
+          "tamano": "Crema de auyama",
+          "precio": 325
+        },
+        {
+          "tamano": "Crema de vegetales",
+          "precio": 375
+        }
+      ],
+      "etiquetas": [],
+      "imagen": "assets/img/platos/sopas-y-cremas.webp"
+    },
+    {
+      "id": "empanadas",
+      "seccion": "antojos",
+      "nombre": "Nutriempanadas",
+      "descripcion": "Horneadas, en 4 masas distintas.",
+      "opciones": [
+        "Plátano amarillo con pollo y mozzarella",
+        "Batata, linaza y avena con pollo y mozzarella",
+        "Zanahoria y auyama con vegetales y queso",
+        "Avena y espinaca con berenjena, champiñones y queso"
+      ],
+      "precios": [
+        {
+          "tamano": "Único",
+          "precio": 475
+        }
+      ],
+      "etiquetas": [],
+      "imagen": "assets/img/platos/nutriempanadas.webp"
+    },
+    {
+      "id": "hamburguesa",
+      "seccion": "antojos",
+      "nombre": "Nutrihamburguesa",
+      "descripcion": "Sin pan: medallones de pollo, res o berenjena con tomate, cebolla, maduro al grill, aguacate, queso y lechuga.",
+      "opciones": [
+        "Pollo",
+        "Res",
+        "Berenjena",
+        "Combinada"
+      ],
+      "precios": [
+        {
+          "tamano": "Único",
+          "precio": 650
+        }
+      ],
+      "etiquetas": [],
+      "imagen": "assets/img/platos/nutrihamburguesa.webp"
+    },
+    {
+      "id": "pizzana",
+      "seccion": "antojos",
+      "nombre": "Pizzana",
+      "descripcion": "Base de brócoli y pollo, salsa de tomate artesanal y tus toppings.",
+      "opciones": [],
+      "precios": [
+        {
+          "tamano": "Único",
+          "precio": 675
+        }
+      ],
+      "etiquetas": [
+        "proteina"
+      ],
+      "imagen": "assets/img/platos/pizzana.webp"
+    },
+    {
+      "id": "wrap-a",
+      "seccion": "antojos",
+      "nombre": "Wraps",
+      "descripcion": "Tortilla integral con el relleno que prefieras.",
+      "opciones": [
+        "Pollo",
+        "Tuna",
+        "Cerdo",
+        "Res",
+        "Vegetales",
+        "Huevo",
+        "Jamón y queso"
+      ],
+      "precios": [
+        {
+          "tamano": "S",
+          "precio": 475
+        },
+        {
+          "tamano": "M",
+          "precio": 575
+        },
+        {
+          "tamano": "L",
+          "precio": 675
+        }
+      ],
+      "etiquetas": [],
+      "imagen": "assets/img/platos/wraps.webp"
+    },
+    {
+      "id": "quesa-a",
+      "seccion": "antojos",
+      "nombre": "Quesadilla",
+      "descripcion": "Pollo desmechado o res molida con queso bajo en grasa en tortilla artesanal, con pico de gallo o guacamole. Pídela napolitana con salsa de tomate.",
+      "opciones": [
+        "Pollo",
+        "Res molida"
+      ],
+      "precios": [
+        {
+          "tamano": "Único",
+          "precio": 575
+        }
+      ],
+      "etiquetas": [],
+      "imagen": null
+    },
+    {
+      "id": "nutrishot",
+      "seccion": "bebidas",
+      "nombre": "Nutrishot",
+      "descripcion": "2 oz de jengibre prensado en frío con extracto de frutas o raíz de cúrcuma.",
+      "opciones": [],
+      "precios": [
+        {
+          "tamano": "Precio",
+          "precio": null
+        }
+      ],
+      "etiquetas": [],
+      "imagen": "assets/img/menu-bebidas/nutrishot.webp"
+    },
+    {
+      "id": "defenshot",
+      "seccion": "bebidas",
+      "nombre": "Defenshot",
+      "descripcion": "Chupito de cúrcuma, jengibre y pimienta negra.",
+      "opciones": [],
+      "precios": [
+        {
+          "tamano": "Precio",
+          "precio": null
+        }
+      ],
+      "etiquetas": [],
+      "imagen": "assets/img/menu-bebidas/defenshot.webp"
+    },
+    {
+      "id": "activador",
+      "seccion": "bebidas",
+      "nombre": "Shot activador",
+      "descripcion": "Infusión de jengibre, limón en rodajas, semillas de chía y agave.",
+      "opciones": [],
+      "precios": [
+        {
+          "tamano": "Precio",
+          "precio": null
+        }
+      ],
+      "etiquetas": [],
+      "imagen": null
+    },
+    {
+      "id": "verdequiero",
+      "seccion": "bebidas",
+      "nombre": "Verde que te quiero verde",
+      "descripcion": "Batido de apio, limón, piña, espinaca, manzana verde y pepino. Poténcialo con linaza, canela, jengibre, aguacate, cúrcuma o menta.",
+      "opciones": [],
+      "precios": [
+        {
+          "tamano": "Precio",
+          "precio": null
+        }
+      ],
+      "etiquetas": [
+        "ligero"
+      ],
+      "imagen": "assets/img/menu-bebidas/verde-que-te-quiero-verde.webp"
+    },
+    {
+      "id": "verde",
+      "seccion": "bebidas",
+      "nombre": "Verde",
+      "descripcion": "Prensado de manzana verde, pepino, apio, piña, jengibre y naranja.",
+      "opciones": [],
+      "precios": [
+        {
+          "tamano": "Precio",
+          "precio": null
+        }
+      ],
+      "etiquetas": [
+        "ligero"
+      ],
+      "imagen": null
+    },
+    {
+      "id": "zana",
+      "seccion": "bebidas",
+      "nombre": "Zana",
+      "descripcion": "Prensado de zanahoria, lima y miel.",
+      "opciones": [],
+      "precios": [
+        {
+          "tamano": "Precio",
+          "precio": null
+        }
+      ],
+      "etiquetas": [],
+      "imagen": "assets/img/menu-bebidas/zana.webp"
+    },
+    {
+      "id": "tresenuno",
+      "seccion": "bebidas",
+      "nombre": "3 en 1",
+      "descripcion": "Prensado de remolacha, pimiento y zanahoria.",
+      "opciones": [],
+      "precios": [
+        {
+          "tamano": "Precio",
+          "precio": null
+        }
+      ],
+      "etiquetas": [
+        "ligero"
+      ],
+      "imagen": null
+    },
+    {
+      "id": "prensados",
+      "seccion": "bebidas",
+      "nombre": "Prensados tropicales",
+      "descripcion": "Piña, Tropibel (sandía, limón y menta) o carambola con limón y menta.",
+      "opciones": [
+        "Piña",
+        "Tropibel",
+        "Carambola"
+      ],
+      "precios": [
+        {
+          "tamano": "Precio",
+          "precio": null
+        }
+      ],
+      "etiquetas": [],
+      "imagen": "assets/img/menu-bebidas/prensados-tropicales.webp"
+    },
+    {
+      "id": "potencializados",
+      "seccion": "bebidas",
+      "nombre": "Jugos potencializados",
+      "descripcion": "Bluebel: naranja con espirulina azul. Limonada con cristal de caña y carbón activado.",
+      "opciones": [
+        "Bluebel",
+        "Limonada con carbón activado"
+      ],
+      "precios": [
+        {
+          "tamano": "Precio",
+          "precio": null
+        }
+      ],
+      "etiquetas": [],
+      "imagen": "assets/img/menu-bebidas/jugos-potencializados.webp"
+    },
+    {
+      "id": "teverde",
+      "seccion": "bebidas",
+      "nombre": "Té verde",
+      "descripcion": "Matcha con hierbas y especias, con leche vegetal, agua o café.",
+      "opciones": [
+        "Con leche vegetal",
+        "Con agua",
+        "Con café"
+      ],
+      "precios": [
+        {
+          "tamano": "Precio",
+          "precio": null
+        }
+      ],
+      "etiquetas": [],
+      "imagen": "assets/img/menu-bebidas/te-verde.webp"
+    },
+    {
+      "id": "terojo",
+      "seccion": "bebidas",
+      "nombre": "Té rojo",
+      "descripcion": "Flor de jamaica, semilla de granada, maracuyá, especias y hierbas.",
+      "opciones": [],
+      "precios": [
+        {
+          "tamano": "Precio",
+          "precio": null
+        }
+      ],
+      "etiquetas": [],
+      "imagen": "assets/img/menu-bebidas/te-rojo.webp"
+    },
+    {
+      "id": "tisana",
+      "seccion": "bebidas",
+      "nombre": "Tisana de la abuela",
+      "descripcion": "Té de hierbas, flores, frutas y raíces.",
+      "opciones": [],
+      "precios": [
+        {
+          "tamano": "Precio",
+          "precio": null
+        }
+      ],
+      "etiquetas": [],
+      "imagen": "assets/img/menu-bebidas/tisana-de-la-abuela.webp"
+    }
+  ],
+  "powerBowl": {
+    "tamanos": [
+      {
+        "tamano": "S",
+        "precio": 575
+      },
+      {
+        "tamano": "M",
+        "precio": 675
+      },
+      {
+        "tamano": "L",
+        "precio": 975
+      },
+      {
+        "tamano": "XL",
+        "precio": 1275
+      }
+    ],
+    "pasos": [
+      {
+        "paso": "Proteína",
+        "opciones": [
+          "Atún",
+          "Mero",
+          "Tilapia",
+          "Huevos",
+          "Salmón",
+          "Sardinas",
+          "Res molida",
+          "Lomo de cerdo",
+          "Muslo de pollo al horno",
+          "Chuleta natural",
+          "Chuleta ahumada",
+          "Pechuga a la plancha"
+        ]
+      },
+      {
+        "paso": "Carbohidrato",
+        "opciones": [
+          "Trigo",
+          "Arroz",
+          "Papas",
+          "Yautía",
+          "Batata",
+          "Quinoa",
+          "Cepa de apio",
+          "Pasta integral",
+          "Guineos verdes",
+          "Plátano maduro"
+        ]
+      },
+      {
+        "paso": "Grasa saludable",
+        "opciones": [
+          "Queso",
+          "Nueces",
+          "Aguacate",
+          "Almendras",
+          "Aceite de coco",
+          "Aceite de oliva",
+          "Mantequilla de maní",
+          "Mantequilla de almendras"
+        ]
+      },
+      {
+        "paso": "Vegetales",
+        "opciones": [
+          "Ensalada verde",
+          "Mix de vegetales",
+          "Ensalada arcoíris",
+          "Ensalada capresa",
+          "Vegetales hervidos",
+          "Vegetales salteados"
+        ]
+      },
+      {
+        "paso": "Nutrisalsa",
+        "opciones": [
+          "Pesto",
+          "Yogurt",
+          "Aguacate",
+          "Mostaza",
+          "Balsámica",
+          "Tomate"
+        ]
+      }
+    ]
+  },
+  "nutrialmuerzoSemana": {
+    "precio": 475,
+    "lunes_a_viernes": [
+      "Nutriovalado con ensalada de hojas verdes",
+      "Wrap de pollo con guacamole y pico de gallo",
+      "Sopa de lenteja y pollo con aguacate y arroz blanco",
+      "Taco salad de res, de pollo o de tuna",
+      "Nutrichofán con huevo pochado y ensalada arcoíris"
+    ]
+  }
+}

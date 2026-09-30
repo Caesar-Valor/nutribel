@@ -1,0 +1,154 @@
+{
+  "nombre": "balé",
+  "subtitulo": "Barre, Ballet & Pilates",
+  "relacion": "Estudio de la hija de la Dra. Bielka Eusebio; en el mismo edificio que NutriBEL (su letrero se ve en la fachada)",
+  "logo": "assets/img/bale/bale-logo-transparente.png",
+  "colores_logo": {
+    "fondo": "#F3E4D8",
+    "texto": "#2E2723"
+  },
+  "horario": [
+    {
+      "dia": "lunes",
+      "inicio": "15:00",
+      "fin": "16:00",
+      "clase": "Ballet niñas",
+      "instructora": "Rusmairy",
+      "nota": "3 a 5 años"
+    },
+    {
+      "dia": "lunes",
+      "inicio": "16:00",
+      "fin": "17:00",
+      "clase": "Ballet niñas",
+      "instructora": "Rusmairy",
+      "nota": "6 a 10 años"
+    },
+    {
+      "dia": "lunes",
+      "inicio": "17:30",
+      "fin": "18:30",
+      "clase": "Hot Barre",
+      "instructora": "Marifer"
+    },
+    {
+      "dia": "lunes",
+      "inicio": "18:45",
+      "fin": "19:30",
+      "clase": "Hot Barre",
+      "instructora": "Marifer"
+    },
+    {
+      "dia": "martes",
+      "inicio": "18:30",
+      "fin": "19:30",
+      "clase": "Barre Flex",
+      "instructora": "Lynette"
+    },
+    {
+      "dia": "miercoles",
+      "inicio": "15:00",
+      "fin": "16:00",
+      "clase": "Ballet niñas",
+      "instructora": "Rusmairy",
+      "nota": "3 a 5 años"
+    },
+    {
+      "dia": "miercoles",
+      "inicio": "16:00",
+      "fin": "17:00",
+      "clase": "Ballet niñas",
+      "instructora": "Rusmairy",
+      "nota": "6 a 10 años"
+    },
+    {
+      "dia": "miercoles",
+      "inicio": "17:30",
+      "fin": "18:30",
+      "clase": "Hot Barre",
+      "instructora": "Marifer"
+    },
+    {
+      "dia": "miercoles",
+      "inicio": "18:45",
+      "fin": "19:30",
+      "clase": "Hot Barre",
+      "instructora": "Marifer"
+    },
+    {
+      "dia": "jueves",
+      "inicio": "06:45",
+      "fin": "07:30",
+      "clase": "Barre Flow",
+      "instructora": "Marifer"
+    },
+    {
+      "dia": "jueves",
+      "inicio": "17:45",
+      "fin": "18:30",
+      "clase": "Hot Barre",
+      "instructora": "Marifer",
+      "nota": "Solo nivel avanzado"
+    },
+    {
+      "dia": "jueves",
+      "inicio": "18:45",
+      "fin": "19:30",
+      "clase": "Hot Barre",
+      "instructora": "Marifer",
+      "nota": "Exclusiva para miembros"
+    },
+    {
+      "dia": "viernes",
+      "inicio": "08:00",
+      "fin": "08:45",
+      "clase": "Reformer",
+      "instructora": "Viviana"
+    },
+    {
+      "dia": "viernes",
+      "inicio": "09:00",
+      "fin": "09:45",
+      "clase": "Reformer",
+      "instructora": "Viviana"
+    },
+    {
+      "dia": "viernes",
+      "inicio": "10:00",
+      "fin": "10:45",
+      "clase": "Reformer",
+      "instructora": "Viviana"
+    },
+    {
+      "dia": "viernes",
+      "inicio": "11:00",
+      "fin": "11:45",
+      "clase": "Reformer",
+      "instructora": "Viviana"
+    },
+    {
+      "dia": "sabado",
+      "inicio": "10:00",
+      "fin": "11:00",
+      "clase": "Hot Barre",
+      "instructora": "Marifer",
+      "nota": "First class session"
+    },
+    {
+      "dia": "sabado",
+      "inicio": "11:00",
+      "fin": "12:00",
+      "clase": "Hot Barre",
+      "instructora": "Marifer",
+      "nota": "First class session"
+    }
+  ],
+  "pendiente": [
+    "Nombre de la hija y si ella también imparte clases",
+    "Precios y membresías",
+    "WhatsApp e Instagram propios de balé",
+    "Fotos del estudio y de las clases",
+    "Confirmar sábado 11:00–12:00 (la imagen dice '12:00 AM', se asumió mediodía)",
+    "Confirmar si se puede decir en la web que balé está en el mismo edificio que NutriBEL (por ahora no se menciona)"
+  ]
+}

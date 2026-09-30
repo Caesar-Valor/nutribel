@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>NutriBEL · Prueba de la fase 1</title>
+<meta name="robots" content="noindex">
+<script>try{if(localStorage.getItem("nutribel-mode")==="dark")document.documentElement.setAttribute("data-mode","dark")}catch(e){}</script>
+<link rel="icon" href="assets/img/marca/logo-circulo.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght,SOFT@0,9..144,400..700,0..100;1,9..144,400..700,0..100&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/base.css">
+<script src="js/common.js" defer></script>
+<script src="js/prueba-fase1.js" defer></script>
+</head>
+<!-- Página TEMPORAL para revisar la fase 1. Se borra en la fase 6. -->
+<body data-page="prueba">
+<header class="top" id="cabecera"></header>
+
+<main class="wrap">
+  <section class="block">
+    <span class="eyebrow"><i></i>Prueba de la fase 1</span>
+    <h1 class="title">Come rico. Come dominicano. Come <em>sano</em>.</h1>
+    <p class="lead">Página temporal para revisar tokens, tipografía, botones, bandas, tarjetas, modo oscuro, horario y carrito. No forma parte de la web y se borra en la fase 6.</p>
+    <div class="btns">
+      <a class="btn fill" href="consulta.html">Agendar consulta</a>
+      <a class="btn" href="menu.html">Ver el menú</a>
+      <button class="btn lime" type="button" id="tWa">Probar WhatsApp</button>
+    </div>
+    <p class="privacy" id="tHours" style="margin-top:14px">Horario: cargando…</p>
+  </section>
+
+  <section class="band sage">
+    <h2 class="title">Banda <em>sage</em></h2>
+    <p class="lead">Tarjetas con la franja del color de cada sección. Agrega productos y navega a otra página: el pedido se mantiene.</p>
+    <div class="filters btns" style="margin-bottom:18px">
+      <button class="chip" type="button" aria-pressed="true">Todo<i>3</i></button>
+      <button class="chip" type="button" aria-pressed="false">Alto en proteína<i>1</i></button>
+      <button class="chip" type="button" aria-pressed="false">Ligero<i>1</i></button>
+    </div>
+    <div class="grid" id="tCards"></div>
+  </section>
+
+  <section class="band lav">
+    <h2 class="title" style="color:var(--plum)">Banda lavanda</h2>
+    <div class="panelbox" style="border-top-color:var(--plum);max-width:520px">
+      <h2 style="color:var(--plum)">Recuadro</h2>
+      <p>Formulario de ejemplo con los estilos compartidos.</p>
+      <div class="form">
+        <label class="fld">Nombre<input placeholder="Tu nombre"></label>
+        <div class="row2">
+          <label class="fld">Fecha<input type="date"></label>
+          <label class="fld">Hora<select><option>9:00 am</option></select></label>
+        </div>
+        <p class="privacy">No escribas aquí diagnósticos ni resultados médicos: la doctora los revisará contigo en la consulta.</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="band peach">
+    <h2 class="title" style="color:var(--orange)">Banda durazno</h2>
+    <div class="empty-state">Estado vacío de ejemplo.</div>
+  </section>
+</main>
+
+</body>
+</html>

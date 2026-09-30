@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>balé · Barre, Ballet & Pilates</title>
+<meta name="description" content="balé, estudio de Barre, Ballet & Pilates: horario de clases y reservas.">
+<script>try{if(localStorage.getItem("nutribel-mode")==="dark")document.documentElement.setAttribute("data-mode","dark")}catch(e){}</script>
+<script>document.documentElement.classList.add("js-reveal")</script>
+<link rel="icon" href="assets/img/bale/bale-favicon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght,SOFT@0,9..144,400..700,0..100;1,9..144,400..700,0..100&family=Plus+Jakarta+Sans:wght@400;500;600;700&family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500&family=Montserrat:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="preload" as="image" href="assets/img/bale/bale-logo-transparente.webp">
+<link rel="stylesheet" href="css/base.css">
+<link rel="stylesheet" href="css/bale.css">
+<script src="js/common.js" defer></script>
+<script src="js/bale.js" defer></script>
+</head>
+<body data-page="bale">
+<!-- Entrada de balé: telón que se abre. Solo decorativa (se salta con un clic o una tecla). -->
+<div class="bintro" id="bintro" aria-hidden="true">
+  <div class="half l"></div><div class="half r"></div>
+  <div class="mark">
+    <span class="logo"><img src="assets/img/bale/bale-logo-transparente.webp" alt="" width="517" height="271"></span>
+    <svg viewBox="0 0 260 28"><path pathLength="100" d="M2 16 C 40 2, 70 2, 100 14 S 170 28, 200 12 S 245 4, 258 10"/></svg>
+  </div>
+</div>
+
+<header class="top" id="cabecera"></header>
+
+<main class="wrap bale">
+  <!-- Portada -->
+  <section class="band bhero" style="--bb:var(--b-bg)" aria-labelledby="baleTitle">
+    <svg class="ribbons" viewBox="0 0 1200 700" preserveAspectRatio="none" aria-hidden="true">
+      <path class="r1" pathLength="100" d="M-40 520 C 180 300, 360 280, 520 420 S 860 640, 1240 260"/>
+      <path class="r2" pathLength="100" d="M-40 560 C 200 380, 380 360, 540 470 S 880 660, 1240 330"/>
+    </svg>
+    <div class="inner">
+      <span class="b-kick rise" style="--k:0">Barre, Ballet &amp; Pilates</span>
+      <h1 id="baleTitle" class="rise" style="--k:1"><img src="assets/img/bale/bale-logo-transparente.webp" alt="balé, Barre, Ballet &amp; Pilates" width="517" height="271"></h1>
+      <h2 class="rise" style="--k:2">Barre, para todos los niveles</h2>
+      <p class="rise" style="--k:3">Un entrenamiento que integra ballet, yoga y Pilates, usando una barra de ballet como apoyo. Movimientos controlados y de bajo impacto que complementan tu plan de alimentación.</p>
+      <div class="bbtns rise" style="--k:4">
+        <button class="bbtn solid" type="button" id="trialBtn">Reservar clase de prueba</button>
+        <a class="bbtn line" href="#horario">Ver horario</a>
+      </div>
+      <p class="pending rise" style="--k:5">Precios y membresías: por confirmar.</p>
+    </div>
+  </section>
+
+  <!-- Ballet · Yoga · Pilates -->
+  <section class="band blush" aria-labelledby="whatTitle">
+    <div class="bwhat">
+      <div data-reveal>
+        <span class="b-kick">Clases de Barre</span>
+        <h2 id="whatTitle">Ballet <em>·</em> Yoga <em>·</em> Pilates</h2>
+        <p class="sign">El estudio de la hija de la Dra. Bielka Eusebio</p>
+      </div>
+      <ol class="benef">
+        <li data-reveal style="--r:0"><span class="n">01</span><b>Postura</b><small>Alineación y conciencia corporal</small></li>
+        <li data-reveal style="--r:1"><span class="n">02</span><b>Fuerza</b><small>Core, piernas y glúteos</small></li>
+        <li data-reveal style="--r:2"><span class="n">03</span><b>Flexibilidad</b><small>Estiramientos guiados</small></li>
+        <li data-reveal style="--r:3"><span class="n">04</span><b>Bajo impacto</b><small>Cuida tus articulaciones</small></li>
+      </ol>
+    </div>
+  </section>
+
+  <!-- Horario -->
+  <section class="band paper" id="horario" aria-labelledby="schedTitle">
+    <div class="sched-head" data-reveal>
+      <div>
+        <span class="b-kick">balé</span>
+        <h2 id="schedTitle">Nuestro <em>horario</em></h2>
+      </div>
+      <p>Elige tu clase y resérvala por WhatsApp. <span id="todayNote"></span></p>
+    </div>
+    <div class="bfilters" data-reveal style="--r:1">
+      <div class="row" role="group" aria-labelledby="lblDay"><span class="lbl" id="lblDay">Día</span><div class="row" id="fDay"></div></div>
+      <div class="row" role="group" aria-labelledby="lblType"><span class="lbl" id="lblType">Clase</span><div class="row" id="fType"></div></div>
+    </div>
+    <div class="days" id="days"></div>
+  </section>
+</main>
+
+</body>
+</html>

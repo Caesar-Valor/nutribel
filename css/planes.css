@@ -1,0 +1,20 @@
+/* =========================================================
+   planes.html — planes de la doctora (banda durazno del demo)
+   ========================================================= */
+.plans-page .title{color:var(--orange)}
+.planfilter{display:flex;flex-wrap:wrap;gap:8px;margin:0 0 18px}
+.plans{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(290px,100%),1fr));gap:16px}
+.plan .badge{align-self:flex-start;font-size:13px;font-weight:600;border-radius:999px;padding:3px 10px;background:var(--line);color:var(--ink)}
+.plan .badge.now{background:var(--lime);color:#1f2a10}
+.plan .price{font-size:13.5px;font-weight:600;color:var(--muted)}
+
+/* ---------- Animación de entrada: los planes pasan como hojas de un
+   calendario y la temporada se "sella" (también al filtrar) ---------- */
+.plans{perspective:1400px}
+.plan{--i:0;transform-origin:50% 0;animation:pFlip .75s calc(var(--i) * 75ms) cubic-bezier(.2,.8,.2,1) both}
+.plan .badge{animation:pStamp .5s calc(var(--i) * 75ms + .5s) cubic-bezier(.34,1.56,.64,1) both}
+.plans-page .title{animation:pTitle .7s cubic-bezier(.2,.8,.2,1) both}
+@keyframes pFlip{from{transform:rotateX(-78deg);opacity:0}60%{opacity:1}}
+@keyframes pStamp{from{transform:scale(1.7) rotate(-10deg);opacity:0}}
+@keyframes pTitle{from{transform:translateY(12px);opacity:0}}
+@media (prefers-reduced-motion:reduce){.plan,.plan .badge,.plans-page .title{animation:none!important}}

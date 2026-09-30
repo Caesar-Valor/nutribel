@@ -1,0 +1,170 @@
+{
+  "nota": "Precios pendientes. Textos de 'Reto del galón de agua' y 'Planes semanales' por validar con la doctora. Reto Mamitas en forma sin foto hasta que la doctora decida (la ilustración planes/mamitas-en-forma-ilustracion.webp queda disponible, sin usar).",
+  "tipos": {
+    "todos": "Todos",
+    "programa": "Programas",
+    "kit": "Kits y shots",
+    "temporada": "De temporada",
+    "familias": "Familias",
+    "empresas": "Empresas"
+  },
+  "planes": [
+    {
+      "nombre": "Reto 21 días",
+      "tipo": "programa",
+      "color": "orange",
+      "descripcion": "Tres semanas para crear hábitos que se queden. Incluye consulta con evaluación de composición corporal, tu menú de 21 días entregado a tiempo y una evaluación final para medir tu progreso.",
+      "temporada": null,
+      "precio": null,
+      "imagen": "assets/img/planes/reto-21-dias.webp"
+    },
+    {
+      "nombre": "Reto del galón de agua",
+      "tipo": "programa",
+      "color": "olive",
+      "descripcion": "Reto de hidratación con acompañamiento de la doctora, evaluación inicial y seguimiento durante el programa.",
+      "temporada": null,
+      "precio": null,
+      "imagen": "assets/img/planes/reto-galon-de-agua.webp"
+    },
+    {
+      "nombre": "Kit Detox",
+      "tipo": "kit",
+      "color": "olive",
+      "descripcion": "Seis bebidas numeradas para tomar en orden. Pensado para quienes sienten cansancio o digestión pesada, o se preparan para un procedimiento estético o quirúrgico.",
+      "temporada": null,
+      "precio": null,
+      "imagen": "assets/img/planes/kit-detox.webp"
+    },
+    {
+      "nombre": "NutriShot",
+      "tipo": "kit",
+      "color": "olive",
+      "descripcion": "Shots de jengibre de 2 oz en paquetes de seis unidades, para tomar en ayunas cada mañana.",
+      "temporada": null,
+      "precio": null,
+      "imagen": "assets/img/planes/nutrishot-pack.webp"
+    },
+    {
+      "nombre": "NutriBEL R3",
+      "tipo": "kit",
+      "color": "plum",
+      "descripcion": "Un reset con mezclas de frutas y vegetales potenciadas con espirulina, cúrcuma y maíz morado.",
+      "temporada": null,
+      "precio": null,
+      "imagen": "assets/img/planes/nutribel-r3.webp"
+    },
+    {
+      "nombre": "Loncheras saludables",
+      "tipo": "familias",
+      "color": "orange",
+      "descripcion": "Para niños en edad escolar: orientación nutricional, recetas prácticas y acompañamiento a la familia para armar loncheras balanceadas.",
+      "temporada": null,
+      "precio": null,
+      "imagen": "assets/img/planes/loncheras-saludables.webp"
+    },
+    {
+      "nombre": "NutriBEL al trabajo",
+      "tipo": "empresas",
+      "color": "plum",
+      "descripcion": "Plan empresarial con asesorías, menús personalizados y orientación nutricional para tu equipo.",
+      "temporada": null,
+      "precio": null,
+      "imagen": "assets/img/planes/nutribel-al-trabajo.webp"
+    },
+    {
+      "nombre": "Planes semanales",
+      "tipo": "programa",
+      "color": "olive",
+      "descripcion": "Tu menú de lunes a viernes, organizado según tus objetivos.",
+      "temporada": null,
+      "precio": null,
+      "imagen": "assets/img/planes/planes-semanales.webp"
+    },
+    {
+      "nombre": "7 días de bienestar",
+      "tipo": "temporada",
+      "color": "olive",
+      "descripcion": "Una semana de transición para desinflamar y mejorar la digestión, ideal después de viajes o comidas copiosas. Incluye Nutrishot, jugos potencializados y dos comidas sólidas al día.",
+      "temporada": {
+        "meses": [
+          1
+        ],
+        "fin": null,
+        "texto": "Inicio de año"
+      },
+      "precio": null,
+      "imagen": "assets/img/planes/7-dias-de-bienestar.webp"
+    },
+    {
+      "nombre": "Sin pareo pa' la playa",
+      "tipo": "temporada",
+      "color": "orange",
+      "descripcion": "Dos semanas de plan con buena hidratación, pensado para llegar a la playa sintiéndote ligero.",
+      "temporada": {
+        "meses": [
+          3,
+          4
+        ],
+        "fin": null,
+        "texto": "Marzo y abril"
+      },
+      "precio": null,
+      "imagen": "assets/img/planes/sin-pareo-pa-la-playa.webp"
+    },
+    {
+      "nombre": "Reto Mamitas en forma",
+      "tipo": "temporada",
+      "color": "plum",
+      "descripcion": "Para celebrar el Día de las Madres cuidando la salud de las mamás.",
+      "temporada": {
+        "meses": [
+          5
+        ],
+        "fin": null,
+        "texto": "Todo mayo"
+      },
+      "precio": null,
+      "imagen": null
+    },
+    {
+      "nombre": "Verano Fit",
+      "tipo": "temporada",
+      "color": "orange",
+      "descripcion": "Evita los excesos del verano: hidratación, buena digestión y peso estable.",
+      "temporada": {
+        "meses": [
+          7,
+          8,
+          9
+        ],
+        "fin": [
+          9,
+          22
+        ],
+        "texto": "Julio al 22 de septiembre"
+      },
+      "precio": null,
+      "imagen": "assets/img/planes/verano-fit.webp"
+    },
+    {
+      "nombre": "Rumbo a Navidad sin libras demás",
+      "tipo": "temporada",
+      "color": "plum",
+      "descripcion": "Mantén el equilibrio y llega a las fiestas sintiéndote bien.",
+      "temporada": {
+        "meses": [
+          11,
+          12
+        ],
+        "fin": [
+          12,
+          15
+        ],
+        "texto": "1 de noviembre al 15 de diciembre"
+      },
+      "precio": null,
+      "imagen": "assets/img/planes/rumbo-a-navidad.webp"
+    }
+  ]
+}

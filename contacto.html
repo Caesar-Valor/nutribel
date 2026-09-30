@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>NutriBEL · Visítanos</title>
+<meta name="description" content="Horario, dirección y contacto de NutriBEL en La Vega.">
+<script>try{if(localStorage.getItem("nutribel-mode")==="dark")document.documentElement.setAttribute("data-mode","dark")}catch(e){}</script>
+<link rel="icon" href="assets/img/marca/logo-circulo.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght,SOFT@0,9..144,400..700,0..100;1,9..144,400..700,0..100&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/base.css">
+<link rel="stylesheet" href="css/contacto.css">
+<script src="js/common.js" defer></script>
+<script src="js/contacto.js" defer></script>
+</head>
+<body data-page="contacto">
+<header class="top" id="cabecera"></header>
+
+<main class="wrap">
+  <section class="band sage">
+    <div class="visit">
+      <div class="panelbox">
+        <h1>Visítanos</h1>
+        <p class="openstate" id="openState"><i class="dot"></i>…</p>
+        <table class="hours"><caption class="sr-only">Horario</caption><tbody id="hoursBody"></tbody></table>
+        <p class="addr"><svg class="pin" viewBox="0 0 24 32" aria-hidden="true"><path d="M12 1C6 1 1.5 5.6 1.5 11.3 1.5 19 12 31 12 31s10.5-12 10.5-19.7C22.5 5.6 18 1 12 1z"/><circle cx="12" cy="11.5" r="4"/></svg><address id="addr"></address></p>
+        <div class="btns">
+          <a class="btn fill" id="mapsBtn" target="_blank" rel="noopener">Cómo llegar<span class="sr-only"> (se abre en otra pestaña)</span></a>
+          <a class="btn" id="waBtn" target="_blank" rel="noopener">WhatsApp<span class="sr-only"> (se abre en otra pestaña)</span></a>
+          <a class="btn" id="igBtn" target="_blank" rel="noopener"><span id="igTxt">Instagram</span><span class="sr-only"> (se abre en otra pestaña)</span></a>
+        </div>
+      </div>
+      <div class="gallery">
+        <img src="assets/img/local/fachada.webp" alt="Fachada de NutriBEL con su letrero y sillas en la terraza" width="800" height="516">
+        <img src="assets/img/local/interior.webp" alt="Interior de NutriBEL con estantes iluminados" width="480" height="702">
+      </div>
+    </div>
+  </section>
+</main>
+
+</body>
+</html>
