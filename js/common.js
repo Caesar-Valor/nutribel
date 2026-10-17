@@ -3,6 +3,10 @@
    Cabecera y navegación, modo oscuro, horario abierto/cerrado,
    WhatsApp, carrito persistente (localStorage) y utilidades.
    Cada página declara <body data-page="..."> y carga este archivo con defer.
+   Con <body data-standalone> (balé) no se pinta la cabecera, el pie ni el
+   pedido de NutriBEL: la página trae su propia cabecera con #modeBtn.
+   NutriBEL y balé son secciones aparte: la única conexión es el botón
+   "Ir a balé" de esta cabecera (y "Ir a NutriBEL" en la de balé).
    ========================================================= */
 (function(){
 "use strict";
@@ -10,12 +14,13 @@
 /* ============ CONFIGURACIÓN ============ */
 const PAGES = [
   ["index","Inicio"],["metodo","Método 1 al 6"],["menu","Menú"],["servicios","Servicios"],
-  ["planes","Planes"],["bale","balé"],["consulta","Consulta"],["contacto","Visítanos"]
+  ["planes","Planes"],["consulta","Consulta"],["contacto","Visítanos"]
 ];
 const MODE_KEY  = "nutribel-mode";    // "dark" | "light"
 const CART_KEY  = "nutribel-pedido";  // {items:[{name,size,opt,price,qty}], mode}
 const PANEL_KEY = "nutribel-panel";   // {overrides:{id:{t,nu,off}}, week:[], cfg:{whatsapp,address,maps}} (formato del demo)
 const DAYS = ["Domingo","Lunes","Martes","Miércoles","Jueves","Viernes","Sábado"];
+const STANDALONE = document.body.hasAttribute("data-standalone");
 const MODE_TXT = {recoger:"Para recoger", local:"Comer en el local", cerca:"Delivery cercano", lejos:"Delivery zona retirada"};
 
 /* ============ UTILIDADES ============ */
@@ -114,7 +119,7 @@ function hoursState(now=new Date()){
   };
 }
 function renderStatus(){
-  const s=hoursState(); if(!s) return;
+  const s=hoursState(); if(!s||STANDALONE) return;
   $("#dot").classList.toggle("on",s.open);
   $("#statusTxt").textContent=s.text;
   document.dispatchEvent(new CustomEvent("nb:horario",{detail:s}));
@@ -136,12 +141,13 @@ function renderHeader(){
       <span class="brand">NutriBEL<small>Dra. Bielka Eusebio</small></span>
     </a>
     <div class="status"><i class="dot" id="dot"></i><span id="statusTxt">…</span></div>
+    <a class="tobale in-bar" href="bale.html" aria-label="Ir a balé, Barre, Ballet &amp; Pilates">Ir a <b>balé</b></a>
     <button class="modebtn" id="modeBtn" type="button" aria-label="Cambiar a modo oscuro" title="Modo oscuro / claro">${ICON_MOON}${ICON_SUN}</button>
     <button class="cartbtn" id="openCart" type="button" aria-label="Ver pedido">Pedido <b id="count">0</b></button>
   </div>
   <nav class="nav" aria-label="Páginas"><div class="wrap">
     ${PAGES.map(([id,label])=>`<a href="${id}.html"${id===page?' aria-current="page"':""}>${label}</a>`).join("")}
-  </div></nav>`;
+  </div><a class="tobale in-nav" href="bale.html" aria-label="Ir a balé, Barre, Ballet &amp; Pilates">Ir a <b>balé</b></a></nav>`;
   // En móvil la navegación se desplaza: deja visible la página actual
   const cur=$('.nav a[aria-current="page"]',top), strip=$(".nav .wrap",top);
   if(cur && strip.scrollWidth>strip.clientWidth){
@@ -180,7 +186,7 @@ function toggleMode(){
 function initMode(){
   let m="light"; try{m=localStorage.getItem(MODE_KEY)||"light"}catch(e){}
   applyMode(m);
-  $("#modeBtn").addEventListener("click",toggleMode);
+  const b=$("#modeBtn"); if(b) b.addEventListener("click",toggleMode);
 }
 
 /* ============ PEDIDO (carrito compartido entre páginas) ============ */
@@ -304,17 +310,22 @@ function initCart(){
 
 /* ============ SINCRONIZACIÓN ENTRE PESTAÑAS ============ */
 window.addEventListener("storage",e=>{
-  if(e.key===CART_KEY){cart=readCart();renderModeOptions();renderCart()}
+  if(e.key===CART_KEY&&!STANDALONE){cart=readCart();renderModeOptions();renderCart()}
   else if(e.key===MODE_KEY){applyMode(e.newValue||"light")}
   else if(e.key===PANEL_KEY&&biz){load("negocio").then(n=>{biz=mergeCfg(n);renderStatus()})}
 });
 
 /* ============ ARRANQUE ============ */
-renderHeader();
-renderFooter();
-initMode();
-initCart();
-ready.then(()=>{renderModeOptions();renderCart();renderStatus();setInterval(renderStatus,60000)}).catch(()=>{});
+if(STANDALONE){
+  document.body.insertAdjacentHTML("beforeend",`<div class="toast" id="toast" role="status" aria-live="polite"></div>`);
+  initMode();
+}else{
+  renderHeader();
+  renderFooter();
+  initMode();
+  initCart();
+  ready.then(()=>{renderModeOptions();renderCart();renderStatus();setInterval(renderStatus,60000)}).catch(()=>{});
+}
 
 /* ============ API PARA LAS PÁGINAS ============ */
 window.NB = {

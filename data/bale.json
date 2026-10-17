@@ -2,13 +2,92 @@
   "nombre": "balé",
   "subtitulo": "Barre, Ballet & Pilates",
   "relacion": "Estudio de la hija de la Dra. Bielka Eusebio; en el mismo edificio que NutriBEL (su letrero se ve en la fachada)",
-  "logo": "assets/img/bale/bale-logo-transparente.png",
+  "logo": "assets/img/bale/bale-logo-transparente.webp",
   "colores_logo": {
     "fondo": "#F3E4D8",
     "texto": "#2E2723"
   },
+  "frase": "Un espacio para conectar, fortalecer y transformar.",
+  "historia": [
+    "Balé Studio nace en el corazón de La Vega de la unión de dos pasiones: la nutrición y el movimiento. Una médica nutrióloga y una comunicadora corporativa crearon un espacio de bienestar integral donde mujeres y niñas descubren el placer de ejercitarse y fortalecer su cuerpo.",
+    "Más que un estudio de ejercicio, balé es una comunidad donde cada mujer y cada niña encuentra un espacio para crecer, sentirse fuerte, conectar consigo misma y disfrutar del movimiento."
+  ],
+  "fundadora": {
+    "nombre": "María Fernanda Pimentel",
+    "apodo": "Marifer",
+    "rol": "CEO y coach principal",
+    "texto": "Licenciada en Comunicación Corporativa. Desde pequeña desarrolló una conexión especial con la danza a través del ballet clásico; años después, ese amor por el movimiento la llevó al barre, la pasión que inspiró Balé Studio.",
+    "certificaciones": [
+      {
+        "nombre": "Barre Intensity",
+        "detalle": "Se formó y certificó en México en esta metodología internacional, que combina pilates, danza y entrenamiento funcional con movimientos controlados y ejercicios de mayor intensidad."
+      },
+      {
+        "nombre": "Mat Pilates",
+        "detalle": "Certificaciones con ControlFit, como parte de su formación continua."
+      }
+    ]
+  },
+  "que_es_barre": "Una disciplina inspirada en el ballet clásico que fusiona movimientos de danza, pilates y fortalecimiento muscular. Desarrolla fuerza, resistencia, estabilidad, equilibrio y conciencia corporal, y trabaja todo el cuerpo sin necesidad de experiencia previa en ballet.",
+  "equipo_texto": "Un equipo de instructoras especializadas en ballet clásico, Pilates Reformer y barre, con una misma misión: una experiencia de movimiento de calidad, cercana, profesional y llena de energía.",
+  "clases": [
+    {
+      "tipo": "Hot Barre",
+      "grupo": "Barre",
+      "texto": "Integra ballet, yoga y Pilates usando la barra de ballet como apoyo. Para todos los niveles.",
+      "foto": null
+    },
+    {
+      "tipo": "Barre Flex",
+      "grupo": "Barre",
+      "texto": "Integra ballet, yoga y Pilates usando la barra de ballet como apoyo. Para todos los niveles.",
+      "foto": null
+    },
+    {
+      "tipo": "Barre Flow",
+      "grupo": "Barre",
+      "texto": "Integra ballet, yoga y Pilates usando la barra de ballet como apoyo. Para todos los niveles.",
+      "foto": null
+    },
+    {
+      "tipo": "Ballet niñas",
+      "grupo": "Ballet",
+      "texto": "Ballet clásico para niñas, en dos grupos por edad: de 3 a 5 años y de 6 a 10 años.",
+      "foto": "assets/img/bale/ballet-ninas-zapatillas-1.webp",
+      "alt": "Piernas de niñas con medias rosadas y zapatillas de ballet, en fila en la barra",
+      "foto2": "assets/img/bale/ballet-ninas-zapatillas-2.webp",
+      "alt2": "Zapatillas de ballet rosadas y negras de varias niñas sobre el piso del estudio"
+    },
+    {
+      "tipo": "Reformer",
+      "nombre": "Pilates Reformer",
+      "grupo": "Pilates",
+      "texto": "Pilates en máquina Reformer.",
+      "foto": null
+    }
+  ],
+  "instructoras": [
+    {
+      "nombre": "Marifer",
+      "completo": "María Fernanda Pimentel",
+      "rol": "CEO y coach principal"
+    },
+    {
+      "nombre": "Rusmairy",
+      "rol": "Instructora"
+    },
+    {
+      "nombre": "Lynette",
+      "rol": "Instructora"
+    },
+    {
+      "nombre": "Viviana",
+      "rol": "Instructora"
+    }
+  ],
   "horario": [
     {
+      "id": "lun-1500",
       "dia": "lunes",
       "inicio": "15:00",
       "fin": "16:00",
@@ -17,6 +96,7 @@
       "nota": "3 a 5 años"
     },
     {
+      "id": "lun-1600",
       "dia": "lunes",
       "inicio": "16:00",
       "fin": "17:00",
@@ -25,6 +105,7 @@
       "nota": "6 a 10 años"
     },
     {
+      "id": "lun-1730",
       "dia": "lunes",
       "inicio": "17:30",
       "fin": "18:30",
@@ -32,6 +113,7 @@
       "instructora": "Marifer"
     },
     {
+      "id": "lun-1845",
       "dia": "lunes",
       "inicio": "18:45",
       "fin": "19:30",
@@ -39,6 +121,7 @@
       "instructora": "Marifer"
     },
     {
+      "id": "mar-1830",
       "dia": "martes",
       "inicio": "18:30",
       "fin": "19:30",
@@ -46,6 +129,7 @@
       "instructora": "Lynette"
     },
     {
+      "id": "mie-1500",
       "dia": "miercoles",
       "inicio": "15:00",
       "fin": "16:00",
@@ -54,6 +138,7 @@
       "nota": "3 a 5 años"
     },
     {
+      "id": "mie-1600",
       "dia": "miercoles",
       "inicio": "16:00",
       "fin": "17:00",
@@ -62,6 +147,7 @@
       "nota": "6 a 10 años"
     },
     {
+      "id": "mie-1730",
       "dia": "miercoles",
       "inicio": "17:30",
       "fin": "18:30",
@@ -69,6 +155,7 @@
       "instructora": "Marifer"
     },
     {
+      "id": "mie-1845",
       "dia": "miercoles",
       "inicio": "18:45",
       "fin": "19:30",
@@ -76,6 +163,7 @@
       "instructora": "Marifer"
     },
     {
+      "id": "jue-0645",
       "dia": "jueves",
       "inicio": "06:45",
       "fin": "07:30",
@@ -83,6 +171,7 @@
       "instructora": "Marifer"
     },
     {
+      "id": "jue-1745",
       "dia": "jueves",
       "inicio": "17:45",
       "fin": "18:30",
@@ -91,6 +180,7 @@
       "nota": "Solo nivel avanzado"
     },
     {
+      "id": "jue-1845",
       "dia": "jueves",
       "inicio": "18:45",
       "fin": "19:30",
@@ -99,6 +189,7 @@
       "nota": "Exclusiva para miembros"
     },
     {
+      "id": "vie-0800",
       "dia": "viernes",
       "inicio": "08:00",
       "fin": "08:45",
@@ -106,6 +197,7 @@
       "instructora": "Viviana"
     },
     {
+      "id": "vie-0900",
       "dia": "viernes",
       "inicio": "09:00",
       "fin": "09:45",
@@ -113,6 +205,7 @@
       "instructora": "Viviana"
     },
     {
+      "id": "vie-1000",
       "dia": "viernes",
       "inicio": "10:00",
       "fin": "10:45",
@@ -120,6 +213,7 @@
       "instructora": "Viviana"
     },
     {
+      "id": "vie-1100",
       "dia": "viernes",
       "inicio": "11:00",
       "fin": "11:45",
@@ -127,6 +221,7 @@
       "instructora": "Viviana"
     },
     {
+      "id": "sab-1000",
       "dia": "sabado",
       "inicio": "10:00",
       "fin": "11:00",
@@ -135,6 +230,7 @@
       "nota": "First class session"
     },
     {
+      "id": "sab-1100",
       "dia": "sabado",
       "inicio": "11:00",
       "fin": "12:00",
@@ -143,12 +239,424 @@
       "nota": "First class session"
     }
   ],
+  "sala": {
+    "foto": "assets/img/bale/sala-barras.webp",
+    "ancho": 1212,
+    "alto": 680,
+    "alt": "Sala de balé con dos filas de barras de ballet numeradas del 1 al 16 frente al espejo",
+    "lugares": [
+      {
+        "n": 1,
+        "barra": "Primera barra",
+        "x": 24.7,
+        "y": 59.3
+      },
+      {
+        "n": 2,
+        "barra": "Primera barra",
+        "x": 32.7,
+        "y": 56.6
+      },
+      {
+        "n": 3,
+        "barra": "Primera barra",
+        "x": 39.9,
+        "y": 54.6
+      },
+      {
+        "n": 4,
+        "barra": "Primera barra",
+        "x": 45.7,
+        "y": 52.8
+      },
+      {
+        "n": 5,
+        "barra": "Primera barra",
+        "x": 51.7,
+        "y": 50.9
+      },
+      {
+        "n": 6,
+        "barra": "Primera barra",
+        "x": 57.8,
+        "y": 49.1
+      },
+      {
+        "n": 7,
+        "barra": "Primera barra",
+        "x": 62.5,
+        "y": 47.6
+      },
+      {
+        "n": 8,
+        "barra": "Primera barra",
+        "x": 67.6,
+        "y": 46
+      },
+      {
+        "n": 9,
+        "barra": "Segunda barra",
+        "x": 24.6,
+        "y": 46.6
+      },
+      {
+        "n": 10,
+        "barra": "Segunda barra",
+        "x": 30.4,
+        "y": 45.4
+      },
+      {
+        "n": 11,
+        "barra": "Segunda barra",
+        "x": 35.4,
+        "y": 44.9
+      },
+      {
+        "n": 12,
+        "barra": "Segunda barra",
+        "x": 40.8,
+        "y": 44.3
+      },
+      {
+        "n": 13,
+        "barra": "Segunda barra",
+        "x": 45.5,
+        "y": 43.8
+      },
+      {
+        "n": 14,
+        "barra": "Segunda barra",
+        "x": 49.9,
+        "y": 43.2
+      },
+      {
+        "n": 15,
+        "barra": "Segunda barra",
+        "x": 54.2,
+        "y": 42.6
+      },
+      {
+        "n": 16,
+        "barra": "Segunda barra",
+        "x": 58.3,
+        "y": 42.2
+      }
+    ]
+  },
+  "paquetes": [
+    {
+      "id": "prueba",
+      "nombre": "Clase de prueba",
+      "clases": 1,
+      "frase": "Tu primera vez en la barra, para conocernos.",
+      "precio": null
+    },
+    {
+      "id": "4",
+      "nombre": "4 clases",
+      "clases": 4,
+      "frase": "Una clase por semana para empezar el hábito.",
+      "precio": null
+    },
+    {
+      "id": "8",
+      "nombre": "8 clases",
+      "clases": 8,
+      "frase": "Dos veces por semana: aquí se nota el cambio.",
+      "precio": null
+    },
+    {
+      "id": "12",
+      "nombre": "12 clases",
+      "clases": 12,
+      "frase": "Tres clases por semana para ganar fuerza y constancia.",
+      "precio": null
+    },
+    {
+      "id": "16",
+      "nombre": "16 clases",
+      "clases": 16,
+      "frase": "Para las que ya no conciben la semana sin la barra.",
+      "precio": null
+    },
+    {
+      "id": "ilimitada",
+      "nombre": "Membresía ilimitada",
+      "clases": null,
+      "frase": "Todas las clases que quieras durante el mes.",
+      "precio": null,
+      "destacado": true
+    }
+  ],
+  "pago": {
+    "metodo": "Transferencia",
+    "banco": "Banco: por definir",
+    "cuenta": "Cuenta: por definir",
+    "titular": "Titular: por definir"
+  },
+  "politica_cancelacion": "Política de cancelación: por definir (por ejemplo, con cuántas horas de anticipación se puede cancelar sin perder la clase).",
+  "instagram": null,
+  "whatsapp": null,
+  "demo": {
+    "nota": "Datos de ejemplo para la demostración. No son clientas reales.",
+    "ocupados": {
+      "lun-1500": [
+        2,
+        5,
+        9,
+        12
+      ],
+      "lun-1600": [
+        1,
+        3,
+        4,
+        10,
+        11,
+        14
+      ],
+      "lun-1730": [
+        1,
+        2,
+        3,
+        5,
+        6,
+        7,
+        9,
+        10,
+        12,
+        13,
+        15
+      ],
+      "lun-1845": [
+        2,
+        4,
+        8,
+        11,
+        16
+      ],
+      "mar-1830": [
+        1,
+        4,
+        5,
+        8,
+        9,
+        13
+      ],
+      "mie-1500": [
+        3,
+        6,
+        10
+      ],
+      "mie-1600": [
+        2,
+        5,
+        7,
+        9,
+        12
+      ],
+      "mie-1730": [
+        1,
+        2,
+        4,
+        5,
+        6,
+        8,
+        9,
+        11,
+        12,
+        14
+      ],
+      "mie-1845": [
+        3,
+        7,
+        10,
+        15
+      ],
+      "jue-0645": [
+        4,
+        5,
+        12
+      ],
+      "jue-1745": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        9,
+        10,
+        11,
+        12
+      ],
+      "jue-1845": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        12,
+        13,
+        14,
+        16
+      ],
+      "vie-0800": [
+        2,
+        3
+      ],
+      "vie-0900": [
+        1,
+        5,
+        6
+      ],
+      "vie-1000": [
+        4
+      ],
+      "vie-1100": [
+        2,
+        7
+      ],
+      "sab-1000": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        12,
+        13,
+        14,
+        15,
+        16
+      ],
+      "sab-1100": [
+        1,
+        3,
+        4,
+        6,
+        9,
+        10,
+        13
+      ]
+    },
+    "clientes": [
+      {
+        "nombre": "Laura M.",
+        "whatsapp": "809-555-0101",
+        "creditos": 6
+      },
+      {
+        "nombre": "Camila R.",
+        "whatsapp": "809-555-0102",
+        "creditos": 3
+      },
+      {
+        "nombre": "Paola G.",
+        "whatsapp": "809-555-0103",
+        "creditos": 11
+      },
+      {
+        "nombre": "Andrea S.",
+        "whatsapp": "829-555-0104",
+        "creditos": 0
+      },
+      {
+        "nombre": "Gabriela T.",
+        "whatsapp": "809-555-0105",
+        "creditos": 8
+      },
+      {
+        "nombre": "Valeria P.",
+        "whatsapp": "849-555-0106",
+        "creditos": 2
+      },
+      {
+        "nombre": "Sofía D.",
+        "whatsapp": "809-555-0107",
+        "creditos": 15
+      },
+      {
+        "nombre": "Daniela F.",
+        "whatsapp": "829-555-0108",
+        "creditos": 4
+      },
+      {
+        "nombre": "Mariela C.",
+        "whatsapp": "809-555-0109",
+        "creditos": 1
+      },
+      {
+        "nombre": "Isabel N.",
+        "whatsapp": "809-555-0110",
+        "creditos": 7
+      },
+      {
+        "nombre": "Carolina V.",
+        "whatsapp": "849-555-0111",
+        "creditos": 9
+      },
+      {
+        "nombre": "Patricia L.",
+        "whatsapp": "809-555-0112",
+        "creditos": 5
+      },
+      {
+        "nombre": "Natalia B.",
+        "whatsapp": "809-555-0113",
+        "creditos": 3
+      },
+      {
+        "nombre": "Renata A.",
+        "whatsapp": "829-555-0114",
+        "creditos": 10
+      },
+      {
+        "nombre": "Lucía H.",
+        "whatsapp": "809-555-0115",
+        "creditos": 2
+      },
+      {
+        "nombre": "Elena J.",
+        "whatsapp": "849-555-0116",
+        "creditos": 6
+      }
+    ],
+    "pagos": [
+      {
+        "id": "demo-1",
+        "cliente": "Andrea S.",
+        "concepto": "Paquete 8 clases",
+        "comprobante": "transferencia-andrea.jpg"
+      },
+      {
+        "id": "demo-2",
+        "cliente": "Mariela C.",
+        "concepto": "Clase de prueba",
+        "comprobante": "captura-banco.png"
+      }
+    ]
+  },
   "pendiente": [
-    "Nombre de la hija y si ella también imparte clases",
-    "Precios y membresías",
-    "WhatsApp e Instagram propios de balé",
-    "Fotos del estudio y de las clases",
+    "Precios de la clase de prueba, los paquetes y la membresía ilimitada (y su vigencia)",
+    "Datos bancarios para la transferencia",
+    "Política de cancelación",
+    "WhatsApp e Instagram propios de balé (mientras tanto las reservas usan el WhatsApp de NutriBEL, sin mostrarlo en la página)",
+    "Confirmar que 'Marifer' del horario es María Fernanda Pimentel",
+    "Descripción de cada clase (Hot Barre, Barre Flex, Barre Flow, Reformer)",
+    "Cupo real de Reformer y de Ballet niñas (la demo usa los 16 lugares de la sala de barras)",
+    "Fotos de las instructoras (por ahora se muestran sus iniciales)",
     "Confirmar sábado 11:00–12:00 (la imagen dice '12:00 AM', se asumió mediodía)",
-    "Confirmar si se puede decir en la web que balé está en el mismo edificio que NutriBEL (por ahora no se menciona)"
+    "Autorizaciones firmadas de los padres antes de publicar cualquier rostro de niña"
   ]
 }

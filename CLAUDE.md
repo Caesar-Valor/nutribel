@@ -24,7 +24,7 @@ Las imágenes de `referencia/` son páginas del PDF del menú y bocetos del clie
 | `contacto.html` | Horario con indicador abierto/cerrado, fachada + interior, dirección, Cómo llegar, WhatsApp, Instagram |
 | `panel.html` | Panel del negocio (demo): datos del negocio, Nutrialmuerzo de la semana, info nutricional, etiquetas, agotado hoy |
 
-Barra de navegación igual en todas las páginas, marcando la página actual.
+Barra de navegación igual en todas las páginas de NutriBEL, marcando la página actual. balé no está en la navegación: NutriBEL y balé son secciones aparte, y la única conexión es el botón "Ir a balé" de la cabecera de NutriBEL (y "Ir a NutriBEL" en la de balé).
 
 ## Arquitectura
 
@@ -68,14 +68,16 @@ Ver `referencia/boceto-logo-animado.png` y `referencia/boceto-anillo-animado.png
 
 ## balé (bale.html)
 
-Es una submarca con identidad propia; su logo usa una serif fina sobre crema. Colores sugeridos a partir del logo: fondo `#F3E4D8`, texto espresso `#2E2723`, y un acento rosado suave del demo (`#7A3E5C`, fondo `#F7E6E8`). Mantén la misma cabecera de NutriBEL para no perder la navegación.
+Es una submarca con identidad propia; su logo usa una serif fina sobre crema. Colores sugeridos a partir del logo: fondo `#F3E4D8`, texto espresso `#2E2723`, y un acento rosado suave del demo (`#7A3E5C`, fondo `#F7E6E8`).
 
-- **Identidad (aprobada):** tipografía propia — Cormorant Garamond (titulares, serif fina como el logo) y Montserrat (textos, etiquetas espaciadas) —, solo en esta página. La cabecera es la de NutriBEL (misma navegación) pero teñida con la paleta de balé; favicon propio (`assets/img/bale/bale-favicon.png`).
+**Sección aparte (decisión del cliente):** `bale.html` es solo de balé. No lleva la cabecera, la navegación, el pedido ni el pie de NutriBEL, y no hace ninguna referencia a NutriBEL (ni a la doctora ni al edificio). La única excepción es un botón "Ir a NutriBEL" en su cabecera propia, que lleva a `index.html`. Usa `<body data-standalone>`. Las páginas de NutriBEL tampoco muestran nada de balé, salvo el botón "Ir a balé" de la cabecera.
+
+- **Identidad (aprobada):** tipografía propia — Cormorant Garamond (titulares, serif fina como el logo) y Montserrat (textos, etiquetas espaciadas) —, solo en esta página. Cabecera propia de balé (logo, modo oscuro, "Ir a NutriBEL"); favicon propio (`assets/img/bale/bale-favicon.png`).
 - **Entrada:** al abrir la página aparece un telón de terciopelo rosa con el logo de balé en crema y una cinta que se dibuja; el telón se abre hacia los lados (≈2,2 s). Se salta con un clic o una tecla y no aparece con `prefers-reduced-motion`. Todas las animaciones de la página terminan (nada en bucle).
-- **Textos:** arriba "Barre, Ballet & Pilates"; la firma es "El estudio de la hija de la Dra. Bielka Eusebio". No mencionar que está en el mismo edificio hasta que se confirme.
+- **Textos:** arriba "Barre, Ballet & Pilates". Sin firma ni menciones a la Dra. Bielka Eusebio ni a NutriBEL.
 
 - **Horario interactivo:** tómalo de `data/bale.json`, con filtros por día y por tipo de clase (Ballet niñas, Hot Barre, Barre Flex, Barre Flow, Reformer). Marca la clase de hoy y muestra la instructora y las notas ("Solo nivel avanzado", "Exclusiva para miembros", "First class session").
-- **Reserva:** botón "Reservar" por clase que abre WhatsApp con el mensaje ya redactado (clase, día y hora). De momento usa el WhatsApp de NutriBEL hasta tener el de balé.
+- **Reserva:** botón "Reservar" por clase que abre WhatsApp con el mensaje ya redactado (clase, día y hora). De momento usa el número de NutriBEL, sin mostrarlo, hasta tener el de balé.
 - **Descripción:** Barre integra ballet, yoga y Pilates usando una barra de ballet como apoyo, para todos los niveles.
 - **Referencias:** `assets/img/bale/bale-horario.png` es la imagen original del horario.
 

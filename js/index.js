@@ -10,9 +10,9 @@ NB.load("negocio").then(n=>{
   const doc = n.doctora;
   $("#lema").textContent = n.lema;
 
-  $("#steps4").innerHTML = n.pasos_servicio.map(p=>`
+  $("#steps4").innerHTML = n.pasos_servicio.map((p,i)=>`
     <li><div class="lbl"><b>${p.n}</b><span>${esc(p.titulo)}</span></div>
-      <span class="pill"><img src="${esc(p.imagen)}" alt="${esc(p.alt)}" width="449" height="114"></span>
+      <span class="pill"><img src="${esc(p.imagen)}" alt="${esc(p.alt)}" width="449" height="114"${i>=2?' loading="lazy"':""}></span>
       <small>${esc(p.texto)}</small></li>`).join("");
 
   const img=$("#docImg"); img.src=doc.foto; img.alt=doc.alt;

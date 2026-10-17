@@ -1,0 +1,104 @@
+{
+ "foto": "img/sala-barras.jpg",
+ "ancho": 1212,
+ "alto": 680,
+ "nota": "x_pct/y_pct = centro del número de cada lugar en la foto, en % del ancho y alto",
+ "lugares": [
+  {
+   "lugar": 1,
+   "barra": "Primera barra",
+   "x_pct": 24.7,
+   "y_pct": 59.3
+  },
+  {
+   "lugar": 2,
+   "barra": "Primera barra",
+   "x_pct": 32.7,
+   "y_pct": 56.6
+  },
+  {
+   "lugar": 3,
+   "barra": "Primera barra",
+   "x_pct": 39.9,
+   "y_pct": 54.6
+  },
+  {
+   "lugar": 4,
+   "barra": "Primera barra",
+   "x_pct": 45.7,
+   "y_pct": 52.8
+  },
+  {
+   "lugar": 5,
+   "barra": "Primera barra",
+   "x_pct": 51.7,
+   "y_pct": 50.9
+  },
+  {
+   "lugar": 6,
+   "barra": "Primera barra",
+   "x_pct": 57.8,
+   "y_pct": 49.1
+  },
+  {
+   "lugar": 7,
+   "barra": "Primera barra",
+   "x_pct": 62.5,
+   "y_pct": 47.6
+  },
+  {
+   "lugar": 8,
+   "barra": "Primera barra",
+   "x_pct": 67.6,
+   "y_pct": 46.0
+  },
+  {
+   "lugar": 9,
+   "barra": "Segunda barra",
+   "x_pct": 24.6,
+   "y_pct": 46.6
+  },
+  {
+   "lugar": 10,
+   "barra": "Segunda barra",
+   "x_pct": 30.4,
+   "y_pct": 45.4
+  },
+  {
+   "lugar": 11,
+   "barra": "Segunda barra",
+   "x_pct": 35.4,
+   "y_pct": 44.9
+  },
+  {
+   "lugar": 12,
+   "barra": "Segunda barra",
+   "x_pct": 40.8,
+   "y_pct": 44.3
+  },
+  {
+   "lugar": 13,
+   "barra": "Segunda barra",
+   "x_pct": 45.5,
+   "y_pct": 43.8
+  },
+  {
+   "lugar": 14,
+   "barra": "Segunda barra",
+   "x_pct": 49.9,
+   "y_pct": 43.2
+  },
+  {
+   "lugar": 15,
+   "barra": "Segunda barra",
+   "x_pct": 54.2,
+   "y_pct": 42.6
+  },
+  {
+   "lugar": 16,
+   "barra": "Segunda barra",
+   "x_pct": 58.3,
+   "y_pct": 42.2
+  }
+ ]
+}

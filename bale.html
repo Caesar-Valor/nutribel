@@ -4,9 +4,9 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>balé · Barre, Ballet & Pilates</title>
-<meta name="description" content="balé, estudio de Barre, Ballet & Pilates: horario de clases y reservas.">
+<meta name="description" content="Balé Studio, Barre, Ballet & Pilates en La Vega: clases, horario, reservas y paquetes.">
 <script>try{if(localStorage.getItem("nutribel-mode")==="dark")document.documentElement.setAttribute("data-mode","dark")}catch(e){}</script>
-<script>document.documentElement.classList.add("js-reveal")</script>
+<script>document.documentElement.classList.add("js-reveal");if(/[?&]vista=estudio\b/.test(location.search))document.documentElement.classList.add("vista-estudio")</script>
 <link rel="icon" href="assets/img/bale/bale-favicon.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -17,71 +17,277 @@
 <script src="js/common.js" defer></script>
 <script src="js/bale.js" defer></script>
 </head>
-<body data-page="bale">
+<body data-page="bale" data-standalone>
 <!-- Entrada de balé: telón que se abre. Solo decorativa (se salta con un clic o una tecla). -->
 <div class="bintro" id="bintro" aria-hidden="true">
   <div class="half l"></div><div class="half r"></div>
   <div class="mark">
-    <span class="logo"><img src="assets/img/bale/bale-logo-transparente.webp" alt="" width="517" height="271"></span>
+    <span class="logo"><img src="assets/img/bale/bale-logo-transparente.webp" alt="" width="1040" height="538"></span>
     <svg viewBox="0 0 260 28"><path pathLength="100" d="M2 16 C 40 2, 70 2, 100 14 S 170 28, 200 12 S 245 4, 258 10"/></svg>
   </div>
 </div>
 
-<header class="top" id="cabecera"></header>
+<!-- Cabecera propia de balé: la única salida hacia NutriBEL es el botón "Ir a NutriBEL" -->
+<header class="btop">
+  <div class="wrap">
+    <a class="bmark" href="bale.html" aria-label="balé, ir al inicio"><img src="assets/img/bale/bale-logo-transparente.webp" alt="" width="1040" height="538"></a>
+    <button class="modebtn" id="modeBtn" type="button" aria-label="Cambiar a modo oscuro" title="Modo oscuro / claro"><svg class="moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg><svg class="sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="4.5"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg></button>
+    <a class="tonb" href="index.html">Ir a NutriBEL</a>
+  </div>
+</header>
+
+<!-- Menú interno de balé -->
+<nav class="bnav" aria-label="Secciones de balé">
+  <div class="wrap">
+    <span class="pub"><a href="#estudio">Estudio</a><a href="#clases">Clases</a><a href="#horario">Horario</a><a href="#paquetes">Paquetes</a><a href="#equipo">Equipo</a><a href="#ubicacion">Ubicación</a></span>
+    <span class="adm"><a href="bale.html">Ver la página pública</a></span>
+  </div>
+</nav>
+<p class="demo-strip">Demostración: las reservas se guardan solo en este navegador.</p>
 
 <main class="wrap bale">
-  <!-- Portada -->
-  <section class="band bhero" style="--bb:var(--b-bg)" aria-labelledby="baleTitle">
+<div id="publico">
+  <!-- 1. Bienvenida -->
+  <section class="band bhero" id="inicio" style="--bb:var(--b-bg)" aria-labelledby="baleTitle">
     <svg class="ribbons" viewBox="0 0 1200 700" preserveAspectRatio="none" aria-hidden="true">
       <path class="r1" pathLength="100" d="M-40 520 C 180 300, 360 280, 520 420 S 860 640, 1240 260"/>
       <path class="r2" pathLength="100" d="M-40 560 C 200 380, 380 360, 540 470 S 880 660, 1240 330"/>
     </svg>
     <div class="inner">
-      <span class="b-kick rise" style="--k:0">Barre, Ballet &amp; Pilates</span>
-      <h1 id="baleTitle" class="rise" style="--k:1"><img src="assets/img/bale/bale-logo-transparente.webp" alt="balé, Barre, Ballet &amp; Pilates" width="517" height="271"></h1>
-      <h2 class="rise" style="--k:2">Barre, para todos los niveles</h2>
-      <p class="rise" style="--k:3">Un entrenamiento que integra ballet, yoga y Pilates, usando una barra de ballet como apoyo. Movimientos controlados y de bajo impacto que complementan tu plan de alimentación.</p>
-      <div class="bbtns rise" style="--k:4">
-        <button class="bbtn solid" type="button" id="trialBtn">Reservar clase de prueba</button>
-        <a class="bbtn line" href="#horario">Ver horario</a>
+      <div class="txt">
+        <span class="b-kick rise" style="--k:0">Barre, Ballet &amp; Pilates</span>
+        <h1 id="baleTitle" class="rise" style="--k:1"><img src="assets/img/bale/bale-logo-transparente.webp" alt="balé, Barre, Ballet &amp; Pilates" width="1040" height="538"></h1>
+        <p class="frase rise" style="--k:2">Un espacio para conectar, fortalecer y transformar.</p>
+        <div class="bbtns rise" style="--k:3">
+          <a class="bbtn solid" href="#horario">Reservar</a>
+          <a class="bbtn line" href="#paquetes">Ver paquetes</a>
+        </div>
       </div>
-      <p class="pending rise" style="--k:5">Precios y membresías: por confirmar.</p>
+      <figure class="arch rise" style="--k:2">
+        <img src="assets/img/bale/barre-entrenamiento.webp" alt="Hombro y espalda de una alumna con gotas de sudor durante una clase de barre" width="1200" height="1800" fetchpriority="high">
+      </figure>
     </div>
   </section>
 
-  <!-- Ballet · Yoga · Pilates -->
-  <section class="band blush" aria-labelledby="whatTitle">
-    <div class="bwhat">
+  <!-- 2. El estudio -->
+  <section class="band blush" id="estudio" aria-labelledby="estTitle">
+    <div class="best">
       <div data-reveal>
-        <span class="b-kick">Clases de Barre</span>
-        <h2 id="whatTitle">Ballet <em>·</em> Yoga <em>·</em> Pilates</h2>
-        <p class="sign">El estudio de la hija de la Dra. Bielka Eusebio</p>
+        <span class="b-kick">El estudio</span>
+        <h2 id="estTitle">Nutrición <em>y</em> movimiento</h2>
+        <div id="historia"></div>
       </div>
-      <ol class="benef">
-        <li data-reveal style="--r:0"><span class="n">01</span><b>Postura</b><small>Alineación y conciencia corporal</small></li>
-        <li data-reveal style="--r:1"><span class="n">02</span><b>Fuerza</b><small>Core, piernas y glúteos</small></li>
-        <li data-reveal style="--r:2"><span class="n">03</span><b>Flexibilidad</b><small>Estiramientos guiados</small></li>
-        <li data-reveal style="--r:3"><span class="n">04</span><b>Bajo impacto</b><small>Cuida tus articulaciones</small></li>
-      </ol>
+      <article class="founder" data-reveal style="--r:1" aria-labelledby="mfName">
+        <span class="ini big" aria-hidden="true">MF</span>
+        <h3 id="mfName"></h3>
+        <p class="role"></p>
+        <p class="bio"></p>
+      </article>
+    </div>
+    <div class="barre" data-reveal>
+      <div>
+        <span class="b-kick">Barre</span>
+        <h2>¿Qué es el <em>barre</em>?</h2>
+        <p id="queBarre"></p>
+        <ul class="benef" aria-label="Qué trabaja el barre">
+          <li>Fuerza</li><li>Resistencia</li><li>Estabilidad</li><li>Equilibrio</li><li>Conciencia corporal</li>
+        </ul>
+      </div>
+      <div>
+        <span class="b-kick">Certificaciones de María Fernanda</span>
+        <ol class="certs" id="certs"></ol>
+      </div>
     </div>
   </section>
 
-  <!-- Horario -->
-  <section class="band paper" id="horario" aria-labelledby="schedTitle">
-    <div class="sched-head" data-reveal>
-      <div>
-        <span class="b-kick">balé</span>
-        <h2 id="schedTitle">Nuestro <em>horario</em></h2>
-      </div>
-      <p>Elige tu clase y resérvala por WhatsApp. <span id="todayNote"></span></p>
+  <!-- 3. Clases -->
+  <section class="band paper" id="clases" aria-labelledby="claTitle">
+    <div class="shead" data-reveal>
+      <span class="b-kick">Tipos de clase</span>
+      <h2 id="claTitle">Nuestras <em>clases</em></h2>
     </div>
-    <div class="bfilters" data-reveal style="--r:1">
-      <div class="row" role="group" aria-labelledby="lblDay"><span class="lbl" id="lblDay">Día</span><div class="row" id="fDay"></div></div>
-      <div class="row" role="group" aria-labelledby="lblType"><span class="lbl" id="lblType">Clase</span><div class="row" id="fType"></div></div>
-    </div>
-    <div class="days" id="days"></div>
+    <div class="ctypes" id="ctypes"></div>
   </section>
+
+  <!-- 4. Horario y reservas -->
+  <section class="band" style="--bb:var(--b-bg)" id="horario" aria-labelledby="schedTitle">
+    <div class="shead" data-reveal>
+      <span class="b-kick">Reservar</span>
+      <h2 id="schedTitle">Horario <em>y</em> reservas</h2>
+      <p>Elige el día y la clase, y escoge tu lugar en la barra.</p>
+    </div>
+    <div class="cal">
+      <div class="weekbar">
+        <button class="arrow" type="button" id="prevW" aria-label="Semana anterior"><span aria-hidden="true">‹</span></button>
+        <p class="wlabel" id="wLabel" aria-live="polite"></p>
+        <button class="arrow" type="button" id="nextW" aria-label="Semana siguiente"><span aria-hidden="true">›</span></button>
+      </div>
+      <div class="strip" id="strip" role="group" aria-label="Días de la semana"></div>
+      <div class="bfilters">
+        <label>Instructora<select id="fInst"></select></label>
+        <label>Tipo de clase<select id="fType"></select></label>
+      </div>
+      <h3 class="dtitle" id="dTitle"></h3>
+      <ol class="rows" id="rows"></ol>
+    </div>
+
+    <div class="msgs" aria-labelledby="msgTitle">
+      <div class="shead">
+        <span class="b-kick">Mensajes automáticos</span>
+        <h3 id="msgTitle">Así te avisa <em>balé</em></h3>
+        <p>Vista previa de los mensajes de WhatsApp del sistema real. <strong>En el sistema real llegarán solos.</strong></p>
+      </div>
+      <div class="phone" id="bubbles"></div>
+    </div>
+  </section>
+
+  <!-- 5. Paquetes -->
+  <section class="band paper" id="paquetes" aria-labelledby="paqTitle">
+    <div class="shead" data-reveal>
+      <span class="b-kick">Paquetes</span>
+      <h2 id="paqTitle">Elige tu <em>ritmo</em></h2>
+      <p>Clases por créditos o membresía mensual. Precios por definir.</p>
+    </div>
+    <div class="packs" id="packs"></div>
+  </section>
+
+  <!-- 6. Equipo -->
+  <section class="band blush" id="equipo" aria-labelledby="eqTitle">
+    <div class="shead" data-reveal>
+      <span class="b-kick">Team</span>
+      <h2 id="eqTitle">Nuestro <em>equipo</em></h2>
+      <p id="eqText"></p>
+    </div>
+    <div class="team" id="team"></div>
+  </section>
+
+  <!-- 7. Ubicación y contacto -->
+  <section class="band" style="--bb:var(--b-bg)" id="ubicacion" aria-labelledby="ubTitle">
+    <div class="ubic" data-reveal>
+      <div>
+        <span class="b-kick">Ubicación</span>
+        <h2 id="ubTitle">Te esperamos <em>en balé</em></h2>
+        <p class="where">La Vega, República Dominicana</p>
+        <p id="addr" class="addr"></p>
+      </div>
+      <div class="links">
+        <a class="bbtn solid" id="mapsBtn" href="contacto.html" target="_blank" rel="noopener">Cómo llegar</a>
+        <a class="bbtn line" id="waBtn" href="contacto.html" target="_blank" rel="noopener">WhatsApp</a>
+        <span class="ig"><span class="lbl">Instagram</span> <span class="pending-mark">@ por confirmar</span></span>
+      </div>
+    </div>
+  </section>
+</div>
+
+<!-- Vista del estudio (demo): bale.html?vista=estudio -->
+<div id="vistaEstudio" hidden>
+  <section class="vhead">
+    <span class="b-kick">balé · demo</span>
+    <h1>Vista del <em>estudio</em></h1>
+    <p>Lo que vería el equipo de balé: reservas por clase, clientas, pagos por confirmar y el calendario de cada instructora. Con datos de ejemplo más las reservas hechas en este navegador.</p>
+    <button class="linkbtn" type="button" id="resetDemo">Borrar las reservas de la demo</button>
+  </section>
+  <div class="tabs" role="tablist" aria-label="Vista del estudio">
+    <button role="tab" type="button" id="t-res" aria-controls="p-res" aria-selected="true">Reservas</button>
+    <button role="tab" type="button" id="t-cli" aria-controls="p-cli" aria-selected="false" tabindex="-1">Clientes</button>
+    <button role="tab" type="button" id="t-pag" aria-controls="p-pag" aria-selected="false" tabindex="-1">Pagos</button>
+    <button role="tab" type="button" id="t-cal" aria-controls="p-cal" aria-selected="false" tabindex="-1">Calendario</button>
+  </div>
+  <div class="vweek">
+    <button class="arrow" type="button" id="vPrev" aria-label="Semana anterior"><span aria-hidden="true">‹</span></button>
+    <p class="wlabel" id="vLabel" aria-live="polite"></p>
+    <button class="arrow" type="button" id="vNext" aria-label="Semana siguiente"><span aria-hidden="true">›</span></button>
+    <label class="vinst">Instructora<select id="vInst"></select></label>
+  </div>
+  <section role="tabpanel" id="p-res" aria-labelledby="t-res">
+    <div class="vres">
+      <ol class="vlist" id="vList"></ol>
+      <div class="vdetail" id="vDetail"></div>
+    </div>
+  </section>
+  <section role="tabpanel" id="p-cli" aria-labelledby="t-cli" hidden>
+    <div class="tablewrap"><table class="vtable"><caption class="sr-only">Clientes</caption>
+      <thead><tr><th scope="col">Nombre</th><th scope="col">WhatsApp</th><th scope="col">Reservas</th><th scope="col">Créditos</th></tr></thead>
+      <tbody id="cliBody"></tbody></table></div>
+    <p class="privacy" id="cliNote"></p>
+  </section>
+  <section role="tabpanel" id="p-pag" aria-labelledby="t-pag" hidden>
+    <h2 class="vh2">Transferencias por confirmar</h2>
+    <ul class="pays" id="payPend"></ul>
+    <h2 class="vh2">Aprobados</h2>
+    <ul class="pays done" id="payDone"></ul>
+  </section>
+  <section role="tabpanel" id="p-cal" aria-labelledby="t-cal" hidden>
+    <h2 class="vh2">Calendario de la instructora</h2>
+    <p class="privacy">Descarga un archivo .ics con las clases de la semana elegida y su lista de alumnas. Se importa en Google Calendar (Configuración → Importar) o se abre en el iPhone para añadirlo al Calendario.</p>
+    <ol class="vlist cal-prev" id="calPrev"></ol>
+    <button class="bbtn solid" type="button" id="icsBtn">Descargar calendario (.ics)</button>
+  </section>
+</div>
 </main>
+
+<footer class="bfoot">
+  <div class="wrap">
+    <span>balé · Barre, Ballet &amp; Pilates · La Vega, República Dominicana</span>
+    <a href="bale.html?vista=estudio" class="pubonly">Vista del estudio (demo)</a>
+  </div>
+</footer>
+
+<!-- Reserva: lugar → datos → confirmación -->
+<dialog class="book" id="book" aria-labelledby="bkTitle">
+  <div class="bk">
+    <header>
+      <div>
+        <span class="b-kick" id="bkKick">Reservar</span>
+        <h2 id="bkTitle"></h2>
+        <p id="bkMeta"></p>
+      </div>
+      <button class="x" type="button" id="bkClose" aria-label="Cerrar">×</button>
+    </header>
+
+    <div class="step" id="stLugar">
+      <p class="steph">1. Elige tu lugar</p>
+      <div class="sala" id="sala" aria-hidden="true"></div>
+      <ul class="legend" aria-hidden="true"><li><i class="s-free"></i>Libre</li><li><i class="s-busy"></i>Ocupado</li><li><i class="s-mine"></i>Tu lugar</li></ul>
+      <div class="seats" id="seats"></div>
+      <p class="pick" id="pick" aria-live="polite">Toca un lugar libre.</p>
+      <div class="bkbtns"><button class="bbtn solid" type="button" id="toDatos" disabled>Continuar</button></div>
+    </div>
+
+    <form class="step form" id="stDatos" novalidate hidden>
+      <p class="steph" id="datosH">2. Tus datos</p>
+      <div class="kids" id="kids" hidden>
+        <label class="fld">Nombre de la niña<input id="kName" autocomplete="off"></label>
+        <label class="fld">Nombre del padre, la madre o el tutor<input id="gName" autocomplete="name"></label>
+      </div>
+      <label class="fld" id="nameWrap">Nombre<input id="fName" autocomplete="name"></label>
+      <label class="fld"><span id="waLbl">WhatsApp</span><input id="fWa" type="tel" inputmode="tel" autocomplete="tel" placeholder="809-000-0000"></label>
+      <fieldset class="payf" id="payF">
+        <legend>Forma de pago</legend>
+        <label class="radio"><input type="radio" name="pago" value="Transferencia" checked> Transferencia</label>
+        <div class="bank" id="bank"></div>
+        <label class="fld">Comprobante de la transferencia<input type="file" id="fFile" accept="image/*,application/pdf"></label>
+        <p class="privacy">Demostración: el archivo no se sube ni se guarda, solo se anota su nombre.</p>
+      </fieldset>
+      <label class="check"><input type="checkbox" id="fPol"> <span>Acepto la política de cancelación. <small id="polTxt"></small></span></label>
+      <p class="privacy">No escribas datos de salud aquí.</p>
+      <div class="bkbtns">
+        <button class="bbtn line" type="button" id="backLugar">Cambiar lugar</button>
+        <button class="bbtn solid" type="submit" id="confirmBtn">Confirmar reserva</button>
+      </div>
+    </form>
+
+    <div class="step done" id="stListo" hidden tabindex="-1">
+      <svg class="ok" viewBox="0 0 52 52" aria-hidden="true"><circle cx="26" cy="26" r="24"/><path d="M15 27l7 7 15-16"/></svg>
+      <h3 id="okTitle">¡Reserva confirmada!</h3>
+      <dl class="sum" id="sum"></dl>
+      <div class="bkbtns">
+        <button class="bbtn solid" type="button" id="sendWa">Enviar confirmación por WhatsApp</button>
+        <button class="bbtn line" type="button" id="bkDone">Listo</button>
+      </div>
+    </div>
+  </div>
+</dialog>
 
 </body>
 </html>

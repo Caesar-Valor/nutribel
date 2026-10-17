@@ -5,21 +5,56 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>NutriBEL · Panel del negocio</title>
 <meta name="description" content="Panel del negocio (demo).">
+<meta name="robots" content="noindex">
 <script>try{if(localStorage.getItem("nutribel-mode")==="dark")document.documentElement.setAttribute("data-mode","dark")}catch(e){}</script>
 <link rel="icon" href="assets/img/marca/logo-circulo.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght,SOFT@0,9..144,400..700,0..100;1,9..144,400..700,0..100&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="css/base.css">
+<link rel="stylesheet" href="css/panel.css">
 <script src="js/common.js" defer></script>
+<script src="js/panel.js" defer></script>
 </head>
 <body data-page="panel">
 <header class="top" id="cabecera"></header>
 
 <main class="wrap">
-  <section class="block">
+  <section class="panel-page">
     <h1 class="title">Panel del negocio</h1>
-    <p class="lead">Página en construcción (fase 6).</p>
+    <p class="note">Versión demo: los cambios se guardan solo en este navegador. En la versión final se guardan en una base de datos y todos los clientes los ven al instante.</p>
+    <form id="panelForm" novalidate>
+      <div class="pgrid">
+        <div class="side">
+          <div class="pbox">
+            <h2>Datos del negocio</h2>
+            <div class="form">
+              <label class="fld">WhatsApp (con código de país, ej. 18095551234)<input type="tel" id="aWa" inputmode="numeric" autocomplete="off"></label>
+              <label class="fld">Dirección<input type="text" id="aAddr" autocomplete="off"></label>
+              <label class="fld">Enlace de Google Maps (opcional)<input type="url" id="aMaps" placeholder="https://maps.app.goo.gl/..." autocomplete="off"></label>
+            </div>
+          </div>
+          <div class="pbox">
+            <h2>Nutrialmuerzo de la semana</h2>
+            <div class="form" id="week"></div>
+          </div>
+        </div>
+        <div>
+          <div class="dishes-head">
+            <h2>Platos del menú</h2>
+            <label class="fld">Buscar plato<input type="search" id="search" placeholder="Ej.: wrap, sopa, pizzana"></label>
+          </div>
+          <p class="privacy">Abre un plato para completar su información nutricional, sus etiquetas o marcarlo como agotado hoy.</p>
+          <div id="dishes"></div>
+          <div class="empty-state noresults" id="noResults" hidden>Ningún plato coincide con la búsqueda.</div>
+        </div>
+      </div>
+      <div class="savebar">
+        <span class="state" id="saveState" role="status">Todo guardado</span>
+        <button class="btn fill" type="submit">Guardar cambios</button>
+      </div>
+      <p class="resetrow"><button class="linkbtn" type="button" id="resetBtn">Restaurar datos del menú</button></p>
+    </form>
   </section>
 </main>
 

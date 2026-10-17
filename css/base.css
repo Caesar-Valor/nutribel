@@ -39,12 +39,15 @@ html{scroll-padding-top:calc(env(safe-area-inset-top,0px) + 118px);scroll-behavi
 html.mode-anim *,html.mode-anim *::before,html.mode-anim *::after{transition:background-color .5s ease,color .5s ease,border-color .5s ease,box-shadow .5s ease,fill .5s ease!important}
 
 /* ---------- Base ---------- */
-*,*::before,*::after{box-sizing:inherit}
+/* border-box directo: con "inherit", el contenido de <details> heredaba content-box del nodo interno del navegador */
+*,*::before,*::after{box-sizing:border-box}
 body{margin:0;background:var(--cream);color:var(--ink);font:400 16px/1.6 var(--body);-webkit-font-smoothing:antialiased}
 img{max-width:100%;display:block}
 button,input,select,textarea{font:inherit;color:inherit}
 button{cursor:pointer}
 :focus-visible{outline:3px solid var(--lime);outline-offset:2px}
+/* Campos: el contorno se mantiene aunque el foco esté en una parte interna (p. ej. el calendario de la fecha) */
+input:focus,input:focus-within,select:focus,textarea:focus{outline:3px solid var(--lime);outline-offset:2px}
 .wrap{max-width:1080px;margin:0 auto;padding:0 20px}
 .sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
 
@@ -75,6 +78,18 @@ h1 em,h2 em{font-style:italic;font-weight:400;color:var(--leaf)}
 :root[data-mode="dark"] .modebtn .sun{display:block}
 :root[data-mode="dark"] .modebtn .moon{display:none}
 @keyframes iconIn{from{transform:rotate(-120deg) scale(.4);opacity:0}to{transform:none;opacity:1}}
+/* Único enlace a balé: sección aparte */
+.tobale{flex:none;display:inline-flex;align-items:baseline;gap:5px;border:1.5px solid var(--line);background:var(--paper);color:var(--ink);border-radius:999px;padding:8px 13px;text-decoration:none;font-size:14px;font-weight:600;line-height:1.2}
+.tobale b{font-weight:600}
+.tobale:hover{border-color:var(--olive);color:var(--olive)}
+/* En escritorio va en la barra; en el teléfono, al final de la navegación y fijo a la derecha */
+.tobale.in-nav{display:none}
+@media (max-width:600px){
+  .tobale.in-bar{display:none}
+  .nav{display:flex;align-items:center}
+  .nav .wrap{flex:1;min-width:0;padding-right:10px;-webkit-mask-image:linear-gradient(to left,transparent 0,#000 22px);mask-image:linear-gradient(to left,transparent 0,#000 22px)}
+  .tobale.in-nav{display:inline-flex;margin-right:16px;padding:6px 12px;font-size:14px}
+}
 .cartbtn{border:2px solid var(--olive);background:var(--olive);color:#fff;border-radius:999px;padding:8px 14px;font-weight:600;display:flex;gap:8px;align-items:center;flex:none}
 .cartbtn b{background:var(--lime);color:#1f2a10;border-radius:999px;min-width:22px;padding:0 6px;text-align:center}
 

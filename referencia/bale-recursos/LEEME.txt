@@ -1,0 +1,12 @@
+RECURSOS PARA LA DEMO DE BALÉ (dentro de la web de NutriBEL)
+
+img/sala-barras.jpg ............... Sala real con las 16 barras numeradas (1-8 Primera barra, 9-16 Segunda barra)
+img/ballet-ninas-zapatillas-1.jpg . Ballet niñas, solo piernas y zapatillas (SIN rostros)
+img/ballet-ninas-zapatillas-2.jpg . Ballet niñas, solo piernas y zapatillas (SIN rostros)
+img/barre-entrenamiento.jpg ....... Barre adultas, espalda (sin rostro)
+img/bale-logo.png ................. Logo de balé (fondo crema #F3E4D8, letras #2E2723)
+datos/sala.json ................... Posición de cada uno de los 16 lugares sobre sala-barras.jpg (en % de ancho y alto)
+texto/historia.md ................. Texto de la clienta (bienvenida, historia, qué es el barre)
+texto/inspiracion-verbena.md ...... Qué tomar de la web de inspiración
+
+REGLA: no se publica ningún rostro de niña hasta tener las autorizaciones firmadas de sus padres.
