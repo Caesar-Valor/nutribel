@@ -27,6 +27,16 @@ const MODE_TXT = {recoger:"Para recoger", local:"Comer en el local", cerca:"Deli
 const $ = (s,el=document)=>el.querySelector(s);
 const esc = s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 const money = n=>typeof n==="number"?"RD$"+n.toLocaleString("es-DO"):"Precio por confirmar";
+// Variables del sistema de diseño (css/base.css)
+const cssVar = name=>getComputedStyle(document.documentElement).getPropertyValue(name).trim();
+const cssMs = (name,def)=>{const v=cssVar(name); return v?parseFloat(v)*(v.endsWith("ms")?1:1000):def};
+// Fotos con variantes -480/-800 (assets/img/{platos,menu-bebidas,planes,bale,local}): srcset para que el teléfono baje la pequeña
+const SRCSET_DIRS = /assets\/img\/(platos|menu-bebidas|planes|bale|local)\/[^/]+\.webp$/;
+function srcset(src){
+  if(!SRCSET_DIRS.test(src||"")||/-(480|800)\.webp$/.test(src)) return "";
+  const b=src.slice(0,-5);
+  return `${b}-480.webp 480w, ${b}-800.webp 800w`;
+}
 function readLS(key){try{return JSON.parse(localStorage.getItem(key))}catch(e){return null}}
 function writeLS(key,val){try{localStorage.setItem(key,JSON.stringify(val))}catch(e){}}
 
@@ -143,7 +153,7 @@ function renderHeader(){
     <div class="status"><i class="dot" id="dot"></i><span id="statusTxt">…</span></div>
     <a class="tobale in-bar" href="bale.html" aria-label="Ir a balé, Barre, Ballet &amp; Pilates">Ir a <b>balé</b></a>
     <button class="modebtn" id="modeBtn" type="button" aria-label="Cambiar a modo oscuro" title="Modo oscuro / claro">${ICON_MOON}${ICON_SUN}</button>
-    <button class="cartbtn" id="openCart" type="button" aria-label="Ver pedido">Pedido <b id="count">0</b></button>
+    <button class="cartbtn" id="openCart" type="button">Pedido <b id="count">0</b><span class="sr-only" id="countTxt"> productos</span></button>
   </div>
   <nav class="nav" aria-label="Páginas"><div class="wrap">
     ${PAGES.map(([id,label])=>`<a href="${id}.html"${id===page?' aria-current="page"':""}>${label}</a>`).join("")}
@@ -180,7 +190,7 @@ function toggleMode(){
   const tr=document.startViewTransition(save);
   tr.ready.then(()=>{
     root.animate({clipPath:[`circle(0px at ${x}px ${y}px)`,`circle(${end}px at ${x}px ${y}px)`]},
-      {duration:650,easing:"cubic-bezier(.65,0,.35,1)",pseudoElement:"::view-transition-new(root)"});
+      {duration:cssMs("--dur-theme",650),easing:cssVar("--ease-in-out")||"cubic-bezier(.65,0,.35,1)",pseudoElement:"::view-transition-new(root)"});
   }).catch(()=>{});
 }
 function initMode(){
@@ -217,6 +227,7 @@ function addToCart(item){
   const same=cart.items.find(c=>c.name===it.name&&c.size===it.size&&c.opt===it.opt);
   if(same) same.qty=Math.min(99,same.qty+1); else cart.items.push(Object.assign({qty:1},it));
   saveCart(); renderCart(); toast(`${it.name} agregado al pedido`);
+  document.dispatchEvent(new CustomEvent("nb:cart-add",{detail:it})); // js/motion.js anima la llegada al pedido
 }
 
 function renderDrawer(){
@@ -250,7 +261,8 @@ function renderModeOptions(){
 function renderCart(){
   const n=cart.items.reduce((a,c)=>a+c.qty,0), T=totals();
   $("#count").textContent=n;
-  $("#openCart").setAttribute("aria-label",n?`Ver pedido: ${n} ${n===1?"producto":"productos"}`:"Ver pedido: vacío");
+  // Nombre accesible = texto visible ("Pedido 2") + " productos", sin un aria-label que lo contradiga
+  $("#countTxt").textContent=n===1?" producto":" productos";
   $("#dAddrWrap").classList.toggle("show",!!T.fee);
   $("#cartBody").innerHTML = !cart.items.length ? `<div class="empty-state">Tu pedido está vacío. Elige algo del menú y aparecerá aquí.</div>` :
     cart.items.map((c,i)=>`<div class="line"><div><b>${esc(c.name)}</b>${c.size?` (${esc(c.size)})`:""}<br><small>${esc(c.opt)}</small></div>
@@ -329,7 +341,7 @@ if(STANDALONE){
 
 /* ============ API PARA LAS PÁGINAS ============ */
 window.NB = {
-  $, esc, money, toast, load, ready, DAYS,
+  $, esc, money, toast, load, ready, DAYS, srcset, cssVar, cssMs,
   whatsapp:openWA, waLink,
   cart:{add:addToCart, open:()=>openDrawer("#cart"), items:()=>cart.items.map(c=>Object.assign({},c))},
   panel,

@@ -1,3 +1,7 @@
 {
-  "cleanUrls": false
+  "cleanUrls": false,
+  "rewrites": [
+    { "source": "/", "destination": "/index.html" },
+    { "source": "/:page(index|metodo|menu|servicios|planes|bale|consulta|contacto|panel)", "destination": "/:page.html" }
+  ]
 }

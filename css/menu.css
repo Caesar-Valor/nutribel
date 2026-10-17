@@ -21,6 +21,11 @@ h2.big{font:600 clamp(38px,6vw,64px)/.9 var(--head);margin:0 0 18px;color:var(--
 .tabs button[aria-selected="true"]{background:var(--tc);color:#fff}
 .filters{display:flex;flex-wrap:wrap;gap:8px;margin:6px 0 22px}
 .filters:empty{display:none}
+/* Mientras llega data/menu.json se reserva el alto de lo que se va a pintar (evita el salto de diseño, CLS) */
+.today:empty{min-height:250px}
+#menu:not(.ready) .tabs{min-height:53px}
+#menu:not(.ready) .filters{display:block;min-height:48px}
+#menu:not(.ready) #menuBody{min-height:100vh}
 :root[data-mode="dark"] .tabs button[aria-selected="true"]{color:#161a11}
 
 /* Información nutricional y opciones dentro de la tarjeta */
@@ -53,6 +58,8 @@ select.opt{width:100%;margin-top:4px;border:1.5px solid var(--line);background:v
   .bowl{grid-template-columns:1fr}
   .summary{position:static}
   .today{grid-template-columns:1fr}
+  .today:empty{min-height:430px}
+  #menu:not(.ready) .filters{min-height:96px}
   .today .day{writing-mode:horizontal-tb;transform:none}
 }
 

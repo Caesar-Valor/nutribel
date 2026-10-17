@@ -1,0 +1,83 @@
+{
+  "index": {
+    "rendimiento": 84,
+    "accesibilidad": 100,
+    "buenas_practicas": 100,
+    "seo": 100,
+    "FCP": "1.4 s",
+    "LCP": "2.3 s",
+    "TBT": "10 ms",
+    "CLS": "0.269",
+    "fallos": [
+      "cumulative-layout-shift: Cumulative Layout Shift (0.269)",
+      "mainthread-work-breakdown: Minimize main-thread work (2.2 s)",
+      "layout-shifts: Avoid large layout shifts (3 layout shifts found)",
+      "label-content-name-mismatch: Elements with visible text labels do not have matching accessible names.",
+      "uses-long-cache-ttl: Serve static assets with an efficient cache policy (12 resources found)",
+      "offscreen-images: Defer offscreen images (Est savings of 42 KiB)",
+      "render-blocking-resources: Eliminate render-blocking resources (Est savings of 530 ms)",
+      "modern-image-formats: Serve images in next-gen formats (Est savings of 76 KiB)",
+      "uses-responsive-images: Properly size images (Est savings of 18 KiB)",
+      "cache-insight: Use efficient cache lifetimes (Est savings of 239 KiB)",
+      "cls-culprits-insight: Layout shift culprits",
+      "image-delivery-insight: Improve image delivery (Est savings of 105 KiB)",
+      "network-dependency-tree-insight: Network dependency tree",
+      "render-blocking-insight: Render blocking requests (Est savings of 700 ms)"
+    ]
+  },
+  "menu": {
+    "rendimiento": 83,
+    "accesibilidad": 100,
+    "buenas_practicas": 100,
+    "seo": 100,
+    "FCP": "2.5 s",
+    "LCP": "4.1 s",
+    "TBT": "0 ms",
+    "CLS": "0",
+    "fallos": [
+      "first-contentful-paint: First Contentful Paint (2.5 s)",
+      "largest-contentful-paint: Largest Contentful Paint (4.1 s)",
+      "interactive: Time to Interactive (4.1 s)",
+      "mainthread-work-breakdown: Minimize main-thread work (2.1 s)",
+      "largest-contentful-paint-element: Largest Contentful Paint element (4,070 ms)",
+      "label-content-name-mismatch: Elements with visible text labels do not have matching accessible names.",
+      "uses-long-cache-ttl: Serve static assets with an efficient cache policy (8 resources found)",
+      "render-blocking-resources: Eliminate render-blocking resources (Est savings of 1,600 ms)",
+      "uses-responsive-images: Properly size images (Est savings of 116 KiB)",
+      "cache-insight: Use efficient cache lifetimes (Est savings of 185 KiB)",
+      "forced-reflow-insight: Forced reflow",
+      "image-delivery-insight: Improve image delivery (Est savings of 97 KiB)",
+      "network-dependency-tree-insight: Network dependency tree",
+      "render-blocking-insight: Render blocking requests (Est savings of 1,820 ms)"
+    ]
+  },
+  "bale": {
+    "rendimiento": 93,
+    "accesibilidad": 96,
+    "buenas_practicas": 100,
+    "seo": 100,
+    "FCP": "2.4 s",
+    "LCP": "2.6 s",
+    "TBT": "30 ms",
+    "CLS": "0",
+    "fallos": [
+      "first-contentful-paint: First Contentful Paint (2.4 s)",
+      "largest-contentful-paint: Largest Contentful Paint (2.6 s)",
+      "speed-index: Speed Index (3.5 s)",
+      "max-potential-fid: Max Potential First Input Delay (310 ms)",
+      "mainthread-work-breakdown: Minimize main-thread work (4.3 s)",
+      "largest-contentful-paint-element: Largest Contentful Paint element (2,580 ms)",
+      "color-contrast: Background and foreground colors do not have a sufficient contrast ratio.",
+      "label-content-name-mismatch: Elements with visible text labels do not have matching accessible names.",
+      "uses-long-cache-ttl: Serve static assets with an efficient cache policy (10 resources found)",
+      "render-blocking-resources: Eliminate render-blocking resources (Est savings of 1,430 ms)",
+      "unminified-javascript: Minify JavaScript (Est savings of 2 KiB)",
+      "uses-responsive-images: Properly size images (Est savings of 242 KiB)",
+      "cache-insight: Use efficient cache lifetimes (Est savings of 2,100 KiB)",
+      "image-delivery-insight: Improve image delivery (Est savings of 223 KiB)",
+      "lcp-discovery-insight: LCP request discovery",
+      "network-dependency-tree-insight: Network dependency tree",
+      "render-blocking-insight: Render blocking requests (Est savings of 1,430 ms)"
+    ]
+  }
+}

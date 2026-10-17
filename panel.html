@@ -3,7 +3,9 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>NutriBEL · Panel del negocio</title>
+<title>Panel del negocio · NutriBEL</title>
+<link rel="preload" href="data/negocio.json" as="fetch" crossorigin="anonymous">
+<link rel="preload" href="data/menu.json" as="fetch" crossorigin="anonymous">
 <meta name="description" content="Panel del negocio (demo).">
 <meta name="robots" content="noindex">
 <script>try{if(localStorage.getItem("nutribel-mode")==="dark")document.documentElement.setAttribute("data-mode","dark")}catch(e){}</script>
@@ -15,6 +17,7 @@
 <link rel="stylesheet" href="css/panel.css">
 <script src="js/common.js" defer></script>
 <script src="js/panel.js" defer></script>
+<script type="module" src="js/motion.js"></script>
 </head>
 <body data-page="panel">
 <header class="top" id="cabecera"></header>

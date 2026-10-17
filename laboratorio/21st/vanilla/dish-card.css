@@ -1,0 +1,26 @@
+/* Laboratorio: tarjeta de plato traducida de React + Tailwind a CSS con los tokens de css/base.css */
+.lab{padding:var(--sp-7) 20px var(--sp-8)}
+.lab h1{font:600 var(--fs-title)/.95 var(--head);color:var(--olive);margin:0 0 var(--sp-3)}
+.lab code{font-size:.9em;background:var(--sage);border-radius:var(--r-xs);padding:1px 6px}
+.lab-grid{max-width:380px;margin:var(--sp-5) 0}
+
+.dcard{position:relative;display:flex;flex-direction:column;gap:var(--sp-3);overflow:hidden;background:var(--paper);border:1.5px solid var(--line);border-top:6px solid var(--olive);border-radius:var(--r-lg);padding:18px;box-shadow:var(--sh-sm);transition:box-shadow var(--dur-base) var(--ease-out)}
+.dcard:hover{box-shadow:var(--sh-lg)}
+.dcard .ph{margin:-18px -18px var(--sp-1);aspect-ratio:16/10;overflow:hidden;border-radius:14px 14px 0 0;background:var(--sage)}
+.dcard .ph img{width:100%;height:100%;object-fit:cover;transition:transform var(--dur-slow) var(--ease-out)}
+.dcard:hover .ph img{transform:scale(1.04)}
+.dcard h3{font:600 var(--fs-h3)/1.05 var(--head);color:var(--olive);margin:0}
+.dcard p{margin:0;font-size:15.5px;line-height:1.45;color:var(--muted)}
+.dcard .tag{display:inline-flex;align-items:center;gap:4px}
+.dcard .tag svg{width:12px;height:12px;fill:currentColor}
+
+/* Selector de tamaño: el resaltado se desliza entre opciones (equivale al layoutId de React) */
+.dsizes{position:relative;display:flex;flex-wrap:wrap;gap:var(--sp-2)}
+.dsizes button{position:relative;z-index:1;display:flex;align-items:center;gap:var(--sp-2);min-height:36px;padding:0 var(--sp-3);border:0;border-radius:var(--r-sm);background:none;color:var(--olive);font-weight:600;font-size:14px}
+.dsizes button span:last-child{font-weight:500;opacity:.8}
+.dsizes .hl{position:absolute;left:0;top:0;z-index:0;border-radius:var(--r-sm);background:color-mix(in srgb,var(--lime) 35%,transparent);box-shadow:inset 0 0 0 2px var(--olive);pointer-events:none}
+
+.dadd{margin-top:auto;min-height:var(--tap);display:flex;align-items:center;justify-content:center;overflow:hidden;border:0;border-radius:12px;background:var(--olive);color:#fff;font-weight:600}
+.dadd .lbl{display:inline-flex;align-items:center;gap:var(--sp-2)}
+.dadd svg{width:16px;height:16px;fill:none;stroke:currentColor;stroke-width:2.5;stroke-linecap:round;stroke-linejoin:round}
+:root[data-mode="dark"] .dadd{color:#161a11}

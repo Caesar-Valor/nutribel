@@ -19,6 +19,7 @@ body[data-page="bale"]{
   --blush:#F7E6E8;
   --rose-soft:#F4C5CE;       /* rosa del material de redes de balé */
   --hot:#ED2F59;             /* acento de redes: con moderación (botón principal, etiquetas) */
+  --hot-fill:#E0264F;        /* el mismo rosa un punto más profundo para rellenos con texto blanco: 4,6:1 (#ED2F59 solo da 4,1:1) */
   /* Tokens compartidos reasignados para esta página */
   --cream:#F3E4D8; --paper:#FFFAF6; --ink:#2E2723; --muted:#6B5A52; --line:#E3CFC2;
   --olive:#2E2723; --leaf:#7A3E5C; --lime:#D9A9BE; --sage:#EAD7CB; --cta:#7A3E5C; --accent:#7A3E5C;
@@ -127,13 +128,13 @@ html:has(body[data-page="bale"]){scroll-padding-top:calc(env(safe-area-inset-top
 .bbtn.line:hover{background:var(--rose);color:#fff}
 .bbtn:disabled{opacity:.45;cursor:not-allowed;transform:none}
 .bbtn.sm{padding:11px 16px;font-size:11px}
-.bbtn.hot{background:var(--hot);border-color:var(--hot);color:#fff}                 /* blanco sobre #ED2F59: 4,7:1 */
+.bbtn.hot{background:var(--hot-fill);border-color:var(--hot-fill);color:#fff}       /* blanco sobre #E0264F: 4,6:1 */
 .bbtn.hot:hover{background:#d4204a;border-color:#d4204a}
 .bbtn.ghost{background:rgba(30,22,20,.25);border-color:#F3E4D8;color:#F3E4D8}
 .bbtn.ghost:hover{background:#F3E4D8;color:#2E2723}
 :root[data-mode="dark"] .bbtn.solid,:root[data-mode="dark"] .bbtn.line:hover{color:#1d1715}
 .bhero .rise{animation:rise .9s calc(var(--base) + var(--k,0) * .12s) cubic-bezier(.2,.8,.2,1) both}
-.badge{display:inline-block;align-self:flex-start;font:700 10.5px/1.2 var(--b-sans);letter-spacing:.14em;text-transform:uppercase;background:var(--hot);color:#fff;border-radius:999px;padding:5px 10px}
+.badge{display:inline-block;align-self:flex-start;font:700 10.5px/1.2 var(--b-sans);letter-spacing:.14em;text-transform:uppercase;background:var(--hot-fill);color:#fff;border-radius:999px;padding:5px 10px}
 @keyframes rise{from{opacity:0;transform:translateY(22px)}}
 
 /* ---------- 2. El estudio ---------- */
@@ -182,7 +183,9 @@ html:has(body[data-page="bale"]){scroll-padding-top:calc(env(safe-area-inset-top
 .dbtn i{width:5px;height:5px;border-radius:50%;background:transparent}
 .dbtn i.has{background:var(--rose)}
 .dbtn.hoy .dw{color:var(--rose)}
-.dbtn.past{opacity:.55}
+/* Días pasados: se atenúan con color, no con opacidad, para mantener 4,5:1 */
+.dbtn.past .dn{color:var(--muted)}
+.dbtn.past .dw{text-decoration:line-through}
 .dbtn[aria-pressed="true"]{background:var(--rose);border-color:var(--rose);color:#fff;opacity:1}
 .dbtn[aria-pressed="true"] .dw{color:#fff}
 .dbtn[aria-pressed="true"] i.has{background:#fff}
@@ -212,7 +215,10 @@ html:has(body[data-page="bale"]){scroll-padding-top:calc(env(safe-area-inset-top
 .rbtn{border:1.5px solid var(--rose);background:var(--rose);color:#fff;border-radius:999px;padding:11px 18px;font:700 11px/1 var(--b-sans);letter-spacing:.16em;text-transform:uppercase;margin-left:auto}
 .rbtn.line{background:transparent;color:var(--rose)}
 :root[data-mode="dark"] .rbtn:not(.line){color:#1d1715}
-.crow.past{opacity:.6}
+/* Clases ya terminadas: se apagan con color (no con opacidad) para mantener 4,5:1 */
+.crow.past :is(b,h4,small,.who,.state){color:var(--muted)}
+.crow.past .badge{background:var(--muted)}
+.crow.past .ini{background:var(--line)}
 .crow.full .cupo{color:var(--rose)}
 .rows .empty-state{margin-top:6px}
 @keyframes clsIn{from{opacity:0;transform:translateY(12px)}}

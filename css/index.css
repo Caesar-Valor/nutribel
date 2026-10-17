@@ -11,11 +11,17 @@ main{overflow-x:clip}
 .intro .eyebrow{margin-bottom:14px}
 .intro h1{font:500 clamp(38px,5.2vw,64px)/1.02 var(--head);letter-spacing:-.03em;color:var(--olive);margin:0 auto 6px;max-width:18ch;font-variation-settings:"SOFT" 60}
 .intro h1 em{font-style:italic;font-weight:400;color:var(--leaf)}
+/* Titular palabra por palabra. Va en CSS (no en Motion) para que se pinte desde el primer fotograma:
+   esperar al módulo de JS retrasaba el LCP. Sin filtro blur: con él, Lighthouse medía el LCP al final de la animación (4,4 s). */
+.intro h1 .w{display:inline-block;animation:wordIn var(--dur-reveal) calc(var(--i,0) * var(--stagger)) var(--ease-out) both}
+@keyframes wordIn{from{opacity:0;transform:translateY(.45em)}}
 .trio{display:grid;grid-template-columns:1fr 1.15fr .9fr;gap:22px;align-items:center;margin-top:18px}
 .cta-row{display:flex;justify-content:center;flex-wrap:wrap;gap:10px;margin:26px 0 8px}
 
 /* ---------- 4 pasos en píldoras ---------- */
 .steps4{display:grid;gap:14px;margin:0;padding:0;list-style:none;text-align:left}
+/* Reserva el alto de los 4 pasos mientras llega data/negocio.json (evita el salto de diseño, CLS) */
+.steps4:empty{min-height:560px}
 .steps4 li{--sc:var(--orange)}
 .steps4 li:nth-child(1){--sc:#D9822B}.steps4 li:nth-child(2){--sc:#E6B422}.steps4 li:nth-child(3){--sc:#8FAE36}.steps4 li:nth-child(4){--sc:var(--plum)}
 .steps4 .lbl{display:flex;align-items:center;gap:8px;margin:0 0 6px}
@@ -33,8 +39,8 @@ main{overflow-x:clip}
 .orbwrap::before{content:"";position:absolute;inset:-12px;border-radius:50%;border:1.5px dotted color-mix(in srgb,var(--leaf) 55%,transparent);animation:spin 90s linear infinite reverse}
 .orb{position:absolute;inset:0;border-radius:50%;background:radial-gradient(circle at 50% 42%,#4d6130,#3F4D2B 70%);overflow:hidden;box-shadow:0 24px 50px rgba(40,50,25,.22);animation:orbIn .9s cubic-bezier(.2,.9,.3,1.2) both}
 .orb .ring,.orb .apple{position:absolute;inset:0;background:#A6C24F;-webkit-mask-size:100% 100%;mask-size:100% 100%;-webkit-mask-repeat:no-repeat;mask-repeat:no-repeat}
-.orb .ring{-webkit-mask-image:url(../assets/img/marca/anillo-vegetales-mascara.png);mask-image:url(../assets/img/marca/anillo-vegetales-mascara.png);opacity:.9;animation:ringIn 1.4s .25s cubic-bezier(.2,.8,.2,1) both, spin 70s 1.6s linear infinite}
-.orb .apple{-webkit-mask-image:url(../assets/img/marca/manzana-mascara.png);mask-image:url(../assets/img/marca/manzana-mascara.png);animation:appleIn .8s .7s cubic-bezier(.34,1.56,.64,1) both, float 6s 1.6s ease-in-out infinite}
+.orb .ring{-webkit-mask-image:url(../assets/img/marca/anillo-vegetales-mascara.webp);mask-image:url(../assets/img/marca/anillo-vegetales-mascara.webp);opacity:.9;animation:ringIn 1.4s .25s cubic-bezier(.2,.8,.2,1) both, spin 70s 1.6s linear infinite}
+.orb .apple{-webkit-mask-image:url(../assets/img/marca/manzana-mascara.webp);mask-image:url(../assets/img/marca/manzana-mascara.webp);animation:appleIn .8s .7s cubic-bezier(.34,1.56,.64,1) both, float 6s 1.6s ease-in-out infinite}
 .orbwrap:hover .ring{animation-duration:1.4s,18s}
 @keyframes spin{to{transform:rotate(360deg)}}
 @keyframes orbIn{from{transform:scale(.7);opacity:0}}
@@ -83,5 +89,6 @@ main{overflow-x:clip}
   .steps4{grid-template-columns:1fr 1fr;gap:14px 12px}
   .steps4 .lbl b{font-size:32px}.steps4 .lbl span{font-size:12px}
   .steps4 .pill{height:52px}
+  .steps4:empty{min-height:300px}
 }
-@media (prefers-reduced-motion:reduce){.orb,.orb .ring,.orb .apple,.orbwrap::before,.trio .doc .arch,.trio .doc img,.docname{animation:none!important}}
+@media (prefers-reduced-motion:reduce){.intro h1 .w,.orb,.orb .ring,.orb .apple,.orbwrap::before,.trio .doc .arch,.trio .doc img,.docname{animation:none!important}}

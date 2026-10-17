@@ -115,7 +115,7 @@ function renderStatic(){
     const tag=[...new Set(list.map(c=>c.etiqueta).filter(Boolean))];
     const days=[...new Set(list.map(c=>c.dia))].sort((a,b)=>DKEYS.indexOf(a)-DKEYS.indexOf(b)).map(k=>DSHORT[DKEYS.indexOf(k)].toLowerCase()).map(s=>s[0].toUpperCase()+s.slice(1)).join(" · ");
     const ph=t.fotos.length
-      ? `<div class="phs n${Math.min(t.fotos.length,2)}">${t.fotos.slice(0,2).map(f=>`<img src="${esc(f.src)}" alt="${esc(f.alt)}" width="900" height="1350" loading="lazy">`).join("")}</div>`
+      ? `<div class="phs n${Math.min(t.fotos.length,2)}">${t.fotos.slice(0,2).map(f=>`<img src="${esc(f.src)}" srcset="${esc(NB.srcset(f.src))}" sizes="(max-width:700px) 50vw, 220px" alt="${esc(f.alt)}" width="900" height="1350" loading="lazy" decoding="async">`).join("")}</div>`
       : `<div class="phs none"><span class="pending-mark">Foto por confirmar</span></div>`;
     return `<article class="ctype" data-reveal style="--r:${i%3}">
       ${ph}
@@ -157,11 +157,11 @@ function renderStatic(){
   // Comunidad: un evento de ejemplo y la colaboración con NutriBEL
   const E=D.comunidad.evento, C=D.comunidad.colaboracion;
   $("#comu").innerHTML=`<article class="ccard" data-reveal>
-      <figure><img src="${esc(E.foto)}" alt="${esc(E.alt)}" width="900" height="1124" loading="lazy"></figure>
+      <figure><img src="${esc(E.foto)}" srcset="${esc(NB.srcset(E.foto))}" sizes="(max-width:700px) 90vw, 420px" alt="${esc(E.alt)}" width="900" height="1124" loading="lazy" decoding="async"></figure>
       <div><span class="b-kick">${esc(E.kick)}</span><h3>${esc(E.titulo)}</h3><p>${esc(E.texto)}</p><span class="pending-mark">${esc(E.proximos)}</span></div>
     </article>
     <article class="ccard" data-reveal style="--r:1">
-      <figure><img src="${esc(C.foto)}" alt="${esc(C.alt)}" width="900" height="1125" loading="lazy"></figure>
+      <figure><img src="${esc(C.foto)}" srcset="${esc(NB.srcset(C.foto))}" sizes="(max-width:700px) 90vw, 420px" alt="${esc(C.alt)}" width="900" height="1125" loading="lazy" decoding="async"></figure>
       <div><span class="b-kick">${esc(C.kick)}</span><h3>${esc(C.titulo)}</h3><p>${esc(C.texto)}</p><a class="bbtn line" href="${esc(C.enlace)}">${esc(C.enlace_texto)}</a></div>
     </article>`;
 
@@ -193,8 +193,8 @@ function renderWeek(){
   const t=todayIx();
   $("#strip").innerHTML=DSHORT.map((s,i)=>{
     const d=dayDate(week,i), n=dayClasses(i).length, hoy=week===0&&i===t, past=week===0&&i<t;
-    return `<button type="button" class="dbtn ${hoy?"hoy":""} ${past?"past":""}" data-d="${i}" aria-pressed="${i===dayIx}" aria-label="${esc(fmtDay(d))}${hoy?", hoy":""}: ${n?`${n} ${n===1?"clase":"clases"}`:"sin clases"}">
-      <span class="dw">${hoy?"Hoy":s}</span><span class="dn">${d.getDate()}</span><i class="${n?"has":""}"></i></button>`;
+    return `<button type="button" class="dbtn ${hoy?"hoy":""} ${past?"past":""}" data-d="${i}" aria-pressed="${i===dayIx}">
+      <span class="dw" aria-hidden="true">${hoy?"Hoy":s}</span><span class="dn" aria-hidden="true">${d.getDate()}</span><i class="${n?"has":""}"></i><span class="sr-only">${esc(fmtDay(d))}${hoy?", hoy":""}: ${n?`${n} ${n===1?"clase":"clases"}`:"sin clases"}</span></button>`;
   }).join("");
   renderRows();
 }

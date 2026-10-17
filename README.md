@@ -10,7 +10,7 @@ El contenido se carga desde `data/*.json` con `fetch`, así que **no funciona ab
 npx serve .
 ```
 
-y abre la dirección que indique (normalmente http://localhost:3000). También sirve la extensión Live Server de VS Code. `serve.json` desactiva las "URL limpias" de `serve`, que redirigían `bale.html?vista=estudio` a `/bale` y perdían el parámetro.
+y abre la dirección que indique (normalmente http://localhost:3000). También sirve la extensión Live Server de VS Code. `serve.json` desactiva las "URL limpias" de `serve`, que redirigían `bale.html?vista=estudio` a `/bale` y perdían el parámetro. Como sin ellas `serve` mostraba la lista de carpetas en `/`, `serve.json` reescribe `/` a `index.html`, y `/consulta`, `/bale`, etc. a su `.html`, así siguen funcionando las redirecciones que el navegador guardó de antes. Si cambias `serve.json`, reinicia `serve`.
 
 ## Estructura
 
@@ -20,12 +20,34 @@ css/base.css      tokens claro/oscuro, tipografía, cabecera, navegación, boton
 css/<pagina>.css  estilos propios de cada página
 js/common.js      cabecera y navegación, modo oscuro, horario, WhatsApp, carrito compartido (API global NB)
 js/<pagina>.js    lógica de cada página
+js/motion.js      microinteracciones (módulo ES): entradas al hacer scroll, hover/toque, plato que vuela al pedido
+js/vendor/motion.mjs  Motion 14 para JS puro (animate, inView, scroll) empaquetado en un solo archivo
+design-system/    decisiones del sistema de diseño (los tokens viven en css/base.css)
+sitemap.xml, robots.txt  SEO (URL base: https://caesar-valor.github.io/nutribel/)
+laboratorio/      pruebas aisladas que no se enlazan desde la web
 data/*.json       contenido (lo que falta confirmar está en la lista "pendiente")
 assets/img/       imágenes
 referencia/       demo aprobado y bocetos (no se enlaza desde la web)
 ```
 
 Cada página lleva `<body data-page="id">`, un `<header class="top" id="cabecera"></header>` vacío que rellena `common.js`, y en el `<head>` un script de una línea que aplica el modo oscuro antes de pintar.
+
+## Sistema de diseño y animación
+
+Los tokens (tipografía, espaciado, radios, sombras, duraciones y curvas) están en el `:root` de `css/base.css`. `design-system/nutribel/MASTER.md` explica cada decisión. `js/motion.js` lee esas variables para que CSS y JavaScript animen con las mismas duraciones. Con `prefers-reduced-motion` no se anima nada.
+
+`js/vendor/motion.mjs` se generó una sola vez con esbuild a partir del paquete `motion` (`npm i`). La web no necesita compilación. Para actualizarlo, ejecuta en una carpeta aparte:
+
+```bash
+echo 'export { animate, inView, scroll } from "motion";' > entry.mjs
+npx esbuild entry.mjs --bundle --format=esm --minify --outfile=js/vendor/motion.mjs
+```
+
+Las fotos de platos, planes, local y balé tienen variantes `-480.webp` y `-800.webp` para `srcset` (`NB.srcset()` en `common.js`).
+
+## SEO
+
+Cada página lleva título, descripción, `canonical`, Open Graph (imágenes en `assets/img/og/`) y Twitter Card. `index.html` y `contacto.html` incluyen datos estructurados `Restaurant` + `MedicalClinic` (dirección, horario, teléfono, Instagram), y `bale.html` incluye `ExerciseGym`. **Si cambia el dominio**, actualiza la URL base en esas etiquetas, en `sitemap.xml` y en `robots.txt`. `robots.txt` solo lo leen los buscadores en la raíz del dominio, así que en `usuario.github.io/nutribel/` no tiene efecto hasta que haya un dominio propio. Si cambian el horario o el WhatsApp desde el panel, el JSON-LD no se actualiza solo: hay que editarlo.
 
 ## Datos guardados en el navegador
 

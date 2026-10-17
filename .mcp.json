@@ -1,0 +1,23 @@
+{
+  "mcpServers": {
+    "motion": {
+      "type": "http",
+      "url": "https://mcp.motion.dev"
+    },
+    "motion-plus": {
+      "type": "http",
+      "url": "https://mcp.motion.dev/plus"
+    },
+    "magic": {
+      "type": "stdio",
+      "command": "npx",
+      "args": [
+        "-y",
+        "@21st-dev/magic@latest"
+      ],
+      "env": {
+        "API_KEY": "TU_CLAVE"
+      }
+    }
+  }
+}
