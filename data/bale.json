@@ -33,37 +33,82 @@
   "clases": [
     {
       "tipo": "Hot Barre",
+      "tipos": [
+        "Hot Barre"
+      ],
       "grupo": "Barre",
-      "texto": "Integra ballet, yoga y Pilates usando la barra de ballet como apoyo. Para todos los niveles.",
-      "foto": null
+      "texto": "Integra ballet, yoga y Pilates usando la barra de ballet como apoyo. Para todos los niveles. Los sábados, sesión de primera clase.",
+      "fotos": [
+        {
+          "src": "assets/img/bale/hot-barre-1.webp",
+          "alt": "Alumnas en la barra frente al espejo, con una pierna extendida hacia atrás, en una clase de Hot Barre"
+        },
+        {
+          "src": "assets/img/bale/hot-barre-3.webp",
+          "alt": "Fila de alumnas apoyadas en la barra levantando la pierna, con pelotas de pilates en el piso"
+        }
+      ]
     },
     {
-      "tipo": "Barre Flex",
+      "tipo": "Barre Flex y Barre Flow",
+      "tipos": [
+        "Barre Flex",
+        "Barre Flow"
+      ],
       "grupo": "Barre",
       "texto": "Integra ballet, yoga y Pilates usando la barra de ballet como apoyo. Para todos los niveles.",
-      "foto": null
+      "fotos": [
+        {
+          "src": "assets/img/bale/barre-entrenamiento.webp",
+          "alt": "Hombro y espalda de una alumna con gotas de sudor durante una clase de barre"
+        }
+      ]
     },
     {
-      "tipo": "Barre Flow",
-      "grupo": "Barre",
-      "texto": "Integra ballet, yoga y Pilates usando la barra de ballet como apoyo. Para todos los niveles.",
-      "foto": null
-    },
-    {
-      "tipo": "Ballet niñas",
-      "grupo": "Ballet",
-      "texto": "Ballet clásico para niñas, en dos grupos por edad: de 3 a 5 años y de 6 a 10 años.",
-      "foto": "assets/img/bale/ballet-ninas-zapatillas-1.webp",
-      "alt": "Piernas de niñas con medias rosadas y zapatillas de ballet, en fila en la barra",
-      "foto2": "assets/img/bale/ballet-ninas-zapatillas-2.webp",
-      "alt2": "Zapatillas de ballet rosadas y negras de varias niñas sobre el piso del estudio"
+      "tipo": "Mat Pilates",
+      "tipos": [
+        "Mat Pilates"
+      ],
+      "grupo": "Pilates",
+      "texto": "Pilates en colchoneta, con accesorios como la pelota.",
+      "fotos": [
+        {
+          "src": "assets/img/bale/mat-pilates-4.webp",
+          "alt": "Alumnas acostadas en colchonetas sosteniendo una pelota de pilates con los brazos extendidos"
+        },
+        {
+          "src": "assets/img/bale/mat-pilates-1.webp",
+          "alt": "Alumna en la colchoneta levanta una pelota de pilates sobre el pecho"
+        }
+      ]
     },
     {
       "tipo": "Reformer",
       "nombre": "Pilates Reformer",
+      "tipos": [
+        "Reformer"
+      ],
       "grupo": "Pilates",
       "texto": "Pilates en máquina Reformer.",
-      "foto": null
+      "fotos": []
+    },
+    {
+      "tipo": "Ballet niñas",
+      "tipos": [
+        "Ballet niñas"
+      ],
+      "grupo": "Ballet",
+      "texto": "Ballet clásico para niñas, en tres grupos por edad.",
+      "fotos": [
+        {
+          "src": "assets/img/bale/ballet-ninas-zapatillas-1.webp",
+          "alt": "Piernas de niñas con medias rosadas y zapatillas de ballet, en fila en la barra"
+        },
+        {
+          "src": "assets/img/bale/ballet-ninas-zapatillas-2.webp",
+          "alt": "Zapatillas de ballet rosadas y negras de varias niñas sobre el piso del estudio"
+        }
+      ]
     }
   ],
   "instructoras": [
@@ -73,11 +118,11 @@
       "rol": "CEO y coach principal"
     },
     {
-      "nombre": "Rusmairy",
+      "nombre": "Glenny",
       "rol": "Instructora"
     },
     {
-      "nombre": "Lynette",
+      "nombre": "Rusmairy",
       "rol": "Instructora"
     },
     {
@@ -93,7 +138,7 @@
       "fin": "16:00",
       "clase": "Ballet niñas",
       "instructora": "Rusmairy",
-      "nota": "3 a 5 años"
+      "nota": "3 a 4 años"
     },
     {
       "id": "lun-1600",
@@ -102,7 +147,7 @@
       "fin": "17:00",
       "clase": "Ballet niñas",
       "instructora": "Rusmairy",
-      "nota": "6 a 10 años"
+      "nota": "5 a 7 años"
     },
     {
       "id": "lun-1730",
@@ -113,20 +158,45 @@
       "instructora": "Marifer"
     },
     {
-      "id": "lun-1845",
+      "id": "lun-1830",
       "dia": "lunes",
-      "inicio": "18:45",
+      "inicio": "18:30",
       "fin": "19:30",
       "clase": "Hot Barre",
       "instructora": "Marifer"
     },
     {
-      "id": "mar-1830",
+      "id": "mar-1630",
       "dia": "martes",
-      "inicio": "18:30",
+      "inicio": "16:30",
+      "fin": "17:30",
+      "clase": "Ballet niñas",
+      "instructora": "Glenny",
+      "nota": "8 a 11 años"
+    },
+    {
+      "id": "mar-1745",
+      "dia": "martes",
+      "inicio": "17:45",
+      "fin": "18:30",
+      "clase": "Mat Pilates",
+      "instructora": "Glenny"
+    },
+    {
+      "id": "mar-1845",
+      "dia": "martes",
+      "inicio": "18:45",
       "fin": "19:30",
       "clase": "Barre Flex",
-      "instructora": "Lynette"
+      "instructora": "Glenny"
+    },
+    {
+      "id": "mie-0830",
+      "dia": "miercoles",
+      "inicio": "08:30",
+      "fin": "09:30",
+      "clase": "Mat Pilates",
+      "instructora": "Glenny"
     },
     {
       "id": "mie-1500",
@@ -135,7 +205,7 @@
       "fin": "16:00",
       "clase": "Ballet niñas",
       "instructora": "Rusmairy",
-      "nota": "3 a 5 años"
+      "nota": "3 a 4 años"
     },
     {
       "id": "mie-1600",
@@ -144,7 +214,7 @@
       "fin": "17:00",
       "clase": "Ballet niñas",
       "instructora": "Rusmairy",
-      "nota": "6 a 10 años"
+      "nota": "5 a 7 años"
     },
     {
       "id": "mie-1730",
@@ -155,9 +225,9 @@
       "instructora": "Marifer"
     },
     {
-      "id": "mie-1845",
+      "id": "mie-1830",
       "dia": "miercoles",
-      "inicio": "18:45",
+      "inicio": "18:30",
       "fin": "19:30",
       "clase": "Hot Barre",
       "instructora": "Marifer"
@@ -166,27 +236,34 @@
       "id": "jue-0645",
       "dia": "jueves",
       "inicio": "06:45",
-      "fin": "07:30",
+      "fin": "07:45",
       "clase": "Barre Flow",
       "instructora": "Marifer"
+    },
+    {
+      "id": "jue-1630",
+      "dia": "jueves",
+      "inicio": "16:30",
+      "fin": "17:30",
+      "clase": "Ballet niñas",
+      "instructora": "Glenny",
+      "nota": "8 a 11 años"
     },
     {
       "id": "jue-1745",
       "dia": "jueves",
       "inicio": "17:45",
       "fin": "18:30",
-      "clase": "Hot Barre",
-      "instructora": "Marifer",
-      "nota": "Solo nivel avanzado"
+      "clase": "Mat Pilates",
+      "instructora": "Glenny"
     },
     {
       "id": "jue-1845",
       "dia": "jueves",
       "inicio": "18:45",
       "fin": "19:30",
-      "clase": "Hot Barre",
-      "instructora": "Marifer",
-      "nota": "Exclusiva para miembros"
+      "clase": "Barre Flex",
+      "instructora": "Glenny"
     },
     {
       "id": "vie-0800",
@@ -227,7 +304,8 @@
       "fin": "11:00",
       "clase": "Hot Barre",
       "instructora": "Marifer",
-      "nota": "First class session"
+      "nota": "First class session",
+      "etiqueta": "Primera clase"
     },
     {
       "id": "sab-1100",
@@ -236,7 +314,8 @@
       "fin": "12:00",
       "clase": "Hot Barre",
       "instructora": "Marifer",
-      "nota": "First class session"
+      "nota": "First class session",
+      "etiqueta": "Primera clase"
     }
   ],
   "sala": {
@@ -400,20 +479,8 @@
   "demo": {
     "nota": "Datos de ejemplo para la demostración. No son clientas reales.",
     "ocupados": {
-      "lun-1500": [
-        2,
-        5,
-        9,
-        12
-      ],
-      "lun-1600": [
-        1,
-        3,
-        4,
-        10,
-        11,
-        14
-      ],
+      "lun-1500": 4,
+      "lun-1600": 6,
       "lun-1730": [
         1,
         2,
@@ -427,14 +494,16 @@
         13,
         15
       ],
-      "lun-1845": [
+      "lun-1830": [
         2,
         4,
         8,
         11,
         16
       ],
-      "mar-1830": [
+      "mar-1630": 5,
+      "mar-1745": 7,
+      "mar-1845": [
         1,
         4,
         5,
@@ -442,18 +511,9 @@
         9,
         13
       ],
-      "mie-1500": [
-        3,
-        6,
-        10
-      ],
-      "mie-1600": [
-        2,
-        5,
-        7,
-        9,
-        12
-      ],
+      "mie-0830": 3,
+      "mie-1500": 3,
+      "mie-1600": 5,
       "mie-1730": [
         1,
         2,
@@ -466,7 +526,7 @@
         12,
         14
       ],
-      "mie-1845": [
+      "mie-1830": [
         3,
         7,
         10,
@@ -477,18 +537,8 @@
         5,
         12
       ],
-      "jue-1745": [
-        1,
-        2,
-        3,
-        4,
-        5,
-        6,
-        9,
-        10,
-        11,
-        12
-      ],
+      "jue-1630": 8,
+      "jue-1745": 12,
       "jue-1845": [
         1,
         2,
@@ -506,22 +556,10 @@
         14,
         16
       ],
-      "vie-0800": [
-        2,
-        3
-      ],
-      "vie-0900": [
-        1,
-        5,
-        6
-      ],
-      "vie-1000": [
-        4
-      ],
-      "vie-1100": [
-        2,
-        7
-      ],
+      "vie-0800": 2,
+      "vie-0900": 3,
+      "vie-1000": 1,
+      "vie-1100": 2,
       "sab-1000": [
         1,
         2,
@@ -650,13 +688,68 @@
   "pendiente": [
     "Precios de la clase de prueba, los paquetes y la membresía ilimitada (y su vigencia)",
     "Datos bancarios para la transferencia",
-    "Política de cancelación",
+    "Política de cancelación (y con cuánta anticipación se puede cancelar)",
     "WhatsApp e Instagram propios de balé (mientras tanto las reservas usan el WhatsApp de NutriBEL, sin mostrarlo en la página)",
     "Confirmar que 'Marifer' del horario es María Fernanda Pimentel",
-    "Descripción de cada clase (Hot Barre, Barre Flex, Barre Flow, Reformer)",
-    "Cupo real de Reformer y de Ballet niñas (la demo usa los 16 lugares de la sala de barras)",
+    "Descripción de cada clase (Hot Barre, Barre Flex, Barre Flow, Mat Pilates, Reformer)",
+    "Cupo real de Reformer, Mat Pilates y Ballet niñas (la demo usa 6, 12 y 12)",
+    "Foto de la clase de Reformer",
+    "Qué llevar a clase (calcetas antideslizantes, colchoneta)",
+    "Próximos eventos de la comunidad",
     "Fotos de las instructoras (por ahora se muestran sus iniciales)",
-    "Confirmar sábado 11:00–12:00 (la imagen dice '12:00 AM', se asumió mediodía)",
+    "Confirmar sábado 11:00–12:00 (la imagen dice '12:00am', se asumió mediodía)",
     "Autorizaciones firmadas de los padres antes de publicar cualquier rostro de niña"
-  ]
+  ],
+  "horario_fuente": "Horario oficial (referencia/bale-recursos/datos/horario.json, diseño final v4). No se modifica: solo se le añadió id y etiqueta.",
+  "barra_tipos": [
+    "Hot Barre",
+    "Barre Flex",
+    "Barre Flow"
+  ],
+  "cupos": {
+    "nota": "Cupo por confirmar con el estudio (valores de la demo)",
+    "Reformer": 6,
+    "Mat Pilates": 12,
+    "Ballet niñas": 12
+  },
+  "comunidad": {
+    "evento": {
+      "kick": "Eventos",
+      "titulo": "Girls Day Out",
+      "foto": "assets/img/bale/evento-girls-day-out.webp",
+      "alt": "Póster del evento Girls Day Out de balé: domingo 29 de agosto a las 10 a. m. en la Plaza NutriBEL, con pilates mat al aire libre, brunch by NutriBEL, crea tu propio hair clip y DJ set",
+      "texto": "Una mañana de pilates mat al aire libre, brunch, taller de hair clips y DJ set. Así son los eventos de la comunidad balé.",
+      "proximos": "Próximos eventos: por confirmar"
+    },
+    "colaboracion": {
+      "kick": "Colaboración",
+      "titulo": "Balé × NutriBEL",
+      "foto": "assets/img/bale/balexnutribel-matcha.webp",
+      "alt": "Vaso de matcha con hielo y hojas de menta junto a los logos de NutriBEL y balé",
+      "texto": "Movimiento y buena comida en el mismo edificio: el matcha de la colaboración balé × NutriBEL, para después de clase.",
+      "enlace": "menu.html",
+      "enlace_texto": "Ver el menú de NutriBEL"
+    }
+  },
+  "faq": [
+    {
+      "p": "¿Necesito experiencia en ballet?",
+      "r": "No. El barre se adapta a todos los niveles y trabaja todo el cuerpo sin necesidad de experiencia previa en ballet. Los sábados de Hot Barre son sesiones de primera clase."
+    },
+    {
+      "p": "¿Qué llevo?",
+      "r": "Ropa cómoda para moverte y una botella de agua.",
+      "pendiente": "Calcetas antideslizantes y si el estudio presta colchonetas: por confirmar"
+    },
+    {
+      "p": "¿Cómo reservo?",
+      "r": "En el horario, elige el día y la clase y pulsa «Reservar». En las clases de barra escoges tu lugar en la sala; luego dejas tu nombre, tu WhatsApp y el comprobante de la transferencia."
+    },
+    {
+      "p": "¿Cómo cancelo?",
+      "r": "Escríbenos por WhatsApp y liberamos tu lugar para la siguiente persona de la lista de espera.",
+      "pendiente": "Con cuántas horas de anticipación se puede cancelar sin perder la clase: por confirmar"
+    }
+  ],
+  "ubicacion": "En el edificio de NutriBEL"
 }

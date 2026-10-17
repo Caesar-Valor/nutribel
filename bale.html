@@ -12,6 +12,8 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght,SOFT@0,9..144,400..700,0..100;1,9..144,400..700,0..100&family=Plus+Jakarta+Sans:wght@400;500;600;700&family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500&family=Montserrat:wght@400;500;600;700&display=swap" rel="stylesheet">
 <link rel="preload" as="image" href="assets/img/bale/bale-logo-transparente.webp">
+<link rel="preload" as="image" type="image/webp" href="assets/video/bale/bale-hero-vertical-poster.webp" media="(max-aspect-ratio:4/5)">
+<link rel="preload" as="image" type="image/webp" href="assets/video/bale/bale-hero-horizontal-poster.webp" media="(min-aspect-ratio:4/5)">
 <link rel="stylesheet" href="css/base.css">
 <link rel="stylesheet" href="css/bale.css">
 <script src="js/common.js" defer></script>
@@ -27,19 +29,19 @@
   </div>
 </div>
 
-<!-- Cabecera propia de balé: la única salida hacia NutriBEL es el botón "Ir a NutriBEL" -->
+<!-- Cabecera propia de balé, con el enlace "← NutriBEL" -->
 <header class="btop">
   <div class="wrap">
     <a class="bmark" href="bale.html" aria-label="balé, ir al inicio"><img src="assets/img/bale/bale-logo-transparente.webp" alt="" width="1040" height="538"></a>
     <button class="modebtn" id="modeBtn" type="button" aria-label="Cambiar a modo oscuro" title="Modo oscuro / claro"><svg class="moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg><svg class="sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="4.5"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg></button>
-    <a class="tonb" href="index.html">Ir a NutriBEL</a>
+    <a class="tonb" href="index.html" aria-label="Ir a NutriBEL"><span aria-hidden="true">←</span> NutriBEL</a>
   </div>
 </header>
 
 <!-- Menú interno de balé -->
 <nav class="bnav" aria-label="Secciones de balé">
   <div class="wrap">
-    <span class="pub"><a href="#estudio">Estudio</a><a href="#clases">Clases</a><a href="#horario">Horario</a><a href="#paquetes">Paquetes</a><a href="#equipo">Equipo</a><a href="#ubicacion">Ubicación</a></span>
+    <span class="pub"><a href="#estudio">Estudio</a><a href="#clases">Clases</a><a href="#horario">Horario</a><a href="#paquetes">Paquetes</a><a href="#comunidad">Comunidad</a><a href="#equipo">Equipo</a><a href="#faq">Preguntas</a><a href="#ubicacion">Ubicación</a></span>
     <span class="adm"><a href="bale.html">Ver la página pública</a></span>
   </div>
 </nav>
@@ -47,25 +49,24 @@
 
 <main class="wrap bale">
 <div id="publico">
-  <!-- 1. Bienvenida -->
-  <section class="band bhero" id="inicio" style="--bb:var(--b-bg)" aria-labelledby="baleTitle">
-    <svg class="ribbons" viewBox="0 0 1200 700" preserveAspectRatio="none" aria-hidden="true">
-      <path class="r1" pathLength="100" d="M-40 520 C 180 300, 360 280, 520 420 S 860 640, 1240 260"/>
-      <path class="r2" pathLength="100" d="M-40 560 C 200 380, 380 360, 540 470 S 880 660, 1240 330"/>
-    </svg>
+  <!-- 1. Bienvenida: video a pantalla completa (vertical en el teléfono, horizontal en el escritorio) -->
+  <section class="bhero" id="inicio" aria-labelledby="baleTitle">
+    <div class="hmedia" aria-hidden="true">
+      <picture>
+        <source media="(min-aspect-ratio:4/5)" srcset="assets/video/bale/bale-hero-horizontal-poster.webp" type="image/webp">
+        <source media="(min-aspect-ratio:4/5)" srcset="assets/video/bale/bale-hero-horizontal-poster.jpg">
+        <source srcset="assets/video/bale/bale-hero-vertical-poster.webp" type="image/webp">
+        <img src="assets/video/bale/bale-hero-vertical-poster.jpg" alt="" width="720" height="1280" fetchpriority="high">
+      </picture>
+      <video id="heroVid" muted playsinline loop preload="none" disablepictureinpicture tabindex="-1" poster="assets/video/bale/bale-hero-vertical-poster.webp"></video>
+    </div>
     <div class="inner">
-      <div class="txt">
-        <span class="b-kick rise" style="--k:0">Barre, Ballet &amp; Pilates</span>
-        <h1 id="baleTitle" class="rise" style="--k:1"><img src="assets/img/bale/bale-logo-transparente.webp" alt="balé, Barre, Ballet &amp; Pilates" width="1040" height="538"></h1>
-        <p class="frase rise" style="--k:2">Un espacio para conectar, fortalecer y transformar.</p>
-        <div class="bbtns rise" style="--k:3">
-          <a class="bbtn solid" href="#horario">Reservar</a>
-          <a class="bbtn line" href="#paquetes">Ver paquetes</a>
-        </div>
+      <h1 id="baleTitle" class="rise" style="--k:1"><img src="assets/img/bale/bale-logo-transparente.webp" alt="balé, Barre, Ballet &amp; Pilates" width="1040" height="538"></h1>
+      <p class="frase rise" style="--k:2">Un espacio para conectar, fortalecer y transformar.</p>
+      <div class="bbtns rise" style="--k:3">
+        <a class="bbtn hot" href="#horario" id="firstBtn">Reserva tu primera clase</a>
+        <a class="bbtn ghost" href="#horario">Ver horario</a>
       </div>
-      <figure class="arch rise" style="--k:2">
-        <img src="assets/img/bale/barre-entrenamiento.webp" alt="Hombro y espalda de una alumna con gotas de sudor durante una clase de barre" width="1200" height="1800" fetchpriority="high">
-      </figure>
     </div>
   </section>
 
@@ -114,7 +115,7 @@
     <div class="shead" data-reveal>
       <span class="b-kick">Reservar</span>
       <h2 id="schedTitle">Horario <em>y</em> reservas</h2>
-      <p>Elige el día y la clase, y escoge tu lugar en la barra.</p>
+      <p>Elige el día y la clase. En las clases de barra escoges tu lugar en la sala.</p>
     </div>
     <div class="cal">
       <div class="weekbar">
@@ -151,8 +152,17 @@
     <div class="packs" id="packs"></div>
   </section>
 
-  <!-- 6. Equipo -->
-  <section class="band blush" id="equipo" aria-labelledby="eqTitle">
+  <!-- 6. Comunidad -->
+  <section class="band blush" id="comunidad" aria-labelledby="comTitle">
+    <div class="shead" data-reveal>
+      <span class="b-kick">Comunidad</span>
+      <h2 id="comTitle">Más que <em>clases</em></h2>
+    </div>
+    <div class="comu" id="comu"></div>
+  </section>
+
+  <!-- 7. Equipo -->
+  <section class="band" style="--bb:var(--b-bg)" id="equipo" aria-labelledby="eqTitle">
     <div class="shead" data-reveal>
       <span class="b-kick">Team</span>
       <h2 id="eqTitle">Nuestro <em>equipo</em></h2>
@@ -161,13 +171,23 @@
     <div class="team" id="team"></div>
   </section>
 
-  <!-- 7. Ubicación y contacto -->
-  <section class="band" style="--bb:var(--b-bg)" id="ubicacion" aria-labelledby="ubTitle">
+  <!-- 8. Preguntas frecuentes -->
+  <section class="band paper" id="faq" aria-labelledby="faqTitle">
+    <div class="shead" data-reveal>
+      <span class="b-kick">Preguntas frecuentes</span>
+      <h2 id="faqTitle">Antes de tu <em>primera clase</em></h2>
+    </div>
+    <div class="faq" id="faqList"></div>
+  </section>
+
+  <!-- 9. Ubicación y contacto -->
+  <section class="band blush" id="ubicacion" aria-labelledby="ubTitle">
     <div class="ubic" data-reveal>
       <div>
         <span class="b-kick">Ubicación</span>
         <h2 id="ubTitle">Te esperamos <em>en balé</em></h2>
-        <p class="where">La Vega, República Dominicana</p>
+        <p class="where" id="where">En el edificio de NutriBEL</p>
+        <p class="city">La Vega, República Dominicana</p>
         <p id="addr" class="addr"></p>
       </div>
       <div class="links">
@@ -256,6 +276,7 @@
 
     <form class="step form" id="stDatos" novalidate hidden>
       <p class="steph" id="datosH">2. Tus datos</p>
+      <p class="cupoinfo" id="cupoInfo" hidden></p>
       <div class="kids" id="kids" hidden>
         <label class="fld">Nombre de la niña<input id="kName" autocomplete="off"></label>
         <label class="fld">Nombre del padre, la madre o el tutor<input id="gName" autocomplete="name"></label>

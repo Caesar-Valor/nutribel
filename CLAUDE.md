@@ -70,16 +70,18 @@ Ver `referencia/boceto-logo-animado.png` y `referencia/boceto-anillo-animado.png
 
 Es una submarca con identidad propia; su logo usa una serif fina sobre crema. Colores sugeridos a partir del logo: fondo `#F3E4D8`, texto espresso `#2E2723`, y un acento rosado suave del demo (`#7A3E5C`, fondo `#F7E6E8`).
 
-**Sección aparte (decisión del cliente):** `bale.html` es solo de balé. No lleva la cabecera, la navegación, el pedido ni el pie de NutriBEL, y no hace ninguna referencia a NutriBEL (ni a la doctora ni al edificio). La única excepción es un botón "Ir a NutriBEL" en su cabecera propia, que lleva a `index.html`. Usa `<body data-standalone>`. Las páginas de NutriBEL tampoco muestran nada de balé, salvo el botón "Ir a balé" de la cabecera.
+**Sección aparte (decisión del cliente):** `bale.html` es solo de balé. No lleva la cabecera, la navegación, el pedido ni el pie de NutriBEL, ni menciona a la doctora. Su cabecera propia tiene "← NutriBEL", que lleva a `index.html`. Usa `<body data-standalone>`. Dentro de balé, NutriBEL solo aparece en la colaboración Balé × NutriBEL de Comunidad y en la ubicación ("En el edificio de NutriBEL"). Las páginas de NutriBEL tampoco muestran nada de balé, salvo el botón "Ir a balé" de la cabecera.
 
 - **Identidad (aprobada):** tipografía propia — Cormorant Garamond (titulares, serif fina como el logo) y Montserrat (textos, etiquetas espaciadas) —, solo en esta página. Cabecera propia de balé (logo, modo oscuro, "Ir a NutriBEL"); favicon propio (`assets/img/bale/bale-favicon.png`).
 - **Entrada:** al abrir la página aparece un telón de terciopelo rosa con el logo de balé en crema y una cinta que se dibuja; el telón se abre hacia los lados (≈2,2 s). Se salta con un clic o una tecla y no aparece con `prefers-reduced-motion`. Todas las animaciones de la página terminan (nada en bucle).
-- **Textos:** arriba "Barre, Ballet & Pilates". Sin firma ni menciones a la Dra. Bielka Eusebio ni a NutriBEL.
+- **Textos:** arriba "Barre, Ballet & Pilates". Sin firma ni menciones a la Dra. Bielka Eusebio.
 
-- **Horario interactivo:** tómalo de `data/bale.json`, con filtros por día y por tipo de clase (Ballet niñas, Hot Barre, Barre Flex, Barre Flow, Reformer). Marca la clase de hoy y muestra la instructora y las notas ("Solo nivel avanzado", "Exclusiva para miembros", "First class session").
+- **Horario interactivo:** el horario oficial es `referencia/bale-recursos/datos/horario.json` (22 clases, instructoras Marifer, Glenny, Rusmairy y Viviana); no lo cambies. Está copiado en `data/bale.json → horario` con un `id` por clase y la `etiqueta` "Primera clase" en los sábados de Hot Barre (first class session). Filtros por día, instructora y tipo de clase. Las clases de barra reservan un lugar sobre la foto de la sala; Reformer, Mat Pilates y Ballet niñas, un cupo por número (`cupos`, por confirmar).
 - **Reserva:** botón "Reservar" por clase que abre WhatsApp con el mensaje ya redactado (clase, día y hora). De momento usa el número de NutriBEL, sin mostrarlo, hasta tener el de balé.
 - **Descripción:** Barre integra ballet, yoga y Pilates usando una barra de ballet como apoyo, para todos los niveles.
-- **Referencias:** `assets/img/bale/bale-horario.png` es la imagen original del horario.
+- **Portada:** video en `assets/video/bale/` (vertical en el teléfono, horizontal en el escritorio), muted, playsinline, loop y póster; no se reproduce con `prefers-reduced-motion`.
+- **Colores de redes:** rosa `#F4C5CE` y acento `#ED2F59`, con moderación (botón principal y etiquetas, con texto blanco).
+- **Referencias:** `referencia/bale-recursos/referencias/horario-oficial.jpg` es el horario tal como lo diseñó la marca.
 
 ## Reglas
 

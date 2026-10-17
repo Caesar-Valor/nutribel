@@ -1,8 +1,10 @@
 /* =========================================================
    bale.html — demo de Balé Studio
-   Página pública: bienvenida, estudio, clases, horario con reservas
-   (tira de 7 días, filtros, mapa de la sala con 16 lugares, lista de
-   espera, pago por transferencia simulado), paquetes, equipo y ubicación.
+   Página pública: bienvenida con video, estudio, clases, horario con
+   reservas (tira de 7 días, filtros, mapa de la sala con 16 lugares en
+   las clases de barra y cupo por número en las demás, lista de espera,
+   pago por transferencia simulado), paquetes, comunidad, equipo,
+   preguntas frecuentes y ubicación.
    Vista del estudio (bale.html?vista=estudio): reservas por clase,
    clientes, pagos por aprobar y calendario .ics por instructora.
    Es una demostración: todo se guarda solo en este navegador
@@ -12,7 +14,6 @@
 "use strict";
 const {$, esc} = NB;
 const KEY = "nutribel-bale-demo";   // {reservas:[], espera:[], aprobados:[]}
-const CUPO = 16;
 const WEEKS_AHEAD = 3;
 const DKEYS = ["lunes","martes","miercoles","jueves","viernes","sabado","domingo"];
 const DSHORT = ["LUN","MAR","MIÉ","JUE","VIE","SÁB","DOM"];
@@ -57,31 +58,41 @@ const uid = ()=>Date.now().toString(36)+Math.random().toString(36).slice(2,6);
 /* ---------- Ocupación de cada clase en una fecha ---------- */
 const occKey = (c,fecha)=>`${c.id}@${fecha}`;
 const clsById = id=>D.horario.find(c=>c.id===id);
-function demoSeats(c){ return (D.demo.ocupados[c.id]||[]).slice(); }
+// Clases de barra: lugar concreto en la sala. Las demás: cupo por número (bale.json → cupos)
+const isBarra = c=>D.barra_tipos.includes(c.clase);
+const cap = c=>isBarra(c) ? D.sala.lugares.length : (+D.cupos[c.clase]||12);
+function demoSeats(c){ const v=D.demo.ocupados[c.id]; return Array.isArray(v)?v.slice():[]; }
+const demoCount = c=>{ const v=D.demo.ocupados[c.id]; return Array.isArray(v)?v.length:(+v||0); };
 function taken(c,fecha){
   const k=occKey(c,fecha), s=new Set(demoSeats(c));
   store.reservas.forEach(r=>{ if(r.occ===k) s.add(r.lugar); });
   return s;
 }
-const free = (c,fecha)=>CUPO-taken(c,fecha).size;
+const webRes = (c,fecha)=>store.reservas.filter(r=>r.occ===occKey(c,fecha));
+const used = (c,fecha)=>isBarra(c) ? taken(c,fecha).size : demoCount(c)+webRes(c,fecha).length;
+const free = (c,fecha)=>cap(c)-used(c,fecha);
 const waitlist = (c,fecha)=>store.espera.filter(e=>e.occ===occKey(c,fecha));
 const isBallet = c=>/ballet/i.test(c.clase);
 const initials = n=>n.split(/\s+/).filter(Boolean).slice(0,2).map(p=>p[0]).join("").toUpperCase();
 const instInfo = n=>D.instructoras.find(i=>i.nombre===n)||{nombre:n,rol:"Instructora"};
-const clsName = c=>{ const t=D.clases.find(x=>x.tipo===c.clase); return (t&&t.nombre)||c.clase; };
+const typeOf = c=>D.clases.find(t=>t.tipos.includes(c.clase));
+const clsName = c=>{ const t=typeOf(c); return t&&t.nombre&&t.tipos.length===1 ? t.nombre : c.clase; };
+const seatTxt = r=>{ const L=r.lugar&&D.sala.lugares.find(l=>l.n===r.lugar); return L?`${L.n}, ${L.barra}`:"Sin lugar fijo (cupo por número)"; };
 const digits = s=>String(s||"").replace(/\D/g,"");
 const fmtWa = s=>{ const d=digits(s).replace(/^1(?=\d{10}$)/,""); return d.length===10?`${d.slice(0,3)}-${d.slice(3,6)}-${d.slice(6)}`:s; };
 
-// Lista de alumnas de una clase: las de ejemplo (fijas por lugar) más las reservas de este navegador
+// Lista de alumnas de una clase: las de ejemplo más las reservas de este navegador.
+// pos = lugar en la sala (clases de barra) u orden de reserva (cupo por número)
 function roster(c,fecha){
-  const k=occKey(c,fecha), cl=D.demo.clientes;
+  const cl=D.demo.clientes;
   const off=parseInt(c.inicio,10)+c.dia.length;           // cada clase empieza en una clienta distinta, sin repetir
-  const demo=demoSeats(c).map((n,i)=>{
-    const p=cl[(i+off)%cl.length];
-    return {lugar:n, nombre:isBallet(c)?`Alumna de ejemplo ${n}`:p.nombre, tutor:isBallet(c)?p.nombre:"", wa:p.whatsapp, demo:true};
-  });
-  const web=store.reservas.filter(r=>r.occ===k).map(r=>({lugar:r.lugar, nombre:r.nina||r.nombre, tutor:r.nina?r.nombre:"", wa:r.wa, pago:r.pago, id:r.id}));
-  return demo.concat(web).sort((a,b)=>a.lugar-b.lugar);
+  const person=(i,lugar)=>{ const p=cl[(i+off)%cl.length];
+    return {lugar, nombre:isBallet(c)?`Alumna de ejemplo ${i+1}`:p.nombre, tutor:isBallet(c)?p.nombre:"", wa:p.whatsapp, demo:true}; };
+  const demo=isBarra(c) ? demoSeats(c).map((n,i)=>person(i,n)) : Array.from({length:demoCount(c)},(_,i)=>person(i,null));
+  const web=webRes(c,fecha).map(r=>({lugar:r.lugar||null, nombre:r.nina||r.nombre, tutor:r.nina?r.nombre:"", wa:r.wa, pago:r.pago, id:r.id}));
+  const all=demo.concat(web);
+  if(isBarra(c)) all.sort((a,b)=>a.lugar-b.lugar);
+  return all.map((r,i)=>Object.assign(r,{pos:r.lugar||i+1}));
 }
 
 /* =========================================================
@@ -96,21 +107,26 @@ function renderStatic(){
   $("#queBarre").textContent=D.que_es_barre;
   $("#certs").innerHTML=F.certificaciones.map(c=>`<li><b>${esc(c.nombre)}</b><span>${esc(c.detalle)}</span></li>`).join("");
 
-  // Clases: cada tipo con sus días y horas tomados del horario
+  // Clases: una tarjeta por tipo, con sus días, horas e instructoras tomados del horario
   $("#ctypes").innerHTML=D.clases.map((t,i)=>{
-    const list=D.horario.filter(c=>c.clase===t.tipo);
+    const list=D.horario.filter(c=>t.tipos.includes(c.clase));
     const who=[...new Set(list.map(c=>c.instructora))].join(", ");
     const ages=[...new Set(list.map(c=>c.nota).filter(n=>/años/.test(n||"")))];
-    const days=[...new Set(list.map(c=>c.dia))].map(k=>DSHORT[DKEYS.indexOf(k)].toLowerCase()).map(s=>s[0].toUpperCase()+s.slice(1)).join(" · ");
-    return `<article class="ctype ${t.foto?"has-ph":""}" data-reveal style="--r:${i%3}">
-      ${t.foto?`<div class="phs"><img src="${esc(t.foto)}" alt="${esc(t.alt)}" width="1200" height="1800" loading="lazy">${t.foto2?`<img src="${esc(t.foto2)}" alt="${esc(t.alt2)}" width="1200" height="1800" loading="lazy">`:""}</div>`:""}
+    const tag=[...new Set(list.map(c=>c.etiqueta).filter(Boolean))];
+    const days=[...new Set(list.map(c=>c.dia))].sort((a,b)=>DKEYS.indexOf(a)-DKEYS.indexOf(b)).map(k=>DSHORT[DKEYS.indexOf(k)].toLowerCase()).map(s=>s[0].toUpperCase()+s.slice(1)).join(" · ");
+    const ph=t.fotos.length
+      ? `<div class="phs n${Math.min(t.fotos.length,2)}">${t.fotos.slice(0,2).map(f=>`<img src="${esc(f.src)}" alt="${esc(f.alt)}" width="900" height="1350" loading="lazy">`).join("")}</div>`
+      : `<div class="phs none"><span class="pending-mark">Foto por confirmar</span></div>`;
+    return `<article class="ctype" data-reveal style="--r:${i%3}">
+      ${ph}
       <div class="ct">
         <span class="b-kick">${esc(t.grupo)}</span>
         <h3>${esc(t.nombre||t.tipo)}</h3>
+        ${tag.map(x=>`<span class="badge">${esc(x)}</span>`).join("")}
         <p>${esc(t.texto)}</p>
-        ${ages.length?`<ul class="ages">${ages.map(a=>`<li>${esc(a)}</li>`).join("")}</ul>`:""}
+        ${ages.length?`<ul class="ages" aria-label="Grupos por edad">${ages.map(a=>`<li>${esc(a)}</li>`).join("")}</ul>`:""}
         <p class="meta"><span>${esc(days)}</span><span>Con ${esc(who)}</span></p>
-        <a class="more" href="#horario" data-type="${esc(t.tipo)}">Ver horario <span aria-hidden="true">→</span></a>
+        <a class="more" href="#horario" data-type="${esc(t.tipos.join("|"))}">Ver horario <span aria-hidden="true">→</span></a>
       </div>
     </article>`;
   }).join("");
@@ -138,20 +154,36 @@ function renderStatic(){
     </article>`;
   }).join("");
 
-  // Ubicación
+  // Comunidad: un evento de ejemplo y la colaboración con NutriBEL
+  const E=D.comunidad.evento, C=D.comunidad.colaboracion;
+  $("#comu").innerHTML=`<article class="ccard" data-reveal>
+      <figure><img src="${esc(E.foto)}" alt="${esc(E.alt)}" width="900" height="1124" loading="lazy"></figure>
+      <div><span class="b-kick">${esc(E.kick)}</span><h3>${esc(E.titulo)}</h3><p>${esc(E.texto)}</p><span class="pending-mark">${esc(E.proximos)}</span></div>
+    </article>
+    <article class="ccard" data-reveal style="--r:1">
+      <figure><img src="${esc(C.foto)}" alt="${esc(C.alt)}" width="900" height="1125" loading="lazy"></figure>
+      <div><span class="b-kick">${esc(C.kick)}</span><h3>${esc(C.titulo)}</h3><p>${esc(C.texto)}</p><a class="bbtn line" href="${esc(C.enlace)}">${esc(C.enlace_texto)}</a></div>
+    </article>`;
+
+  // Preguntas frecuentes
+  $("#faqList").innerHTML=D.faq.map((q,i)=>`<details data-reveal style="--r:${i%3}"><summary>${esc(q.p)}</summary>
+    <div><p>${esc(q.r)}</p>${q.pendiente?`<span class="pending-mark">${esc(q.pendiente)}</span>`:""}</div></details>`).join("");
+
+  // Ubicación y pago
+  $("#where").textContent=D.ubicacion;
   const pay=D.pago;
   $("#bank").innerHTML=`<span class="pending-mark">${esc(pay.banco)}</span><span class="pending-mark">${esc(pay.cuenta)}</span><span class="pending-mark">${esc(pay.titular)}</span>`;
   $("#polTxt").textContent=D.politica_cancelacion;
 }
 
 /* ---------- Horario: tira de días, filtros y filas ---------- */
-const matches = c=>(!fInst||c.instructora===fInst)&&(!fType||c.clase===fType);
+const matches = c=>(!fInst||c.instructora===fInst)&&(!fType||fType.split("|").includes(c.clase));
 const dayClasses = i=>D.horario.filter(c=>c.dia===DKEYS[i]&&matches(c)).sort((a,b)=>toH(a.inicio)-toH(b.inicio));
 
 function renderFilters(){
-  const insts=[...new Set(D.horario.map(c=>c.instructora))], types=[...new Set(D.horario.map(c=>c.clase))];
+  const insts=D.instructoras.map(i=>i.nombre).filter(n=>D.horario.some(c=>c.instructora===n));
   $("#fInst").innerHTML=`<option value="">Todas</option>`+insts.map(n=>`<option value="${esc(n)}">${esc(n)}</option>`).join("");
-  $("#fType").innerHTML=`<option value="">Todas</option>`+types.map(n=>`<option value="${esc(n)}">${esc(n)}</option>`).join("");
+  $("#fType").innerHTML=`<option value="">Todas</option>`+D.clases.map(t=>`<option value="${esc(t.tipos.join("|"))}">${esc(t.nombre||t.tipo)}</option>`).join("");
 }
 
 function renderWeek(){
@@ -184,7 +216,7 @@ function renderRows(){
     return;
   }
   $("#rows").innerHTML=list.map((c,n)=>{
-    const st=rowState(c,fecha), libres=free(c,fecha), w=waitlist(c,fecha).length, inst=instInfo(c.instructora);
+    const st=rowState(c,fecha), libres=free(c,fecha), N=cap(c), w=waitlist(c,fecha).length, inst=instInfo(c.instructora);
     const lbl=`${clsName(c)}, ${fmtDay(d)} a las ${NB.fmtH(toH(c.inicio))}`;
     let action;
     if(st==="past") action=`<span class="state">Finalizada</span>`;
@@ -194,11 +226,11 @@ function renderRows(){
       <div class="tm"><b>${esc(NB.fmtH(toH(c.inicio)))}</b><small>${mins(c)} min</small></div>
       <div class="cn">
         <h4>${esc(clsName(c))}</h4>
-        ${c.nota?`<span class="note">${esc(c.nota)}</span>`:""}
+        ${c.etiqueta?`<span class="badge" title="${esc(c.nota||"")}">${esc(c.etiqueta)}</span>`:c.nota?`<span class="note">${esc(c.nota)}</span>`:""}
         <span class="who"><i class="ini sm" aria-hidden="true">${esc(initials(inst.completo||inst.nombre))}</i>${esc(c.instructora)}</span>
       </div>
       <div class="ac">
-        <span class="cupo">${st==="past"?"":st==="full"?`0 de ${CUPO} libres${w?` · ${w} en espera`:""}`:`<b>${libres}</b> de ${CUPO} libres`}</span>
+        <span class="cupo">${st==="past"?"":st==="full"?`0 de ${N} libres${w?` · ${w} en espera`:""}`:`<b>${libres}</b> de ${N} libres`}${st!=="past"&&!isBarra(c)?`<small class="tbc">Cupo por confirmar</small>`:""}</span>
         ${action}
       </div>
     </li>`;
@@ -224,7 +256,7 @@ function openBook(c,fecha,wait){
   Object.assign(bk,{c,fecha,lugar:null,wait,file:"",last:null});
   const d=fromIso(fecha);
   $("#bkKick").textContent=wait?"Lista de espera":"Reservar";
-  $("#bkTitle").textContent=clsName(c)+(c.nota?` · ${c.nota}`:"");
+  $("#bkTitle").textContent=clsName(c)+(c.etiqueta?` · ${c.etiqueta}`:c.nota?` · ${c.nota}`:"");
   $("#bkMeta").textContent=`${fmtDay(d)} · ${range(c)} · con ${c.instructora}`;
   $("#stDatos").reset();
   const kid=isBallet(c);
@@ -232,12 +264,16 @@ function openBook(c,fecha,wait){
   $("#nameWrap").hidden=kid;
   $("#waLbl").textContent=kid?"WhatsApp del padre, la madre o el tutor":"WhatsApp";
   $("#payF").hidden=wait;
-  $("#datosH").textContent=wait?"Tus datos para la lista de espera":"2. Tus datos y el pago";
+  const barra=isBarra(c), direct=wait||!barra;
+  $("#datosH").textContent=wait?"Tus datos para la lista de espera":barra?"2. Tus datos y el pago":"Tus datos y el pago";
   $("#confirmBtn").textContent=wait?"Unirme a la lista de espera":"Confirmar reserva";
-  $("#backLugar").hidden=wait;
-  if(wait) show("stDatos"); else { renderSeats(); show("stLugar"); }
+  $("#backLugar").hidden=direct;
+  const ci=$("#cupoInfo");
+  ci.hidden=wait||barra;
+  if(!ci.hidden){ const n=free(c,fecha); ci.textContent=`Esta clase no tiene lugar fijo en la sala: quedan ${n} de ${cap(c)} ${n===1?"lugar":"lugares"}. ${D.cupos.nota}.`; }
+  if(direct) show("stDatos"); else { renderSeats(); show("stLugar"); }
   dlg.showModal();
-  const first=wait?(kid?$("#kName"):$("#fName")):$("#seats button:not(:disabled)");
+  const first=direct?(kid?$("#kName"):$("#fName")):$("#seats button:not(:disabled)");
   if(first) first.focus();
 }
 function show(id){
@@ -254,7 +290,7 @@ function renderSeats(){
     }).join("")}</div></div>`;
   $("#seats").innerHTML=row(1,8,"Primera barra")+row(9,16,"Segunda barra");
   const L=D.sala.lugares.find(l=>l.n===bk.lugar);
-  $("#pick").textContent=L?`Elegiste el lugar ${L.n}, ${L.barra}.`:`${CUPO-set.size} de ${CUPO} lugares libres. Toca uno.`;
+  $("#pick").textContent=L?`Elegiste el lugar ${L.n}, ${L.barra}.`:`${cap(bk.c)-set.size} de ${cap(bk.c)} lugares libres. Toca uno.`;
   $("#toDatos").disabled=!L;
 }
 function pickSeat(n){
@@ -279,7 +315,7 @@ function validate(){
 function submit(e){
   e.preventDefault();
   if(!validate()) return;
-  store=readStore();                       // por si otra pestaña reservó mientras tanto
+  store=readStore(); prune();              // por si otra pestaña reservó mientras tanto
   const c=bk.c, kid=isBallet(c);
   const base={id:uid(), occ:occKey(c,bk.fecha), claseId:c.id, fecha:bk.fecha,
     nombre:(kid?$("#gName"):$("#fName")).value.trim(), wa:fmtWa($("#fWa").value.trim()),
@@ -292,9 +328,10 @@ function submit(e){
     store.espera.push(base); save();
     bk.last=Object.assign({pos:waitlist(c,bk.fecha).length},base);
   }else{
-    if(taken(c,bk.fecha).has(bk.lugar)){ NB.toast("Ese lugar se acaba de ocupar. Elige otro."); renderSeats(); show("stLugar"); return; }
+    if(isBarra(c)&&taken(c,bk.fecha).has(bk.lugar)){ NB.toast("Ese lugar se acaba de ocupar. Elige otro."); renderSeats(); show("stLugar"); return; }
+    if(!isBarra(c)&&free(c,bk.fecha)<=0){ NB.toast("La clase se acaba de llenar. Puedes unirte a la lista de espera."); dlg.close(); renderWeek(); return; }
     const f=$("#fFile").files[0];
-    const r=Object.assign(base,{lugar:bk.lugar, pago:"por confirmar", metodo:"Transferencia", comprobante:f?f.name:""});
+    const r=Object.assign(base,{lugar:isBarra(c)?bk.lugar:null, pago:"por confirmar", metodo:"Transferencia", comprobante:f?f.name:""});
     store.reservas.push(r); save();
     bk.last=r;
   }
@@ -302,11 +339,11 @@ function submit(e){
 }
 
 function summary(r,c){
-  const L=r.lugar?D.sala.lugares.find(l=>l.n===r.lugar):null;
-  return [["Clase",clsName(c)+(c.nota?` (${c.nota})`:"")],["Día",fmtDay(fromIso(r.fecha))],["Hora",range(c)],
-    L?["Lugar",`${L.n}, ${L.barra}`]:["Lista de espera",`Posición ${r.pos}`],["Instructora",c.instructora],
+  const wait=r.pos!=null;
+  return [["Clase",clsName(c)+(c.etiqueta?` (${c.etiqueta})`:c.nota?` (${c.nota})`:"")],["Día",fmtDay(fromIso(r.fecha))],["Hora",range(c)],
+    wait?["Lista de espera",`Posición ${r.pos}`]:["Lugar",seatTxt(r)],["Instructora",c.instructora],
     r.nina?["Alumna",r.nina]:null,[r.nina?"Padre, madre o tutor":"Nombre",r.nombre],["WhatsApp",r.wa],
-    L?["Pago",`Transferencia, por confirmar${r.comprobante?` (comprobante: ${r.comprobante})`:" (sin comprobante adjunto)"}`]:null].filter(Boolean);
+    wait?null:["Pago",`Transferencia, por confirmar${r.comprobante?` (comprobante: ${r.comprobante})`:" (sin comprobante adjunto)"}`]].filter(Boolean);
 }
 function renderDone(){
   const r=bk.last, c=bk.c;
@@ -326,12 +363,12 @@ function renderBubbles(){
   const mine=store.reservas[store.reservas.length-1];
   let c, fecha, lugar, name;
   if(mine&&clsById(mine.claseId)){ c=clsById(mine.claseId); fecha=mine.fecha; lugar=mine.lugar; name=(mine.nina?mine.nombre:mine.nombre).split(" ")[0]; }
-  else{ c=D.horario.find(x=>x.clase==="Hot Barre")||D.horario[0]; fecha=iso(dayDate(1,DKEYS.indexOf(c.dia))); lugar=7; name="Laura"; }
-  const L=D.sala.lugares.find(l=>l.n===lugar), d=fmtDay(fromIso(fecha)), h=NB.fmtH(toH(c.inicio)), n=clsName(c);
+  else{ c=D.horario.find(x=>x.clase==="Hot Barre"&&!x.etiqueta)||D.horario[0]; fecha=iso(dayDate(1,DKEYS.indexOf(c.dia))); lugar=7; name="Laura"; }
+  const L=lugar&&D.sala.lugares.find(l=>l.n===lugar), d=fmtDay(fromIso(fecha)), h=NB.fmtH(toH(c.inicio)), n=clsName(c);
   const msgs=[
-    ["Al reservar",`¡Hola, ${name}! Tu lugar en balé está reservado.\n${n} · ${d} · ${h}\nLugar ${L.n} (${L.barra}) · con ${c.instructora}`],
-    ["24 horas antes",`${name}, te recordamos tu clase de mañana: ${n} a las ${h}, lugar ${L.n}. Si no puedes venir, avísanos para liberar tu lugar.`],
-    ["2 horas antes",`¡Nos vemos en 2 horas! ${n} a las ${h} con ${c.instructora}. Tu lugar: ${L.n}, ${L.barra}.`],
+    ["Al reservar",`¡Hola, ${name}! Tu lugar en balé está reservado.\n${n} · ${d} · ${h}\n${L?`Lugar ${L.n} (${L.barra}) · `:""}con ${c.instructora}`],
+    ["24 horas antes",`${name}, te recordamos tu clase de mañana: ${n} a las ${h}${L?`, lugar ${L.n}`:""}. Si no puedes venir, avísanos para liberar tu lugar.`],
+    ["2 horas antes",`¡Nos vemos en 2 horas! ${n} a las ${h} con ${c.instructora}.${L?` Tu lugar: ${L.n}, ${L.barra}.`:""}`],
     ["Lista de espera",`¡Buenas noticias, ${name}! Se liberó un lugar en ${n} del ${d} a las ${h}. Responde SÍ para quedártelo.`]
   ];
   $("#bubbles").innerHTML=`<div class="wa-top"><span class="ini sm" aria-hidden="true">b</span><span><b>balé</b><small>Mensajes automáticos</small></span></div>`+
@@ -339,8 +376,42 @@ function renderBubbles(){
     `<p class="wa-note">${mine?"Con los datos de tu última reserva en esta demo.":"Ejemplo. Reserva una clase y verás tus datos aquí."}</p>`;
 }
 
+/* ---------- Portada: video vertical en el teléfono, horizontal en el escritorio ----------
+   Sin autoplay en el HTML: el video solo se carga y se reproduce si el usuario no pidió
+   reducir el movimiento; en ese caso se queda el póster. Se pausa fuera de la pantalla. */
+function initHero(){
+  const v=$("#heroVid"); if(!v) return;
+  const wide=matchMedia("(min-aspect-ratio:4/5)"), calm=matchMedia("(prefers-reduced-motion: reduce)");
+  let visible=true;
+  const play=()=>{ const p=v.play(); if(p&&p.catch) p.catch(()=>{}); };
+  const pick=()=>{
+    const k=wide.matches?"horizontal":"vertical";
+    v.poster=`assets/video/bale/bale-hero-${k}-poster.webp`;
+    if(calm.matches){ v.pause(); if(v.dataset.src){ delete v.dataset.src; v.removeAttribute("src"); v.load(); } v.classList.remove("on"); return; }
+    const src=`assets/video/bale/bale-hero-${k}.mp4`;
+    if(v.dataset.src!==src){ v.dataset.src=src; v.src=src; }
+    if(visible) play();
+  };
+  v.addEventListener("playing",()=>v.classList.add("on"));
+  [wide,calm].forEach(m=>m.addEventListener?m.addEventListener("change",pick):m.addListener(pick));
+  if("IntersectionObserver" in window) new IntersectionObserver(([e])=>{
+    visible=e.isIntersecting;
+    if(!visible) v.pause(); else if(v.dataset.src) play();
+  }).observe(v);
+  pick();
+}
+
 function initPublic(){
-  renderStatic(); renderFilters(); renderWeek(); renderBubbles();
+  renderStatic(); renderFilters(); renderWeek(); renderBubbles(); initHero();
+  // "Reserva tu primera clase": va al próximo sábado de primera clase
+  $("#firstBtn").addEventListener("click",()=>{
+    fInst=""; fType=""; $("#fInst").value=""; $("#fType").value="";
+    const now=new Date();
+    search: for(let w=0;w<=WEEKS_AHEAD;w++) for(let i=0;i<7;i++){
+      if(D.horario.some(c=>c.etiqueta&&c.dia===DKEYS[i]&&startOf(c,iso(dayDate(w,i)))>now)){ week=w; dayIx=i; break search; }
+    }
+    renderWeek();
+  });
   $("#prevW").addEventListener("click",()=>{ if(week>0){ week--; dayIx=week===0?todayIx():0; renderWeek(); } });
   $("#nextW").addEventListener("click",()=>{ if(week<WEEKS_AHEAD){ week++; dayIx=0; renderWeek(); } });
   $("#strip").addEventListener("click",e=>{ const b=e.target.closest("[data-d]"); if(!b) return; dayIx=+b.dataset.d; renderWeek(); $(`#strip [data-d="${dayIx}"]`).focus(); });
@@ -415,11 +486,11 @@ function renderVWeek(){
   }
   let lastDay=-1;
   $("#vList").innerHTML=occs.map(o=>{
-    const k=occKey(o.c,o.fecha), n=taken(o.c,o.fecha).size, w=waitlist(o.c,o.fecha).length;
+    const k=occKey(o.c,o.fecha), n=used(o.c,o.fecha), N=cap(o.c), w=waitlist(o.c,o.fecha).length;
     const head=o.i!==lastDay?`<li class="vday">${esc(fmtDay(fromIso(o.fecha)))}</li>`:""; lastDay=o.i;
     return head+`<li><button type="button" class="vcls" data-occ="${k}" aria-pressed="${k===vSel}">
       <span class="t">${esc(NB.fmtH(toH(o.c.inicio)))}</span><span class="n">${esc(clsName(o.c))}<small>${esc(o.c.instructora)}</small></span>
-      <span class="c ${n>=CUPO?"full":""}">${n}/${CUPO}${w?` · ${w} en espera`:""}</span></button></li>`;
+      <span class="c ${n>=N?"full":""}">${n}/${N}${w?` · ${w} en espera`:""}</span></button></li>`;
   }).join("")||`<li class="empty-state">Sin clases esta semana.</li>`;
   renderVDetail();
   renderCalPrev();
@@ -428,12 +499,12 @@ function renderVWeek(){
 function renderVDetail(){
   const box=$("#vDetail");
   if(!vSel){ box.innerHTML=""; return; }
-  const [id,fecha]=vSel.split("@"), c=clsById(id), set=taken(c,fecha), list=roster(c,fecha), wl=waitlist(c,fecha);
-  box.innerHTML=`<h2>${esc(clsName(c))}${c.nota?` <small>${esc(c.nota)}</small>`:""}</h2>
-    <p class="meta">${esc(fmtDay(fromIso(fecha)))} · ${esc(range(c))} · ${esc(c.instructora)} · <b>${set.size} de ${CUPO}</b> lugares ocupados</p>
-    <div class="sala mini" aria-hidden="true">${salaHTML(set,null,false)}</div>
+  const [id,fecha]=vSel.split("@"), c=clsById(id), list=roster(c,fecha), wl=waitlist(c,fecha), barra=isBarra(c);
+  box.innerHTML=`<h2>${esc(clsName(c))}${c.etiqueta||c.nota?` <small>${esc(c.etiqueta||c.nota)}</small>`:""}</h2>
+    <p class="meta">${esc(fmtDay(fromIso(fecha)))} · ${esc(range(c))} · ${esc(c.instructora)} · <b>${used(c,fecha)} de ${cap(c)}</b> lugares ocupados</p>
+    ${barra?`<div class="sala mini" aria-hidden="true">${salaHTML(taken(c,fecha),null,false)}</div>`:`<p class="cupoinfo">Cupo por número, sin lugar fijo en la sala: ${cap(c)}. ${esc(D.cupos.nota)}.</p>`}
     <h3>Alumnas</h3>
-    <ol class="roster">${list.map(r=>`<li><span class="seatno" aria-label="Lugar">${r.lugar}</span>
+    <ol class="roster">${list.map(r=>`<li><span class="seatno" title="${barra?"Lugar":"Orden de reserva"}"><span class="sr-only">${barra?"Lugar":"Número"} </span>${r.pos}</span>
       <span class="nm">${esc(r.nombre)}${r.tutor?`<small>Tutor: ${esc(r.tutor)}</small>`:""}</span>
       <span class="tagx ${r.demo?"":"web"}">${r.demo?"Ejemplo":r.pago==="aprobado"?"Web · pagado":"Web · pago por confirmar"}</span>
       ${r.id?`<button class="linkbtn" type="button" data-cancel="${r.id}">Cancelar</button>`:""}</li>`).join("")||"<li>Sin reservas.</li>"}</ol>
@@ -448,8 +519,8 @@ function cancelRes(id){
   renderVWeek(); renderPays(); renderClients();
   if(first){
     const num=digits(first.wa), link=`https://wa.me/${num.length===10?"1"+num:num}?text=${encodeURIComponent(`¡Buenas noticias, ${first.nombre.split(" ")[0]}! Se liberó un lugar en ${clsName(c)} del ${fmtDay(fromIso(r.fecha))} a las ${NB.fmtH(toH(c.inicio))}. Responde SÍ para quedártelo.`)}`;
-    $("#vDetail").insertAdjacentHTML("afterbegin",`<p class="note">Lugar ${r.lugar} liberado. <a href="${esc(link)}" target="_blank" rel="noopener">Avisar a ${esc(first.nina||first.nombre)} por WhatsApp</a> (primera en la lista de espera).</p>`);
-  }else NB.toast(`Lugar ${r.lugar} liberado`);
+    $("#vDetail").insertAdjacentHTML("afterbegin",`<p class="note">${r.lugar?`Lugar ${r.lugar} liberado`:"Cupo liberado"}. <a href="${esc(link)}" target="_blank" rel="noopener">Avisar a ${esc(first.nina||first.nombre)} por WhatsApp</a> (primera en la lista de espera).</p>`);
+  }else NB.toast(r.lugar?`Lugar ${r.lugar} liberado`:"Cupo liberado");
 }
 
 function renderClients(){
@@ -466,7 +537,7 @@ function renderClients(){
 function renderPays(){
   const ok=new Set(store.aprobados);
   const items=D.demo.pagos.map(p=>({id:p.id, who:p.cliente, what:p.concepto, file:p.comprobante, demo:true}))
-    .concat(store.reservas.map(r=>{ const c=clsById(r.claseId); return {id:r.id, who:r.nina?`${r.nombre} (por ${r.nina})`:r.nombre, what:`${clsName(c)} · ${fmtDay(fromIso(r.fecha))} · lugar ${r.lugar}`, file:r.comprobante, done:r.pago==="aprobado"}; }));
+    .concat(store.reservas.map(r=>{ const c=clsById(r.claseId); return {id:r.id, who:r.nina?`${r.nombre} (por ${r.nina})`:r.nombre, what:`${clsName(c)} · ${fmtDay(fromIso(r.fecha))}${r.lugar?` · lugar ${r.lugar}`:""}`, file:r.comprobante, done:r.pago==="aprobado"}; }));
   const li=p=>`<li><div><b>${esc(p.who)}</b>${p.demo?' <span class="tagx">Ejemplo</span>':""}<small>${esc(p.what)}</small><small>Transferencia · ${p.file?`comprobante: ${esc(p.file)}`:"sin comprobante adjunto"}</small></div>
     ${ok.has(p.id)||p.done?`<span class="tagx web">Aprobado</span>`:`<button class="bbtn solid sm" type="button" data-approve="${esc(p.id)}">Aprobar</button>`}</li>`;
   const pend=items.filter(p=>!(ok.has(p.id)||p.done)), done=items.filter(p=>ok.has(p.id)||p.done);
@@ -507,13 +578,13 @@ function buildIcs(inst){
     `X-WR-CALNAME:${icsEsc("balé · "+inst)}`,"X-WR-TIMEZONE:America/Santo_Domingo"];
   weekOccs(vWeek,inst).forEach(o=>{
     const list=roster(o.c,o.fecha);
-    const desc=`Instructora: ${inst}\n${list.length} de ${CUPO} lugares ocupados\n\nAlumnas:\n`+
-      list.map(r=>`${r.lugar}. ${r.nombre}${r.tutor?` (tutor: ${r.tutor})`:""}`).join("\n")+
+    const desc=`Instructora: ${inst}\n${list.length} de ${cap(o.c)} lugares ocupados\n\nAlumnas:\n`+
+      list.map(r=>`${r.pos}. ${r.nombre}${r.tutor?` (tutor: ${r.tutor})`:""}`).join("\n")+
       (waitlist(o.c,o.fecha).length?`\n\nLista de espera: ${waitlist(o.c,o.fecha).map(e=>e.nina||e.nombre).join(", ")}`:"")+
       "\n\nDemo: datos de ejemplo.";
     lines.push("BEGIN:VEVENT",`UID:${o.c.id}-${o.fecha}@bale-demo`,`DTSTAMP:${now}`,
       `DTSTART:${utc(localToUtc(o.fecha,o.c.inicio))}`,`DTEND:${utc(localToUtc(o.fecha,o.c.fin))}`,
-      `SUMMARY:${icsEsc(`${clsName(o.c)}${o.c.nota?` (${o.c.nota})`:""} · ${list.length}/${CUPO}`)}`,
+      `SUMMARY:${icsEsc(`${clsName(o.c)}${o.c.etiqueta||o.c.nota?` (${o.c.etiqueta||o.c.nota})`:""} · ${list.length}/${cap(o.c)}`)}`,
       `DESCRIPTION:${icsEsc(desc)}`,`LOCATION:${icsEsc("balé"+(addr?", "+addr:""))}`,"END:VEVENT");
   });
   lines.push("END:VCALENDAR");
@@ -533,7 +604,7 @@ function downloadIcs(){
 function initStudio(){
   document.title="balé · Vista del estudio (demo)";
   $("#publico").hidden=true; $("#vistaEstudio").hidden=false;
-  const insts=[...new Set(D.horario.map(c=>c.instructora))];
+  const insts=D.instructoras.map(i=>i.nombre).filter(n=>D.horario.some(c=>c.instructora===n));
   $("#vInst").innerHTML=`<option value="">Todas</option>`+insts.map(n=>`<option value="${esc(n)}">${esc(n)}</option>`).join("");
   renderVWeek(); renderClients(); renderPays();
   $("#vPrev").addEventListener("click",()=>{ if(vWeek>0){ vWeek--; renderVWeek(); renderClients(); } });
@@ -559,8 +630,13 @@ function initStudio(){
 }
 
 /* ---------- Arranque ---------- */
+// Descarta reservas de clases que ya no están en el horario (p. ej., de una versión anterior de la demo)
+function prune(){
+  const ok=r=>D.horario.some(c=>c.id===r.claseId);
+  store.reservas=store.reservas.filter(ok); store.espera=store.espera.filter(ok);
+}
 NB.load("bale").then(data=>{
-  D=data;
+  D=data; prune();
   NB.ready.then(biz=>{
     BIZ=biz;
     if(ESTUDIO) return;
@@ -571,7 +647,7 @@ NB.load("bale").then(data=>{
   }).catch(()=>{});
   if(ESTUDIO) initStudio(); else initPublic();
   // Otra pestaña cambió las reservas: vuelve a pintar
-  addEventListener("storage",e=>{ if(e.key!==KEY) return; store=readStore();
+  addEventListener("storage",e=>{ if(e.key!==KEY) return; store=readStore(); prune();
     if(ESTUDIO){ renderVWeek(); renderClients(); renderPays(); } else { renderWeek(); renderBubbles(); } });
 }).catch(()=>{});
 

@@ -1,0 +1,31 @@
+RECURSOS PARA LA DEMO DE BALÉ (versión 2, 17-10-2026)
+
+img/  (todas optimizadas para la web)
+  hot-barre-1..5.jpg ............ Clase de Hot Barre (adultas)
+  mat-pilates-1..4.jpg .......... Clase de Mat Pilates con pelota (adultas)
+  barre-entrenamiento.jpg ....... Barre adulta, espalda
+  ballet-ninas-zapatillas-1..3 .. Ballet niñas: SOLO zapatillas, medias y piso (sin rostros)
+  sala-barras.jpg ............... Sala con las 16 barras numeradas (mapa de reservas)
+  evento-girls-day-out.jpg ...... Póster del evento Girls Day Out (ejemplo de "Eventos")
+  balexnutribel-matcha.jpg ...... Colaboración Balé x NutriBEL
+  bale-logo.png ................. Logo (crema #F3E4D8, café #2E2723)
+
+video/
+  bale-hero-horizontal.mp4 ...... Portada en escritorio, 1280x720, 15 s, sin sonido, en bucle (1.3 MB)
+  bale-hero-vertical.mp4 ........ Portada en teléfono, 720x1280, 15 s, sin sonido, en bucle (1.4 MB)
+  *-poster.jpg .................. Imagen mientras carga el video
+  (Hechos con las fotos de adultas. Reemplazables por un video real de clase cuando lo grabe el estudio.)
+
+datos/
+  horario.json .................. Horario OFICIAL transcrito del diseño final (22 clases, 4 instructoras)
+  sala.json ..................... Posición de los 16 lugares sobre sala-barras.jpg (en %)
+
+texto/
+  historia.md ................... Texto de María Fernanda (bienvenida, historia, qué es el barre)
+  inspiracion-webs.md ........... Verbena, barre3, Physique 57, The Bar Method: qué tomar
+  inspiracion-verbena.md ........ Detalle de Verbena
+
+referencias/
+  horario-oficial.jpg ........... El horario tal como lo diseñó la marca (paleta rosa #F4C5CE y acento #ED2F59)
+
+REGLA: ningún rostro de niña. Se excluyeron TODAS las fotos y fotogramas de NIÑAS BALÉ donde se ven caras.
