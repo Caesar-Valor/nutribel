@@ -1,0 +1,10 @@
+Fotos del equipo de balé (vertical 4:5, por ejemplo 600 x 750 px, en WebP):
+
+  marifer.webp   María Fernanda Pimentel (Marifer)
+  lynette.webp   Lynette
+  rusmairy.webp  Rusmairy
+  viviana.webp   Viviana Medina Sánchez
+
+Antes de publicarlas, la dueña confirma quién es quién.
+Después, en bale/data/bale.json -> instructoras, cambia "foto": null por "foto": "img/equipo/<nombre>.webp".
+Ver bale/COMO-ACTUALIZAR.md.

@@ -73,7 +73,8 @@
         }
       ],
       "etiquetas": [],
-      "imagen": "assets/img/platos/wraps.webp"
+      "imagen": "assets/img/platos/wraps.webp",
+      "alt": "Dos wraps cortados a la mitad, rellenos de pollo y vegetales, con una salsa al lado"
     },
     {
       "id": "sandwich",
@@ -126,7 +127,8 @@
         }
       ],
       "etiquetas": [],
-      "imagen": "assets/img/platos/poder-dominicano.webp"
+      "imagen": "assets/img/platos/poder-dominicano.webp",
+      "alt": "Mangú con cebolla roja, huevo frito, salami, queso frito y aguacate"
     },
     {
       "id": "fritaca",
@@ -151,7 +153,8 @@
       "etiquetas": [
         "proteina"
       ],
-      "imagen": "assets/img/platos/fritaca-omelette.webp"
+      "imagen": "assets/img/platos/fritaca-omelette.webp",
+      "alt": "Fritaca de huevo doblada en un plato blanco"
     },
     {
       "id": "pita",
@@ -181,7 +184,8 @@
         }
       ],
       "etiquetas": [],
-      "imagen": null
+      "imagen": "assets/img/platos/quesadilla.webp",
+      "alt": "Quesadilla en triángulos con pico de gallo y guacamole"
     },
     {
       "id": "avena",
@@ -198,7 +202,8 @@
       "etiquetas": [
         "ligero"
       ],
-      "imagen": null
+      "imagen": "assets/img/platos/nutriavena.webp",
+      "alt": "Bol de avena con almendras, arándanos y coco rallado"
     },
     {
       "id": "montaditos",
@@ -217,7 +222,8 @@
         }
       ],
       "etiquetas": [],
-      "imagen": null
+      "imagen": "assets/img/platos/montaditos.webp",
+      "alt": "Tostada con aguacate, huevo frito, tomate, queso y cebollín"
     },
     {
       "id": "yogurtbel",
@@ -238,7 +244,7 @@
       "etiquetas": [
         "ligero"
       ],
-      "imagen": "assets/img/platos/yogurtbel.webp"
+      "imagen": null
     },
     {
       "id": "rancheros",
@@ -259,7 +265,8 @@
       "etiquetas": [
         "proteina"
       ],
-      "imagen": "assets/img/platos/huevos-rancheros.webp"
+      "imagen": "assets/img/platos/huevos-rancheros.webp",
+      "alt": "Sartén de huevos rancheros gratinados con tostadas de tortilla"
     },
     {
       "id": "bomba",
@@ -280,7 +287,8 @@
       "etiquetas": [
         "proteina"
       ],
-      "imagen": null
+      "imagen": "assets/img/platos/bomba-de-huevo.webp",
+      "alt": "Bomba de huevo gratinada con galletas de arroz"
     },
     {
       "id": "waffles",
@@ -301,7 +309,8 @@
       "etiquetas": [
         "proteina"
       ],
-      "imagen": "assets/img/platos/waffles-pancakes.webp"
+      "imagen": "assets/img/platos/waffles-pancakes.webp",
+      "alt": "Waffles con fresas, huevos revueltos y tocineta"
     },
     {
       "id": "rollo",
@@ -322,7 +331,8 @@
       "etiquetas": [
         "proteina"
       ],
-      "imagen": null
+      "imagen": "assets/img/platos/rollo-de-huevos.webp",
+      "alt": "Dos rollos de huevo con queso rallado"
     },
     {
       "id": "nutrialmuerzo",
@@ -359,7 +369,8 @@
         }
       ],
       "etiquetas": [],
-      "imagen": null
+      "imagen": "assets/img/platos/pasta-tomatina.webp",
+      "alt": "Pasta en salsa de tomate con pan tostado, en plato verde"
     },
     {
       "id": "pesto",
@@ -378,7 +389,8 @@
         }
       ],
       "etiquetas": [],
-      "imagen": "assets/img/platos/pasta-pesto.webp"
+      "imagen": "assets/img/platos/pasta-pesto.webp",
+      "alt": "Pasta al pesto con pollo y pan de ajo"
     },
     {
       "id": "patacon",
@@ -398,7 +410,8 @@
         }
       ],
       "etiquetas": [],
-      "imagen": null
+      "imagen": "assets/img/platos/patacon-maduro.webp",
+      "alt": "Patacón de plátano maduro relleno de pollo, aguacate y lechuga"
     },
     {
       "id": "dominicanisimo",
@@ -417,7 +430,8 @@
         }
       ],
       "etiquetas": [],
-      "imagen": null
+      "imagen": "assets/img/platos/dominicanisimo.webp",
+      "alt": "Arroz blanco, habichuelas rojas, pollo a la plancha, maduro, ensalada y aguacate"
     },
     {
       "id": "canasta",
@@ -435,7 +449,8 @@
         }
       ],
       "etiquetas": [],
-      "imagen": null
+      "imagen": "assets/img/platos/canasta-platano-maduro.webp",
+      "alt": "Canasta de plátano maduro rellena con guacamole y ensalada verde"
     },
     {
       "id": "nutriesfera",
@@ -450,7 +465,8 @@
         }
       ],
       "etiquetas": [],
-      "imagen": "assets/img/platos/nutriesfera.webp"
+      "imagen": "assets/img/platos/nutriesfera.webp",
+      "alt": "Nutriesfera blanca con almendras, aguacate y chuleta con escabeche"
     },
     {
       "id": "nutriovalado",
@@ -467,7 +483,8 @@
       "etiquetas": [
         "proteina"
       ],
-      "imagen": null
+      "imagen": "assets/img/platos/nutriovalado.webp",
+      "alt": "Plato ovalado con proteína gratinada y ensalada de vegetales"
     },
     {
       "id": "pastelbbq",
@@ -482,7 +499,7 @@
         }
       ],
       "etiquetas": [],
-      "imagen": "assets/img/platos/pastel-bbq.webp"
+      "imagen": null
     },
     {
       "id": "bowlbel",
@@ -499,7 +516,8 @@
       "etiquetas": [
         "proteina"
       ],
-      "imagen": null
+      "imagen": "assets/img/platos/bowl-bel.webp",
+      "alt": "Esfera de granos con aguacate y tomate, junto a una ensalada fresca"
     },
     {
       "id": "sopas-a",
@@ -546,7 +564,8 @@
         }
       ],
       "etiquetas": [],
-      "imagen": "assets/img/platos/sopas-y-cremas.webp"
+      "imagen": "assets/img/platos/sopas-y-cremas.webp",
+      "alt": "Sancocho con maíz, yuca y cebollín en un bol verde"
     },
     {
       "id": "tacosalad",
@@ -567,7 +586,8 @@
       "etiquetas": [
         "ligero"
       ],
-      "imagen": "assets/img/platos/taco-salad.webp"
+      "imagen": "assets/img/platos/taco-salad.webp",
+      "alt": "Taco salad con carne molida, maíz, guacamole, vegetales y tostadas"
     },
     {
       "id": "pastaketo",
@@ -617,7 +637,8 @@
       "etiquetas": [
         "ligero"
       ],
-      "imagen": "assets/img/platos/bowl-de-ensaladas.webp"
+      "imagen": "assets/img/platos/bowl-de-ensaladas.webp",
+      "alt": "Bowl de ensalada de granos con habichuelas, maíz, pepino y queso"
     },
     {
       "id": "zuchinie",
@@ -642,7 +663,8 @@
         "singluten",
         "ligero"
       ],
-      "imagen": null
+      "imagen": "assets/img/platos/pasta-zuchinie.webp",
+      "alt": "Espaguetis de calabacín con carne molida y pan tostado"
     },
     {
       "id": "triotacos",
@@ -695,7 +717,8 @@
       "etiquetas": [
         "ligero"
       ],
-      "imagen": null
+      "imagen": "assets/img/platos/bowl-salmon.webp",
+      "alt": "Bowl para llevar con salmón, maíz, aguacate, tomate y cebolla roja"
     },
     {
       "id": "crotones",
@@ -710,7 +733,8 @@
         }
       ],
       "etiquetas": [],
-      "imagen": null
+      "imagen": "assets/img/platos/ensalada-crotones.webp",
+      "alt": "Ensalada verde con pollo, crotones, tomate, pepino y almendras"
     },
     {
       "id": "brochetas",
@@ -777,7 +801,8 @@
         }
       ],
       "etiquetas": [],
-      "imagen": "assets/img/platos/sopas-y-cremas.webp"
+      "imagen": "assets/img/platos/sopas-y-cremas.webp",
+      "alt": "Sancocho con maíz, yuca y cebollín en un bol verde"
     },
     {
       "id": "empanadas",
@@ -797,7 +822,8 @@
         }
       ],
       "etiquetas": [],
-      "imagen": "assets/img/platos/nutriempanadas.webp"
+      "imagen": "assets/img/platos/nutriempanadas.webp",
+      "alt": "Cuatro nutriempanadas de masas de colores sobre una tabla"
     },
     {
       "id": "hamburguesa",
@@ -817,7 +843,8 @@
         }
       ],
       "etiquetas": [],
-      "imagen": "assets/img/platos/nutrihamburguesa.webp"
+      "imagen": "assets/img/platos/nutrihamburguesa.webp",
+      "alt": "Nutrihamburguesa con pollo, aguacate y cebolla, con papas al lado"
     },
     {
       "id": "pizzana",
@@ -834,7 +861,8 @@
       "etiquetas": [
         "proteina"
       ],
-      "imagen": "assets/img/platos/pizzana.webp"
+      "imagen": "assets/img/platos/pizzana.webp",
+      "alt": "Pizza con queso, tomate, aceitunas y maíz"
     },
     {
       "id": "wrap-a",
@@ -865,7 +893,8 @@
         }
       ],
       "etiquetas": [],
-      "imagen": "assets/img/platos/wraps.webp"
+      "imagen": "assets/img/platos/wraps.webp",
+      "alt": "Dos wraps cortados a la mitad, rellenos de pollo y vegetales, con una salsa al lado"
     },
     {
       "id": "quesa-a",
@@ -883,7 +912,8 @@
         }
       ],
       "etiquetas": [],
-      "imagen": null
+      "imagen": "assets/img/platos/quesadilla.webp",
+      "alt": "Quesadilla en triángulos con pico de gallo y guacamole"
     },
     {
       "id": "nutrishot",
@@ -898,7 +928,8 @@
         }
       ],
       "etiquetas": [],
-      "imagen": "assets/img/menu-bebidas/nutrishot.webp"
+      "imagen": "assets/img/menu-bebidas/nutrishot.webp",
+      "alt": "Dos manos sosteniendo botellitas de NutriSHOT"
     },
     {
       "id": "defenshot",
@@ -913,7 +944,7 @@
         }
       ],
       "etiquetas": [],
-      "imagen": "assets/img/menu-bebidas/defenshot.webp"
+      "imagen": null
     },
     {
       "id": "activador",
@@ -928,7 +959,8 @@
         }
       ],
       "etiquetas": [],
-      "imagen": null
+      "imagen": "assets/img/menu-bebidas/shot-activador.webp",
+      "alt": "Botella de Shot activador del Kit Detox"
     },
     {
       "id": "verdequiero",
@@ -945,7 +977,8 @@
       "etiquetas": [
         "ligero"
       ],
-      "imagen": "assets/img/menu-bebidas/verde-que-te-quiero-verde.webp"
+      "imagen": "assets/img/menu-bebidas/verde-que-te-quiero-verde.webp",
+      "alt": "Botellas del jugo Verde que te quiero verde"
     },
     {
       "id": "verde",
@@ -962,7 +995,8 @@
       "etiquetas": [
         "ligero"
       ],
-      "imagen": null
+      "imagen": "assets/img/menu-bebidas/verde.webp",
+      "alt": "Botella de jugo prensado Verde de NutriBEL"
     },
     {
       "id": "zana",
@@ -977,7 +1011,8 @@
         }
       ],
       "etiquetas": [],
-      "imagen": "assets/img/menu-bebidas/zana.webp"
+      "imagen": "assets/img/menu-bebidas/zana.webp",
+      "alt": "Botella de jugo prensado Zana de NutriBEL"
     },
     {
       "id": "tresenuno",
@@ -994,7 +1029,8 @@
       "etiquetas": [
         "ligero"
       ],
-      "imagen": null
+      "imagen": "assets/img/menu-bebidas/3-en-1.webp",
+      "alt": "Botella de jugo prensado 3 en 1 de NutriBEL"
     },
     {
       "id": "prensados",
@@ -1013,7 +1049,8 @@
         }
       ],
       "etiquetas": [],
-      "imagen": "assets/img/menu-bebidas/prensados-tropicales.webp"
+      "imagen": "assets/img/menu-bebidas/prensados-tropicales.webp",
+      "alt": "Botella de jugo prensado de piña de NutriBEL"
     },
     {
       "id": "potencializados",
@@ -1031,7 +1068,8 @@
         }
       ],
       "etiquetas": [],
-      "imagen": "assets/img/menu-bebidas/jugos-potencializados.webp"
+      "imagen": "assets/img/menu-bebidas/jugos-potencializados.webp",
+      "alt": "Jugo azul verdoso servido desde la botella en un vaso"
     },
     {
       "id": "teverde",
@@ -1050,7 +1088,8 @@
         }
       ],
       "etiquetas": [],
-      "imagen": "assets/img/menu-bebidas/te-verde.webp"
+      "imagen": "assets/img/menu-bebidas/te-verde.webp",
+      "alt": "Vaso de té verde matcha con hielo y sorbete"
     },
     {
       "id": "terojo",
@@ -1065,7 +1104,7 @@
         }
       ],
       "etiquetas": [],
-      "imagen": "assets/img/menu-bebidas/te-rojo.webp"
+      "imagen": null
     },
     {
       "id": "tisana",
@@ -1080,7 +1119,7 @@
         }
       ],
       "etiquetas": [],
-      "imagen": "assets/img/menu-bebidas/tisana-de-la-abuela.webp"
+      "imagen": null
     }
   ],
   "powerBowl": {

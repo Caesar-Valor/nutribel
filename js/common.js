@@ -3,10 +3,10 @@
    Cabecera y navegación, modo oscuro, horario abierto/cerrado,
    WhatsApp, carrito persistente (localStorage) y utilidades.
    Cada página declara <body data-page="..."> y carga este archivo con defer.
-   Con <body data-standalone> (balé) no se pinta la cabecera, el pie ni el
-   pedido de NutriBEL: la página trae su propia cabecera con #modeBtn.
-   NutriBEL y balé son secciones aparte: la única conexión es el botón
-   "Ir a balé" de esta cabecera (y "Ir a NutriBEL" en la de balé).
+   Con <body data-standalone> no se pinta la cabecera, el pie ni el pedido:
+   la página trae su propia cabecera con #modeBtn.
+   balé es una página aparte y autónoma (bale/): la única conexión es el
+   botón "Ir a balé" de esta cabecera.
    ========================================================= */
 (function(){
 "use strict";
@@ -30,8 +30,8 @@ const money = n=>typeof n==="number"?"RD$"+n.toLocaleString("es-DO"):"Precio por
 // Variables del sistema de diseño (css/base.css)
 const cssVar = name=>getComputedStyle(document.documentElement).getPropertyValue(name).trim();
 const cssMs = (name,def)=>{const v=cssVar(name); return v?parseFloat(v)*(v.endsWith("ms")?1:1000):def};
-// Fotos con variantes -480/-800 (assets/img/{platos,menu-bebidas,planes,bale,local}): srcset para que el teléfono baje la pequeña
-const SRCSET_DIRS = /assets\/img\/(platos|menu-bebidas|planes|bale|local)\/[^/]+\.webp$/;
+// Fotos con variantes -480/-800 (assets/img/{platos,menu-bebidas,planes,local}): srcset para que el teléfono baje la pequeña
+const SRCSET_DIRS = /assets\/img\/(platos|menu-bebidas|planes|local)\/[^/]+\.webp$/;
 function srcset(src){
   if(!SRCSET_DIRS.test(src||"")||/-(480|800)\.webp$/.test(src)) return "";
   const b=src.slice(0,-5);
@@ -151,13 +151,13 @@ function renderHeader(){
       <span class="brand">NutriBEL<small>Dra. Bielka Eusebio</small></span>
     </a>
     <div class="status"><i class="dot" id="dot"></i><span id="statusTxt">…</span></div>
-    <a class="tobale in-bar" href="bale.html" aria-label="Ir a balé, Barre, Ballet &amp; Pilates">Ir a <b>balé</b></a>
+    <a class="tobale in-bar" href="bale/" aria-label="Ir a balé, Barre, Ballet &amp; Pilates">Ir a <b>balé</b></a>
     <button class="modebtn" id="modeBtn" type="button" aria-label="Cambiar a modo oscuro" title="Modo oscuro / claro">${ICON_MOON}${ICON_SUN}</button>
     <button class="cartbtn" id="openCart" type="button">Pedido <b id="count">0</b><span class="sr-only" id="countTxt"> productos</span></button>
   </div>
   <nav class="nav" aria-label="Páginas"><div class="wrap">
     ${PAGES.map(([id,label])=>`<a href="${id}.html"${id===page?' aria-current="page"':""}>${label}</a>`).join("")}
-  </div><a class="tobale in-nav" href="bale.html" aria-label="Ir a balé, Barre, Ballet &amp; Pilates">Ir a <b>balé</b></a></nav>`;
+  </div><a class="tobale in-nav" href="bale/" aria-label="Ir a balé, Barre, Ballet &amp; Pilates">Ir a <b>balé</b></a></nav>`;
   // En móvil la navegación se desplaza: deja visible la página actual
   const cur=$('.nav a[aria-current="page"]',top), strip=$(".nav .wrap",top);
   if(cur && strip.scrollWidth>strip.clientWidth){

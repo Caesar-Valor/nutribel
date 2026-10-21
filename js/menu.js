@@ -64,7 +64,7 @@ function nutriHTML(nu){
 function cardHTML(d,n){
   return `
     <article class="card ${d.off?'off':''}" data-id="${esc(d.id)}" style="--i:${n}">
-      ${d.imagen?`<div class="ph"><img loading="lazy" decoding="async" src="${esc(d.imagen)}" srcset="${esc(NB.srcset(d.imagen))}" sizes="(max-width:700px) calc(100vw - 40px), 340px" alt="${esc(d.nombre)}"></div>`:""}
+      ${d.imagen?`<div class="ph"><img loading="lazy" decoding="async" src="${esc(d.imagen)}" srcset="${esc(NB.srcset(d.imagen))}" sizes="(max-width:700px) calc(100vw - 40px), 340px" alt="${esc(d.alt||d.nombre)}"></div>`:""}
       <h3>${esc(d.nombre)}</h3>
       <p>${esc(d.descripcion)}</p>
       ${d.etiquetas.length?`<div class="tags">${d.etiquetas.map(t=>`<span class="tag">${esc(M.etiquetas[t]||t)}</span>`).join("")}</div>`:""}

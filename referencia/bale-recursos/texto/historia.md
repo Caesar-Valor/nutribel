@@ -12,7 +12,7 @@ El barre es una disciplina de entrenamiento inspirada en el ballet clásico que 
 
 Con el deseo de profesionalizar su pasión, María Fernanda viajó a México para formarse y certificarse en Barre Intensity, una metodología internacional que combina elementos del pilates, la danza y el entrenamiento funcional, integrando movimientos controlados y ejercicios de mayor intensidad para ofrecer una experiencia completa de entrenamiento.
 
-Además, amplió su preparación con certificaciones en Mat Pilates a través de ControlFit, reafirmando su compromiso con la formación continua y la evolución de sus conocimientos.
+Además, amplió su preparación con certificaciones en Pilates Mat a través de ControlFit, reafirmando su compromiso con la formación continua y la evolución de sus conocimientos.
 
 Hoy, Balé Studio cuenta con el respaldo de un equipo de instructoras especializadas en ballet clásico, Pilates Reformer y barre, que comparten una misma misión: brindar una experiencia de movimiento de calidad, cercana, profesional y llena de energía.
 

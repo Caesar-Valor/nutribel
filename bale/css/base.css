@@ -1,0 +1,88 @@
+/* =========================================================
+   balé — base autónoma
+   Copia mínima de la base de NutriBEL (tokens, modo oscuro, transición,
+   formularios, aviso emergente). La carpeta bale/ funciona sola: se puede
+   copiar tal cual a otro dominio.
+   ========================================================= */
+
+/* ---------- Tokens (modo claro, por defecto) ---------- */
+:root{
+  color-scheme:light;
+  --body:"Montserrat", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --b-serif:"Cormorant Garamond", "Cormorant", Georgia, serif;
+  --b-sans:"Montserrat", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --top-h:64px;
+  --b-bg:#F3E4D8;            /* fondo del logo */
+  --b-ink:#2E2723;           /* espresso del logo */
+  --rose:#7A3E5C;            /* acento rosado */
+  --rose-2:#B06A8B;
+  --blush:#F7E6E8;
+  --rose-soft:#F4C5CE;       /* rosa del material de redes de balé */
+  --hot:#ED2F59;             /* acento de redes: con moderación */
+  --hot-fill:#E0264F;        /* el mismo rosa, más profundo para rellenos con texto blanco: 4,6:1 */
+  --cream:#F3E4D8; --paper:#FFFAF6; --ink:#2E2723; --muted:#6B5A52; --line:#E3CFC2;
+  --ring:#7A3E5C;
+  --dur-theme:650ms; --ease-in-out:cubic-bezier(.65,0,.35,1); --ease-out:cubic-bezier(.2,.8,.2,1);
+  box-sizing:border-box;
+  padding-top:env(safe-area-inset-top,0px); padding-bottom:env(safe-area-inset-bottom,0px);
+}
+html{scroll-behavior:smooth;scroll-padding-top:calc(env(safe-area-inset-top,0px) + var(--top-h) + 56px)}
+
+/* ---------- Modo oscuro (solo con el botón luna/sol) ---------- */
+:root[data-mode="dark"]{color-scheme:dark;
+  --b-bg:#1d1715; --b-ink:#F3E4D8; --rose:#EBB5CD; --rose-2:#D08DAB; --blush:#2a1e24; --rose-soft:#4a3440;
+  --cream:#1d1715; --paper:#271f1c; --ink:#F3E4D8; --muted:#C9B6AC; --line:#3d302b; --ring:#EBB5CD}
+
+/* ---------- Transición entre modos ---------- */
+::view-transition-old(root),::view-transition-new(root){animation:none;mix-blend-mode:normal}
+::view-transition-new(root){z-index:2}
+html.mode-anim *,html.mode-anim *::before,html.mode-anim *::after{transition:background-color .45s ease,color .45s ease,border-color .45s ease!important}
+
+/* ---------- Base ---------- */
+*,*::before,*::after{box-sizing:border-box}
+body{margin:0;background:var(--cream);color:var(--ink);font:400 16px/1.6 var(--body);-webkit-font-smoothing:antialiased;-webkit-tap-highlight-color:transparent;overflow-x:clip}
+img{max-width:100%;display:block}
+button,input,select,textarea{font:inherit;color:inherit}
+button{cursor:pointer;touch-action:manipulation}
+:focus-visible{outline:3px solid var(--ring);outline-offset:2px}
+input:focus,select:focus,textarea:focus{outline:3px solid var(--ring);outline-offset:2px}
+.wrap{max-width:1080px;margin:0 auto;padding:0 20px}
+.sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
+h1,h2,h3{text-wrap:balance}
+p,li{text-wrap:pretty}
+
+/* ---------- Botón de modo oscuro ---------- */
+.modebtn{width:42px;height:42px;border-radius:50%;border:1.5px solid var(--line);background:var(--paper);display:grid;place-items:center;color:var(--b-ink);flex:none;transition:border-color .45s ease,transform .15s var(--ease-out)}
+.modebtn:hover{border-color:var(--b-ink)}
+.modebtn svg{width:20px;height:20px}
+.modebtn:active{transform:scale(.92)}
+.modebtn .sun{display:none}
+:root[data-mode="dark"] .modebtn .sun{display:block}
+:root[data-mode="dark"] .modebtn .moon{display:none}
+
+/* ---------- Bandas de sección a todo el ancho ---------- */
+.band{background:var(--bb);box-shadow:0 0 0 100vmax var(--bb);clip-path:inset(0 -100vmax);margin:0!important;padding:60px 0}
+
+/* ---------- Formularios y textos de apoyo ---------- */
+.form{display:grid;gap:12px}
+label.fld{display:block;font-size:13px;font-weight:600;color:var(--muted)}
+.form input,.form select,.form textarea{width:100%;border:1.5px solid var(--line);background:var(--cream);border-radius:10px;padding:10px 12px;min-height:44px;margin-top:4px}
+.privacy{font-size:13px;color:var(--muted);margin:0}
+.note{font-size:13px;color:var(--muted);background:var(--blush);border-radius:10px;padding:10px 12px;margin:0 0 12px}
+.linkbtn{background:none;border:0;color:var(--rose);text-decoration:underline;font-weight:600;padding:0}
+.empty-state{border:2px dashed var(--line);border-radius:22px;padding:26px;color:var(--muted)}
+
+/* ---------- Pie ---------- */
+footer{border-top:1px solid var(--line);padding:26px 0 40px;color:var(--muted);font-size:14px}
+footer .wrap{display:flex;flex-wrap:wrap;gap:12px;justify-content:space-between;align-items:center}
+
+/* ---------- Aviso emergente ---------- */
+.toast{position:fixed;left:50%;bottom:calc(20px + env(safe-area-inset-bottom,0px));transform:translate(-50%,120px);background:var(--ink);color:var(--cream);padding:11px 18px;border-radius:12px;z-index:60;box-shadow:0 18px 40px rgba(0,0,0,.25);transition:transform .25s var(--ease-out),opacity .25s ease;max-width:90vw;opacity:0;visibility:hidden;pointer-events:none}
+.toast.show{transform:translate(-50%,0);opacity:1;visibility:visible}
+
+/* ---------- Aviso de servidor local (solo en desarrollo) ---------- */
+.devnote{background:#F7E6E8;color:#2E2723;border-bottom:2px solid #7A3E5C;padding:10px 20px;font-size:14px}
+
+@media (prefers-reduced-motion:reduce){
+  *{transition:none!important;scroll-behavior:auto!important}
+}

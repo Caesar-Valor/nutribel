@@ -8,7 +8,7 @@ const {$, esc} = NB;
 
 NB.load("negocio").then(n=>{
   const doc = n.doctora;
-  $("#lema").textContent = n.lema;
+  $("#lema").textContent = n.frase || n.lema;
 
   $("#steps4").innerHTML = n.pasos_servicio.map((p,i)=>`
     <li><div class="lbl"><b>${p.n}</b><span>${esc(p.titulo)}</span></div>

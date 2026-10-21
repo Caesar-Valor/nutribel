@@ -4,7 +4,7 @@
    ========================================================= */
 (function(){
 "use strict";
-const {$, esc, money} = NB;
+const {$, esc} = NB;
 let P, kind="todos";
 
 // De temporada: "Disponible ahora" si hoy cae en sus meses (y antes del día de fin)
@@ -22,11 +22,10 @@ function render(){
     .sort((a,b)=>(status(b)?.now?1:0)-(status(a)?.now?1:0));
   $("#plans").innerHTML=list.map((p,i)=>{const s=status(p);return `
     <article class="card plan" style="--accent:var(--${esc(p.color||"olive")});--i:${i}">
-      ${p.imagen?`<div class="ph"><img loading="lazy" decoding="async" src="${esc(p.imagen)}" srcset="${esc(NB.srcset(p.imagen))}" sizes="(max-width:700px) calc(100vw - 40px), 340px" alt="${esc(p.nombre)}"></div>`:""}
+      ${p.imagen?`<div class="ph"><img loading="lazy" decoding="async" src="${esc(p.imagen)}" srcset="${esc(NB.srcset(p.imagen))}" sizes="(max-width:700px) calc(100vw - 40px), 340px" alt="${esc(p.alt||p.nombre)}"></div>`:""}
       ${s?`<span class="badge ${s.now?"now":""}">${esc(s.txt)}</span>`:""}
       <h3>${esc(p.nombre)}</h3>
       <p>${esc(p.descripcion)}</p>
-      <p class="price">${money(p.precio)}</p>
       <a class="add" href="consulta.html?plan=${encodeURIComponent(p.nombre)}">Consultar con la doctora</a>
     </article>`}).join("");
 }

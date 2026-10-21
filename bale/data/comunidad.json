@@ -1,0 +1,53 @@
+{
+  "_como": "proximos: eventos con fecha (se ocultan solos al día siguiente). momentos: siempre visibles. Ver bale/COMO-ACTUALIZAR.md.",
+  "proximos": [
+    {
+      "id": "halloween-2026",
+      "titulo": "Clase temática de Halloween 🎃",
+      "fecha": "2026-10-27",
+      "hora": "18:30",
+      "precio": 600,
+      "texto": "Ven disfrazada si quieres.",
+      "foto": null,
+      "boton": "Reservar por WhatsApp",
+      "mensaje": "Hola, balé. Quiero reservar mi lugar en la Clase temática de Halloween del martes 27 de octubre a las 6:30 pm (RD$600)."
+    }
+  ],
+  "momentos": [
+    {
+      "id": "girls-day-out",
+      "kick": "Evento",
+      "titulo": "Girls Day Out",
+      "fecha_texto": "29 de agosto",
+      "texto": "Una mañana de pilates al aire libre con la comunidad balé.",
+      "foto": "img/girls-day-out.webp",
+      "alt": "Mujeres haciendo pilates sobre colchonetas rosadas en el césped, frente a una tarima con globos"
+    },
+    {
+      "id": "barre-tini",
+      "kick": "Celebraciones",
+      "titulo": "Barre-tini Party",
+      "texto": "Celebra tu cumpleaños en balé con tus amigos.",
+      "foto": "img/barre-tini-party.webp",
+      "alt": "Globos rosados y bolas de disco plateadas sobre el piso de madera del estudio",
+      "boton": "Pregunta por tu Barre-tini Party",
+      "mensaje": "Hola, balé. Quiero preguntar por una Barre-tini Party para celebrar un cumpleaños."
+    },
+    {
+      "id": "rio",
+      "kick": "Team balé",
+      "titulo": "Conoce a Río 🐾",
+      "texto": "El nuevo integrante del team balé.",
+      "foto": "img/rio.webp",
+      "alt": "Cachorro marrón y blanco en brazos de una alumna con medias antideslizantes"
+    },
+    {
+      "id": "bale-nutribel",
+      "kick": "Colaboración",
+      "titulo": "Balé × NutriBEL",
+      "texto": "Movimiento y buena comida en el mismo edificio: el matcha de la colaboración balé × NutriBEL, para después de clase.",
+      "foto": "img/balexnutribel-matcha.webp",
+      "alt": "Vaso de matcha con hielo y hojas de menta junto a los logos de NutriBEL y balé"
+    }
+  ]
+}

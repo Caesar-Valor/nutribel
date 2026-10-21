@@ -1,0 +1,423 @@
+{
+  "nombre": "balé",
+  "subtitulo": "Barre, Ballet & Pilates",
+  "frase": "Un espacio para conectar, fortalecer y transformar.",
+  "aviso": "",
+  "historia": [
+    "Balé Studio nace en el corazón de La Vega de la unión de dos pasiones: la nutrición y el movimiento. Una médica nutrióloga y una comunicadora corporativa crearon un espacio de bienestar integral donde mujeres y niñas descubren el placer de ejercitarse y fortalecer su cuerpo.",
+    "Más que un estudio de ejercicio, balé es una comunidad donde cada mujer y cada niña encuentra un espacio para crecer, sentirse fuerte, conectar consigo misma y disfrutar del movimiento."
+  ],
+  "fundadora": {
+    "nombre": "María Fernanda Pimentel",
+    "apodo": "Marifer",
+    "rol": "CEO y coach principal",
+    "texto": "Licenciada en Comunicación Corporativa. Desde pequeña desarrolló una conexión especial con la danza a través del ballet clásico; años después, ese amor por el movimiento la llevó al barre, la pasión que inspiró Balé Studio.",
+    "certificaciones": [
+      {
+        "nombre": "Barre Intensity",
+        "detalle": "Se formó y certificó en México en esta metodología internacional, que combina pilates, danza y entrenamiento funcional con movimientos controlados y ejercicios de mayor intensidad."
+      },
+      {
+        "nombre": "Pilates Mat",
+        "detalle": "Certificaciones con ControlFit, como parte de su formación continua."
+      }
+    ]
+  },
+  "que_es_barre": "Una disciplina inspirada en el ballet clásico que fusiona movimientos de danza, pilates y fortalecimiento muscular. Desarrolla fuerza, resistencia, estabilidad, equilibrio y conciencia corporal, y trabaja todo el cuerpo sin necesidad de experiencia previa en ballet.",
+  "equipo_texto": "Un equipo de instructoras especializadas en ballet clásico, Pilates Reformer y barre, con una misma misión: una experiencia de movimiento de calidad, cercana, profesional y llena de energía.",
+  "clases": [
+    {
+      "tipo": "Hot Barre",
+      "tipos": [
+        "Hot Barre"
+      ],
+      "grupo": "Barre",
+      "texto": "Integra ballet, yoga y Pilates usando la barra de ballet como apoyo. Para todos los niveles. Los sábados, sesión de primera clase.",
+      "dias": "Lun · Mié · Jue · Sáb con Marifer",
+      "fotos": [
+        {
+          "src": "img/hot-barre-clase.webp",
+          "alt": "Clase de Hot Barre: alumnas en sentadilla sobre los mats beige con el logo de balé"
+        },
+        {
+          "src": "img/hot-barre-barra.webp",
+          "alt": "Alumna con camiseta verde claro apoyada en la barra, con luces de colores en la pared"
+        }
+      ]
+    },
+    {
+      "tipo": "Barre Flex y Barre Flow",
+      "tipos": [
+        "Barre Flex",
+        "Barre Flow"
+      ],
+      "grupo": "Barre",
+      "texto": "Integra ballet, yoga y Pilates usando la barra de ballet como apoyo. Para todos los niveles. Flex: martes con Lynette. Flow: jueves a las 6:45 am con Marifer.",
+      "dias": "Mar con Lynette · Jue con Marifer",
+      "fotos": [
+        {
+          "src": "img/barras-nuevas.webp",
+          "alt": "Barras de ballet nuevas, individuales, sobre mats beige con el logo de balé"
+        },
+        {
+          "src": "img/barre-arabesque.webp",
+          "alt": "Alumna en arabesque apoyada en la barra junto a la pared con la frase You are exactly where you need to be"
+        }
+      ]
+    },
+    {
+      "tipo": "Pilates Reformer",
+      "tipos": [
+        "Pilates Reformer"
+      ],
+      "grupo": "Pilates",
+      "texto": "Pilates en máquina Reformer, en la sala nueva con espejos en arco. Grupos pequeños.",
+      "dias": "Vie con Viviana",
+      "fotos": [
+        {
+          "src": "img/reformer-sala.webp",
+          "alt": "Sala de Pilates Reformer con tres espejos en arco iluminados y máquinas de madera clara"
+        },
+        {
+          "src": "img/reformer-maquinas.webp",
+          "alt": "Fila de máquinas Reformer de madera clara en la sala nueva"
+        }
+      ]
+    },
+    {
+      "tipo": "Ballet niñas",
+      "tipos": [
+        "Ballet niñas"
+      ],
+      "grupo": "Ballet",
+      "texto": "Ballet clásico para niñas en dos grupos por edad.",
+      "dias": "Lun · Mié con Rusmairy",
+      "edades": [
+        "2 a 5 años",
+        "6 a 11 años"
+      ],
+      "fotos": [
+        {
+          "src": "img/ballet-ninas-zapatillas-1.webp",
+          "alt": "Piernas de niñas con medias rosadas y zapatillas de ballet, en fila"
+        },
+        {
+          "src": "img/ballet-ninas-zapatillas-2.webp",
+          "alt": "Zapatillas de ballet rosadas y negras sobre el piso del estudio"
+        }
+      ]
+    }
+  ],
+  "reformer": {
+    "titulo": "Nuevo espacio de Reformer",
+    "texto": "Estrenamos sala: máquinas Reformer nuevas, luz natural y espejos en arco. Los viernes en la mañana, en grupos pequeños y con la guía de Viviana. Si nunca has probado el Reformer, este es el momento.",
+    "boton": "Reserva tu Reformer del viernes",
+    "fotos": [
+      {
+        "src": "img/reformer-sala.webp",
+        "alt": "Sala de Pilates Reformer con tres espejos en arco iluminados y una máquina Reformer al frente"
+      },
+      {
+        "src": "img/reformer-maquinas.webp",
+        "alt": "Máquinas Reformer de madera clara en fila junto a la ventana con cortinas"
+      },
+      {
+        "src": "img/reformer-ventana.webp",
+        "alt": "Máquinas Reformer frente a un espejo en arco y una ventana con cortina"
+      }
+    ]
+  },
+  "instructoras": [
+    {
+      "nombre": "Marifer",
+      "completo": "María Fernanda Pimentel",
+      "rol": "CEO y coach principal",
+      "clases": "Hot Barre y Barre Flow",
+      "foto": null
+    },
+    {
+      "nombre": "Lynette",
+      "rol": "Instructora",
+      "clases": "Barre Flex",
+      "foto": null
+    },
+    {
+      "nombre": "Rusmairy",
+      "rol": "Instructora",
+      "clases": "Ballet niñas",
+      "foto": null
+    },
+    {
+      "nombre": "Viviana",
+      "completo": "Viviana Medina Sánchez",
+      "rol": "Instructora",
+      "clases": "Pilates Reformer",
+      "foto": null,
+      "bio": "Bailarina de ballet clásico e instructora con más de 10 años de experiencia en República Dominicana, formada en BodyBalance, Pilates Mat y Pilates Reformer."
+    }
+  ],
+  "barra_tipos": [
+    "Hot Barre",
+    "Barre Flex",
+    "Barre Flow"
+  ],
+  "sala": {
+    "filas": 2,
+    "por_fila": 8,
+    "estado": "POR CONFIRMAR",
+    "nota": "Distribución de las barras nuevas por confirmar con el estudio (2 filas de 8).",
+    "foto": "img/barras-nuevas.webp",
+    "alt": "Barras de ballet nuevas, individuales, sobre mats beige con el logo de balé"
+  },
+  "cupos": {
+    "Pilates Reformer": 6,
+    "Ballet niñas": 12,
+    "nota": {
+      "Pilates Reformer": "Cupo estimado por fotos, por confirmar",
+      "Ballet niñas": "Cupo por confirmar"
+    }
+  },
+  "canceladas": [],
+  "_canceladas": "Clases canceladas en una fecha concreta: id de la clase + @ + fecha (ej. \"sab-1000@2026-10-31\"). Se marcan desde panel.html.",
+  "faq": [
+    {
+      "p": "¿Necesito experiencia en ballet?",
+      "r": "No. El barre se adapta a todos los niveles y trabaja todo el cuerpo sin necesidad de experiencia previa en ballet. Los sábados de Hot Barre son sesiones de primera clase."
+    },
+    {
+      "p": "¿Qué llevo?",
+      "r": "Ropa cómoda para moverte y una botella de agua.",
+      "pendiente": "Medias antideslizantes: por confirmar si son obligatorias"
+    },
+    {
+      "p": "¿Cómo reservo?",
+      "r": "En el horario, elige el día y la clase y pulsa «Reservar». En las clases de barra escoges tu lugar; luego dejas tu nombre y tu WhatsApp, y nos envías la reserva por WhatsApp para confirmarla."
+    },
+    {
+      "p": "¿Cómo cancelo?",
+      "r": "Escríbenos por WhatsApp y liberamos tu lugar. Si cancelas el mismo día de la clase, se aplica un cargo de RD$300 por cancelación tardía."
+    },
+    {
+      "p": "¿Puedo regalar clases?",
+      "r": "Sí. Cualquier paquete puede ser un certificado de regalo, en digital o impreso. Escríbenos por WhatsApp."
+    }
+  ],
+  "demo": {
+    "nota": "Datos de ejemplo para la demostración. No son clientas reales.",
+    "ocupados": {
+      "lun-1500": 4,
+      "lun-1600": 6,
+      "lun-1730": [
+        1,
+        2,
+        3,
+        5,
+        6,
+        7,
+        9,
+        10,
+        12,
+        13,
+        15
+      ],
+      "lun-1845": [
+        2,
+        4,
+        8,
+        11,
+        16
+      ],
+      "mar-1830": [
+        1,
+        4,
+        5,
+        8,
+        9,
+        13
+      ],
+      "mie-1500": 3,
+      "mie-1600": 5,
+      "mie-1730": [
+        1,
+        2,
+        4,
+        5,
+        6,
+        8,
+        9,
+        11,
+        12,
+        14
+      ],
+      "mie-1845": [
+        3,
+        7,
+        10,
+        15
+      ],
+      "jue-0645": [
+        4,
+        5,
+        12
+      ],
+      "jue-1745": [
+        2,
+        3,
+        6,
+        9,
+        10
+      ],
+      "jue-1845": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        12,
+        13,
+        14,
+        16
+      ],
+      "vie-0800": 2,
+      "vie-0900": 3,
+      "vie-1000": 1,
+      "vie-1100": 2,
+      "sab-1000": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        12,
+        13,
+        14,
+        15,
+        16
+      ],
+      "sab-1100": [
+        1,
+        3,
+        4,
+        6,
+        9,
+        10,
+        13
+      ]
+    },
+    "clientes": [
+      {
+        "nombre": "Laura M.",
+        "whatsapp": "809-555-0101",
+        "creditos": 6
+      },
+      {
+        "nombre": "Camila R.",
+        "whatsapp": "809-555-0102",
+        "creditos": 3
+      },
+      {
+        "nombre": "Paola G.",
+        "whatsapp": "809-555-0103",
+        "creditos": 11
+      },
+      {
+        "nombre": "Andrea S.",
+        "whatsapp": "829-555-0104",
+        "creditos": 0
+      },
+      {
+        "nombre": "Gabriela T.",
+        "whatsapp": "809-555-0105",
+        "creditos": 8
+      },
+      {
+        "nombre": "Valeria P.",
+        "whatsapp": "849-555-0106",
+        "creditos": 2
+      },
+      {
+        "nombre": "Sofía D.",
+        "whatsapp": "809-555-0107",
+        "creditos": 15
+      },
+      {
+        "nombre": "Daniela F.",
+        "whatsapp": "829-555-0108",
+        "creditos": 4
+      },
+      {
+        "nombre": "Mariela C.",
+        "whatsapp": "809-555-0109",
+        "creditos": 1
+      },
+      {
+        "nombre": "Isabel N.",
+        "whatsapp": "809-555-0110",
+        "creditos": 7
+      },
+      {
+        "nombre": "Carolina V.",
+        "whatsapp": "849-555-0111",
+        "creditos": 9
+      },
+      {
+        "nombre": "Patricia L.",
+        "whatsapp": "809-555-0112",
+        "creditos": 5
+      },
+      {
+        "nombre": "Natalia B.",
+        "whatsapp": "809-555-0113",
+        "creditos": 3
+      },
+      {
+        "nombre": "Renata A.",
+        "whatsapp": "829-555-0114",
+        "creditos": 10
+      },
+      {
+        "nombre": "Lucía H.",
+        "whatsapp": "809-555-0115",
+        "creditos": 2
+      },
+      {
+        "nombre": "Elena J.",
+        "whatsapp": "849-555-0116",
+        "creditos": 6
+      }
+    ],
+    "pagos": [
+      {
+        "id": "demo-1",
+        "cliente": "Andrea S.",
+        "concepto": "Barre, 8 clases al mes"
+      },
+      {
+        "id": "demo-2",
+        "cliente": "Mariela C.",
+        "concepto": "Clase individual de Barre"
+      }
+    ]
+  },
+  "pendiente": [
+    "Cuántos lugares hay con las barras nuevas (la web usa 2 filas de 8 = 16)",
+    "Cuántas máquinas de Reformer hay (la web usa 6, estimado por fotos) y cupo de Ballet niñas (la web usa 12)",
+    "Fotos del equipo y confirmar quién es quién (_insumos/equipo-por-confirmar.jpg)",
+    "Datos bancarios para las transferencias",
+    "Si las medias antideslizantes son obligatorias",
+    "Más fotos de Hot Barre con el mat beige de balé",
+    "Edades de ballet: el flyer de Instagram dice 3–5 y 6–10; la web usa 2–5 y 6–11, como escribió la dueña"
+  ]
+}

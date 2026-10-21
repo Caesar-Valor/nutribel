@@ -1,0 +1,100 @@
+{
+  "moneda": "RD$",
+  "individual": {
+    "titulo": "Clase individual",
+    "nota": "Sujeta a disponibilidad",
+    "items": [
+      {
+        "id": "ind-reformer",
+        "nombre": "Pilates Reformer",
+        "precio": 1100,
+        "tipo": "Pilates Reformer"
+      },
+      {
+        "id": "ind-barre",
+        "nombre": "Barre",
+        "precio": 900,
+        "tipo": "Hot Barre|Barre Flex|Barre Flow"
+      },
+      {
+        "id": "ind-ballet",
+        "nombre": "Ballet clásico",
+        "precio": 1000,
+        "tipo": "Ballet niñas"
+      }
+    ]
+  },
+  "membresia": {
+    "titulo": "Con membresía",
+    "nota": "Aseguras tu cupo durante todo el mes",
+    "items": [
+      {
+        "id": "mem-reformer-4",
+        "nombre": "Pilates Reformer",
+        "detalle": "4 clases al mes",
+        "precio": 6500
+      },
+      {
+        "id": "mem-barre-4",
+        "nombre": "Barre",
+        "detalle": "4 clases al mes",
+        "precio": 3600
+      },
+      {
+        "id": "mem-barre-8",
+        "nombre": "Barre",
+        "detalle": "8 clases al mes",
+        "precio": 6800
+      },
+      {
+        "id": "mem-combo",
+        "nombre": "Combo Pilates + Barre",
+        "detalle": "4 clases de Pilates Reformer + 4 de Barre",
+        "precio": 7200
+      },
+      {
+        "id": "mem-ilimitada",
+        "nombre": "Clases ilimitadas",
+        "detalle": "Pilates reformer, Barre y mat pilates. Puedes tomar todos los horarios durante todo el mes.",
+        "precio": 13500,
+        "destacado": true
+      }
+    ]
+  },
+  "infantil": {
+    "titulo": "Clase infantil",
+    "nombre": "Ballet clásico infantil",
+    "edades": "2 a 11 años",
+    "inscripcion": 2500,
+    "mensualidad": 3500,
+    "accesorios_titulo": "Uniformes y accesorios",
+    "accesorios": [
+      {
+        "nombre": "Uniforme de ballet completo",
+        "precio": 3200
+      },
+      {
+        "nombre": "Medias pantis",
+        "precio": 850
+      },
+      {
+        "nombre": "Zapatillas",
+        "precio": 1250
+      },
+      {
+        "nombre": "Medias antideslizantes cortas",
+        "precio": 450
+      },
+      {
+        "nombre": "Medias antideslizantes largas",
+        "precio": 850
+      }
+    ]
+  },
+  "regalo": {
+    "titulo": "Regala balé",
+    "texto": "Cualquier paquete puede ser un certificado de regalo para un cumpleaños o una fecha especial. Te lo enviamos en digital, o impreso si lo prefieres.",
+    "boton": "Regalar un paquete",
+    "mensaje": "Hola, quiero regalar un paquete de balé como certificado de regalo"
+  }
+}

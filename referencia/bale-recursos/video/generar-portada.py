@@ -8,7 +8,8 @@ es continuo. 30 fps, fundidos de 0,5 s y bucle sin corte (la última foto se
 funde con la primera).
 
 Uso (desde la raíz del proyecto):
-  python referencia/bale-recursos/video/generar-portada.py referencia/bale-recursos/img <ruta de ffmpeg> assets/video/bale horizontal|vertical
+  python referencia/bale-recursos/video/generar-portada.py _insumos/drive <ruta de ffmpeg> bale/video horizontal|vertical
+(las fotos b-DSC*.jpg se descargan de Drive con los IDs de _insumos/fotos.tsv)
 """
 import sys, subprocess, math
 from PIL import Image
@@ -18,12 +19,12 @@ W, H = (1280, 720) if KIND == "horizontal" else (720, 1280)
 FPS, SEG, XF = 30, 2.5, 0.5          # cada foto 2,5 s + 0,5 s de fundido
 # foto, centro de interés (fracción x, y), sentido del zoom (+1 acerca, -1 aleja), paneo en x
 SHOTS = [
-    ("hot-barre-1",   (0.50, 0.56), +1, +0.03),
-    ("mat-pilates-1", (0.50, 0.42), -1, -0.03),
-    ("hot-barre-3",   (0.50, 0.60), +1, -0.03),
-    ("mat-pilates-3", (0.50, 0.52), -1, +0.03),
-    ("hot-barre-5",   (0.50, 0.55), +1, +0.03),
-    ("mat-pilates-4", (0.50, 0.55), -1, -0.03),
+    ("b-DSC02552", (0.50, 0.48), +1, +0.03),   # Hot Barre con los mats de balé
+    ("b-DSC04941", (0.55, 0.50), -1, -0.03),   # barras nuevas
+    ("b-DSC04893", (0.50, 0.60), +1, -0.03),   # sala de Reformer
+    ("b-DSC09187", (0.50, 0.45), -1, +0.03),   # arabesque en la barra
+    ("b-DSC09385", (0.50, 0.36), +1, +0.03),   # Hot Barre en la barra con luces
+    ("b-DSC04819", (0.50, 0.40), -1, -0.03),   # mat con el logo
 ]
 Z0, Z1 = 1.0, 1.09                   # zoom suave
 SPAN = SEG + XF                      # cada toma se mueve durante 3 s (-0,5 … 2,5)

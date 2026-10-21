@@ -2,6 +2,7 @@
   "cleanUrls": false,
   "rewrites": [
     { "source": "/", "destination": "/index.html" },
-    { "source": "/:page(index|metodo|menu|servicios|planes|bale|consulta|contacto|panel)", "destination": "/:page.html" }
+    { "source": "/bale", "destination": "/bale/index.html" },
+    { "source": "/:page(index|metodo|menu|servicios|planes|consulta|contacto|panel)", "destination": "/:page.html" }
   ]
 }

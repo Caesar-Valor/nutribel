@@ -1,0 +1,64 @@
+/* =========================================================
+   balé — panel del negocio (panel.html, demo: guarda en este navegador)
+   ========================================================= */
+.panel-page{padding:30px 20px 40px}
+.phead h1{font:500 clamp(40px,6vw,60px)/1 var(--b-serif);color:var(--b-ink);margin:10px 0 12px}
+.phead h1 em{font-style:italic;color:var(--rose)}
+.phead p{margin:0 0 10px;color:var(--muted);max-width:70ch;line-height:1.65}
+.phead code{font-size:13px;background:var(--blush);border-radius:6px;padding:1px 5px}
+.phead .plinks a{color:var(--rose);font-weight:600}
+.pgrid{display:grid;gap:16px;align-items:start;margin-top:18px}
+.col{display:grid;gap:16px}
+.pbox{background:var(--paper);border:1px solid var(--line);border-radius:24px;padding:18px 18px 16px}
+.pbox h2{font:600 27px/1.1 var(--b-serif);color:var(--b-ink);margin:0 0 10px}
+.pbox .privacy{margin:0 0 10px}
+.pbox .form{gap:10px}
+.pbox .form.two{grid-template-columns:1fr 1fr}
+.pbox input,.pbox textarea{background:var(--b-bg)!important;border-color:var(--line)!important}
+.pbox textarea{resize:vertical;min-height:70px;font:inherit}
+
+/* Cancelar clases */
+.pbox .weekbar{margin:4px 0 8px}
+.cday{font:500 italic 19px/1.2 var(--b-serif);color:var(--b-ink);margin:12px 0 4px}
+.cday::first-letter{text-transform:uppercase}
+.citem{display:flex;align-items:center;gap:10px;padding:8px 10px;border:1px solid var(--line);border-radius:14px;margin-bottom:6px;font-size:14px;background:var(--b-bg)}
+.citem input{width:20px;height:20px;accent-color:var(--hot-fill);flex:none}
+.citem .t{font-weight:700;min-width:64px;color:var(--b-ink)}
+.citem .n{flex:1;color:var(--b-ink)}
+.citem .n small{display:block;color:var(--muted)}
+.citem.on{border-color:var(--hot-fill);background:var(--blush)}
+.citem.on .n{text-decoration:line-through}
+.citem.past{opacity:.6}
+
+/* Precios */
+.pgroup{font:600 10.5px var(--b-sans);letter-spacing:.2em;text-transform:uppercase;color:var(--rose);margin:14px 0 6px}
+.pgroup:first-child{margin-top:0}
+.prow{display:grid;grid-template-columns:1fr 120px;gap:10px;align-items:center;padding:6px 0;border-top:1px solid var(--line)}
+.prow span{font-size:14px;color:var(--b-ink)}
+.prow span small{display:block;color:var(--muted);font-size:12px}
+.prow input{width:100%;border:1.5px solid var(--line);background:var(--b-bg);border-radius:10px;padding:8px 10px;text-align:right}
+
+/* Eventos */
+.ev{border:1px solid var(--line);border-radius:18px;padding:12px;margin-bottom:10px;background:var(--b-bg)}
+.ev .form{grid-template-columns:1fr 1fr;gap:8px}
+.ev .full{grid-column:1/-1}
+.ev .evfoot{display:flex;justify-content:space-between;align-items:center;margin-top:8px;gap:8px}
+.ev .evfoot small{color:var(--muted);font-size:12.5px}
+.ev .evfoot small.gone{color:var(--rose);font-weight:600}
+.ev input,.ev textarea{background:var(--paper)!important}
+
+/* Barra de guardado */
+.savebar{position:sticky;bottom:calc(12px + env(safe-area-inset-bottom,0px));z-index:15;margin-top:18px;display:flex;flex-wrap:wrap;gap:10px;align-items:center;justify-content:space-between;background:var(--paper);border:1px solid var(--line);border-radius:20px;padding:12px 14px;box-shadow:0 10px 30px rgba(46,39,35,.14)}
+.savebar .state{font-size:14px;color:var(--muted)}
+.savebar .state.dirty{color:var(--hot-fill);font-weight:600}
+.savebar .sbtns{display:flex;flex-wrap:wrap;gap:8px}
+.resetrow{margin:14px 0 0;text-align:right}
+.resetrow .linkbtn{font-size:14px}
+
+@media (min-width:900px){
+  .pgrid{grid-template-columns:.9fr 1.1fr}
+}
+@media (max-width:420px){
+  .pbox .form.two,.ev .form{grid-template-columns:1fr}
+  .prow{grid-template-columns:1fr 100px}
+}

@@ -3,8 +3,5 @@ Allow: /
 # Material interno: demo aprobado, bocetos, recursos originales y laboratorio
 Disallow: /referencia/
 Disallow: /laboratorio/
-Disallow: /bale-demo-recursos-v2/
-Disallow: /bale-demo-recursos.zip
-Disallow: /prueba-fase1.html
 
 Sitemap: https://caesar-valor.github.io/nutribel/sitemap.xml

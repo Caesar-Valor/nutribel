@@ -1,0 +1,30 @@
+{
+  "_nota": "Datos de contacto de balé en un solo lugar. Lo que diga POR CONFIRMAR no se muestra como dato real.",
+  "nombre": "balé",
+  "whatsapp": "18496386337",
+  "whatsapp_texto": "+1 849-638-6337",
+  "correo_reservas": "Mariapimentel1609@gmail.com",
+  "instagram": "https://www.instagram.com/balestudio.rd/",
+  "instagram_usuario": "@balestudio.rd",
+  "direccion": "C. José Horacio Rodríguez #30, frente al Country Club, La Vega",
+  "ubicacion": "En el edificio de NutriBEL",
+  "maps": "https://www.google.com/maps/search/?api=1&query=C.%20Jos%C3%A9%20Horacio%20Rodr%C3%ADguez%20%2330%2C%20frente%20al%20Country%20Club%2C%20La%20Vega%2C%20Rep%C3%BAblica%20Dominicana",
+  "zona_horaria": "America/Santo_Domingo",
+  "pago": {
+    "metodo": "Transferencia",
+    "texto": "Transferencia — datos por confirmar",
+    "banco": "POR CONFIRMAR",
+    "tipo_cuenta": "POR CONFIRMAR",
+    "cuenta": "POR CONFIRMAR",
+    "titular": "POR CONFIRMAR"
+  },
+  "cancelacion": {
+    "cargo": 300,
+    "texto": "Si cancelas el mismo día de la clase, se aplica un cargo de RD$300 por cancelación tardía."
+  },
+  "aviso_correo": {
+    "servicio": "FormSubmit",
+    "endpoint": "https://formsubmit.co/ajax/Mariapimentel1609@gmail.com",
+    "nota": "La primera reserva envía a la dueña un correo de activación de FormSubmit. Después de activarlo, cambia el correo de este endpoint por el alias que da FormSubmit (así el correo no queda visible en el código)."
+  }
+}

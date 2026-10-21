@@ -1,0 +1,172 @@
+{
+  "_fuente": "Horario oficial publicado en el Instagram de balé (publicación fijada del 10 de septiembre de 2026). Etiquetas posibles: avanzado, miembros, primera.",
+  "etiquetas": {
+    "avanzado": {
+      "texto": "Solo nivel avanzado",
+      "aviso": "Esta clase es para alumnas de nivel avanzado."
+    },
+    "miembros": {
+      "texto": "Exclusiva para miembros",
+      "aviso": "Esta clase es exclusiva para miembros.",
+      "confirmar": "Confirmo que tengo una membresía activa."
+    },
+    "primera": {
+      "texto": "Sesión de primera clase",
+      "destacado": "Ideal para tu primera clase"
+    }
+  },
+  "clases": [
+    {
+      "id": "lun-1500",
+      "dia": "lunes",
+      "inicio": "15:00",
+      "fin": "16:00",
+      "clase": "Ballet niñas",
+      "instructora": "Rusmairy",
+      "edad": "2 a 5 años"
+    },
+    {
+      "id": "lun-1600",
+      "dia": "lunes",
+      "inicio": "16:00",
+      "fin": "17:00",
+      "clase": "Ballet niñas",
+      "instructora": "Rusmairy",
+      "edad": "6 a 11 años"
+    },
+    {
+      "id": "lun-1730",
+      "dia": "lunes",
+      "inicio": "17:30",
+      "fin": "18:30",
+      "clase": "Hot Barre",
+      "instructora": "Marifer"
+    },
+    {
+      "id": "lun-1845",
+      "dia": "lunes",
+      "inicio": "18:45",
+      "fin": "19:30",
+      "clase": "Hot Barre",
+      "instructora": "Marifer"
+    },
+    {
+      "id": "mar-1830",
+      "dia": "martes",
+      "inicio": "18:30",
+      "fin": "19:30",
+      "clase": "Barre Flex",
+      "instructora": "Lynette"
+    },
+    {
+      "id": "mie-1500",
+      "dia": "miercoles",
+      "inicio": "15:00",
+      "fin": "16:00",
+      "clase": "Ballet niñas",
+      "instructora": "Rusmairy",
+      "edad": "2 a 5 años"
+    },
+    {
+      "id": "mie-1600",
+      "dia": "miercoles",
+      "inicio": "16:00",
+      "fin": "17:00",
+      "clase": "Ballet niñas",
+      "instructora": "Rusmairy",
+      "edad": "6 a 11 años"
+    },
+    {
+      "id": "mie-1730",
+      "dia": "miercoles",
+      "inicio": "17:30",
+      "fin": "18:30",
+      "clase": "Hot Barre",
+      "instructora": "Marifer"
+    },
+    {
+      "id": "mie-1845",
+      "dia": "miercoles",
+      "inicio": "18:45",
+      "fin": "19:30",
+      "clase": "Hot Barre",
+      "instructora": "Marifer"
+    },
+    {
+      "id": "jue-0645",
+      "dia": "jueves",
+      "inicio": "06:45",
+      "fin": "07:30",
+      "clase": "Barre Flow",
+      "instructora": "Marifer"
+    },
+    {
+      "id": "jue-1745",
+      "dia": "jueves",
+      "inicio": "17:45",
+      "fin": "18:30",
+      "clase": "Hot Barre",
+      "instructora": "Marifer",
+      "etiqueta": "avanzado"
+    },
+    {
+      "id": "jue-1845",
+      "dia": "jueves",
+      "inicio": "18:45",
+      "fin": "19:30",
+      "clase": "Hot Barre",
+      "instructora": "Marifer",
+      "etiqueta": "miembros"
+    },
+    {
+      "id": "vie-0800",
+      "dia": "viernes",
+      "inicio": "08:00",
+      "fin": "08:45",
+      "clase": "Pilates Reformer",
+      "instructora": "Viviana"
+    },
+    {
+      "id": "vie-0900",
+      "dia": "viernes",
+      "inicio": "09:00",
+      "fin": "09:45",
+      "clase": "Pilates Reformer",
+      "instructora": "Viviana"
+    },
+    {
+      "id": "vie-1000",
+      "dia": "viernes",
+      "inicio": "10:00",
+      "fin": "10:45",
+      "clase": "Pilates Reformer",
+      "instructora": "Viviana"
+    },
+    {
+      "id": "vie-1100",
+      "dia": "viernes",
+      "inicio": "11:00",
+      "fin": "11:45",
+      "clase": "Pilates Reformer",
+      "instructora": "Viviana"
+    },
+    {
+      "id": "sab-1000",
+      "dia": "sabado",
+      "inicio": "10:00",
+      "fin": "11:00",
+      "clase": "Hot Barre",
+      "instructora": "Marifer",
+      "etiqueta": "primera"
+    },
+    {
+      "id": "sab-1100",
+      "dia": "sabado",
+      "inicio": "11:00",
+      "fin": "12:00",
+      "clase": "Hot Barre",
+      "instructora": "Marifer",
+      "etiqueta": "primera"
+    }
+  ]
+}
