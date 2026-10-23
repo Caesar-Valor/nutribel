@@ -19,11 +19,11 @@ W, H = (1280, 720) if KIND == "horizontal" else (720, 1280)
 FPS, SEG, XF = 30, 2.5, 0.5          # cada foto 2,5 s + 0,5 s de fundido
 # foto, centro de interés (fracción x, y), sentido del zoom (+1 acerca, -1 aleja), paneo en x
 SHOTS = [
-    ("b-DSC02552", (0.50, 0.48), +1, +0.03),   # Hot Barre con los mats de balé
+    ("b-DSC09385", (0.50, 0.33), +1, +0.03),   # Hot Barre en la barra con luces (portada y póster)
     ("b-DSC04941", (0.55, 0.50), -1, -0.03),   # barras nuevas
-    ("b-DSC04893", (0.50, 0.60), +1, -0.03),   # sala de Reformer
+    ("b-DSC05730", (0.50, 0.42), +1, -0.03),   # clase de Pilates Reformer
     ("b-DSC09187", (0.50, 0.45), -1, +0.03),   # arabesque en la barra
-    ("b-DSC09385", (0.50, 0.36), +1, +0.03),   # Hot Barre en la barra con luces
+    ("b-DSC09358", (0.50, 0.40), +1, +0.03),   # Hot Barre: alumna en la barra, de espaldas
     ("b-DSC04819", (0.50, 0.40), -1, -0.03),   # mat con el logo
 ]
 Z0, Z1 = 1.0, 1.09                   # zoom suave

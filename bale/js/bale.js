@@ -132,12 +132,7 @@ function roster(c,fecha){
    ========================================================= */
 function renderStatic(){
   $("#historia").innerHTML=D.historia.map(p=>`<p>${esc(p)}</p>`).join("");
-  const F=D.fundadora;
-  $("#mfName").textContent=F.nombre;
-  $(".founder .role").textContent=F.rol;
-  $(".founder .bio").textContent=F.texto;
   $("#queBarre").textContent=D.que_es_barre;
-  $("#certs").innerHTML=F.certificaciones.map(c=>`<li><b>${esc(c.nombre)}</b><span>${esc(c.detalle)}</span></li>`).join("");
 
   // Clases: una tarjeta por tipo
   $("#ctypes").innerHTML=D.clases.map((t,i)=>{
@@ -152,7 +147,7 @@ function renderStatic(){
         <span class="b-kick">${esc(t.grupo)}</span>
         <h3>${esc(t.tipo)}</h3>
         ${tags.map(x=>`<span class="badge">${esc(x.destacado)}</span>`).join("")}
-        <p>${esc(t.texto)}</p>
+        ${t.texto?`<p>${esc(t.texto)}</p>`:""}
         ${t.edades?`<ul class="ages" aria-label="Grupos por edad">${t.edades.map(a=>`<li>${esc(a)}</li>`).join("")}</ul>`:""}
         <p class="meta"><span>${esc(t.dias)}</span></p>
         <a class="more" href="#horario" data-type="${esc(t.tipos.join("|"))}">Ver horario <span aria-hidden="true">→</span></a>
@@ -162,9 +157,9 @@ function renderStatic(){
 
   // Nuevo espacio de Reformer
   const R=D.reformer, rf=D.horario.filter(c=>c.clase==="Pilates Reformer");
-  $("#refTitle").innerHTML=esc(R.titulo).replace("Reformer","<em>Reformer</em>");
+  $("#refTitle").textContent=R.titulo;
   $("#refText").textContent=R.texto;
-  $("#refMeta").innerHTML=`<span>Viernes · ${rf.map(c=>NB.fmtH(toH(c.inicio)).replace(":00","")).join(", ")}</span><span>Con ${esc(rf[0]?rf[0].instructora:"Viviana")}</span><span>Cupo: ${cap(rf[0]||{clase:"Pilates Reformer"})} máquinas${cupoNota({clase:"Pilates Reformer"})?" <small>(estimado por fotos, por confirmar)</small>":""}</span>`;
+  $("#refMeta").innerHTML=`<span>Viernes · ${rf.map(c=>NB.fmtH(toH(c.inicio)).replace(":00","")).join(", ")}</span><span>Cupo: ${cap(rf[0]||{clase:"Pilates Reformer"})} máquinas${cupoNota({clase:"Pilates Reformer"})?` <small>(${esc(cupoNota({clase:"Pilates Reformer"}).toLowerCase())})</small>`:""}</span>`;
   $("#refBtn").textContent=R.boton;
   $("#refPh").innerHTML=R.fotos.map((f,i)=>imgTag(f,i?"(max-width:700px) 45vw, 240px":"(max-width:700px) 92vw, 520px",1200,1500,i?"":' class="big"')).join("");
 
@@ -176,12 +171,25 @@ function renderStatic(){
     const full=p.completo||p.nombre;
     return `<article class="member" data-reveal style="--r:${i%4}">
       <div class="mph">${p.foto?`<img src="${esc(p.foto)}" alt="${esc(full)}, ${esc(p.rol.toLowerCase())} de balé" width="600" height="750" loading="lazy" decoding="async">`:`<span class="ini" aria-hidden="true">${esc(initials(full))}</span><span class="soonph">Foto próximamente</span>`}</div>
-      <div class="mtx"><h3>${esc(full)}</h3>${p.completo&&p.completo!==p.nombre?`<p class="nick">«${esc(p.nombre)}»</p>`:""}
+      <div class="mtx"><h3>${esc(full)}</h3>${p.completo&&!p.completo.startsWith(p.nombre)?`<p class="nick">«${esc(p.nombre)}»</p>`:""}
       <p class="role">${esc(p.rol)}</p>
       <p class="types">${esc(p.clases)}</p>
-      ${p.bio?`<p class="mbio">${esc(p.bio)}</p>`:""}</div>
+      ${p.bio?`<p class="mbio" id="bio-${i}">${esc(p.bio)}</p><button class="biomore" type="button" aria-expanded="false" aria-controls="bio-${i}" hidden>Leer más</button>`:""}</div>
     </article>`;
   }).join("");
+  // Bio: 4 líneas y "Leer más" solo si el texto no cabe
+  document.querySelectorAll("#team .mbio").forEach(b=>{
+    const btn=b.nextElementSibling;
+    b.classList.add("clamp");
+    if(b.scrollHeight<=b.clientHeight+2){ b.classList.remove("clamp"); return; }
+    btn.hidden=false;
+    btn.addEventListener("click",()=>{
+      const open=btn.getAttribute("aria-expanded")==="true";
+      b.classList.toggle("clamp",open);
+      btn.setAttribute("aria-expanded",String(!open));
+      btn.textContent=open?"Leer más":"Leer menos";
+    });
+  });
 
   renderCommunity();
 
@@ -316,7 +324,7 @@ function renderRows(){
         <h4>${esc(clsName(c))}</h4>
         ${T?(T.destacado?`<span class="badge">${esc(T.destacado)}</span><span class="note">${esc(T.texto)}</span>`:`<span class="badge soft">${esc(T.texto)}</span>`):""}
         ${c.edad?`<span class="note">${esc(c.edad)}</span>`:""}
-        <span class="who"><i class="ini sm" aria-hidden="true">${esc(initials(inst.completo||inst.nombre))}</i>${esc(c.instructora)}</span>
+        <span class="who">${inst.avatar?`<img class="ava" src="${esc(inst.avatar)}" alt="" width="26" height="26" loading="lazy" decoding="async">`:`<i class="ini sm" aria-hidden="true">${esc(initials(inst.completo||inst.nombre))}</i>`}${esc(c.instructora)}</span>
       </div>
       <div class="ac">
         <span class="cupo">${st==="past"||st==="cancel"?"":st==="full"?`0 de ${N} libres${w?` · ${w} en espera`:""}`:`<b>${libres}</b> de ${N} libres`}${(st==="open"||st==="full")&&!isBarra(c)&&cupoNota(c)?`<small class="tbc">${esc(cupoNota(c))}</small>`:""}</span>
@@ -439,7 +447,7 @@ function submit(e){
   renderDone();
   // 2) Aviso al estudio por correo (si falla, la reserva sigue por WhatsApp)
   if(!bk.wait) sendMail(bk.last,c); else $("#mailSt").textContent="";
-  renderWeek(); renderBubbles();
+  renderWeek();
 }
 
 function summary(r,c){
@@ -522,24 +530,6 @@ function myIcs(){
   download(icsFile("balé",[{uid:`${r.id}@bale`,fecha:r.fecha,c,summary:`balé · ${clsName(c)}`,desc}]),`bale-${c.id}-${r.fecha}.ics`);
 }
 
-/* ---------- Vista previa de los mensajes automáticos ---------- */
-function renderBubbles(){
-  const mine=store.reservas[store.reservas.length-1];
-  let c, fecha, lugar, name;
-  if(mine&&clsById(mine.claseId)){ c=clsById(mine.claseId); fecha=mine.fecha; lugar=mine.lugar; name=mine.nombre.split(" ")[0]; }
-  else{ c=D.horario.find(x=>x.clase==="Hot Barre"&&!x.etiqueta)||D.horario[0]; fecha=iso(dayDate(1,DKEYS.indexOf(c.dia))); lugar=7; name="Laura"; }
-  const L=lugar&&lugarOf(lugar), d=fmtDay(fromIso(fecha)), h=NB.fmtH(toH(c.inicio)), n=clsName(c);
-  const msgs=[
-    ["Al reservar",`¡Hola, ${name}! Tu lugar en balé está reservado.\n${n} · ${d} · ${h}\n${L?`${lugarTxt(L)} · `:""}con ${c.instructora}\n${CFG.cancelacion.texto}`],
-    ["24 horas antes",`${name}, te recordamos tu clase de mañana: ${n} a las ${h}${L?`, lugar ${L.n}`:""}. Si no puedes venir, avísanos para liberar tu lugar.`],
-    ["2 horas antes",`¡Nos vemos en 2 horas! ${n} a las ${h} con ${c.instructora}.${L?` ${lugarTxt(L)}.`:""}`],
-    ["Lista de espera",`¡Buenas noticias, ${name}! Se liberó un lugar en ${n} del ${d} a las ${h}. Responde SÍ para quedártelo.`]
-  ];
-  $("#bubbles").innerHTML=`<div class="wa-top"><span class="ini sm" aria-hidden="true">b</span><span><b>balé</b><small>Vista previa</small></span></div>`+
-    msgs.map(([k,t])=>`<div class="bub"><span class="when">${esc(k)}</span><p>${esc(t).replace(/\n/g,"<br>")}</p></div>`).join("")+
-    `<p class="wa-note">${mine?"Con los datos de tu última reserva en este navegador.":"Ejemplo. Reserva una clase y verás tus datos aquí."}</p>`;
-}
-
 /* ---------- Portada: video vertical en el teléfono, horizontal en el escritorio ----------
    Sin autoplay en el HTML: el video solo se carga y se reproduce si el usuario no pidió
    reducir el movimiento; en ese caso se queda el póster. Se pausa fuera de la pantalla. */
@@ -577,7 +567,7 @@ function goToClass(test,type){
 function scrollToHorario(){ $("#horario").scrollIntoView({behavior:matchMedia("(prefers-reduced-motion: reduce)").matches?"auto":"smooth"}); }
 
 function initPublic(){
-  renderStatic(); renderFilters(); renderWeek(); renderBubbles(); initHero();
+  renderStatic(); renderFilters(); renderWeek(); initHero();
   // "Reserva tu primera clase": va al próximo sábado de primera clase
   $("#firstBtn").addEventListener("click",()=>goToClass(c=>c.etiqueta==="primera"));
   $("#refBtn").addEventListener("click",()=>{ goToClass(c=>c.clase==="Pilates Reformer","Pilates Reformer"); scrollToHorario(); });
@@ -791,7 +781,7 @@ Promise.all([NB.load("bale"),NB.load("horario"),NB.load("precios"),NB.load("comu
   setTimeout(watchReveal,0);
   // Otra pestaña cambió las reservas: vuelve a pintar
   addEventListener("storage",e=>{ if(e.key===NB.PANEL_KEY){ location.reload(); return; } if(e.key!==KEY) return; store=readStore(); prune();
-    if(ESTUDIO){ renderVWeek(); renderClients(); renderPays(); } else { renderWeek(); renderBubbles(); } });
+    if(ESTUDIO){ renderVWeek(); renderClients(); renderPays(); } else renderWeek(); });
 }).catch(()=>{});
 
 /* ---------- Entrada: el telón se salta con un clic o una tecla ---------- */

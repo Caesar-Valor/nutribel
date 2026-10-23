@@ -27,7 +27,7 @@
 <link rel="icon" href="img/bale-favicon.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500&family=Montserrat:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600&display=swap" rel="stylesheet">
 <link rel="preload" as="image" href="img/bale-logo-transparente.webp">
 <link rel="preload" as="image" type="image/webp" href="video/bale-hero-vertical-poster.webp" media="(max-aspect-ratio:4/5)">
 <link rel="preload" as="image" type="image/webp" href="video/bale-hero-horizontal-poster.webp" media="(min-aspect-ratio:4/5)">
@@ -93,39 +93,22 @@
     <div class="best">
       <div data-reveal>
         <span class="b-kick">El estudio</span>
-        <h2 id="estTitle">Nutrición <em>y</em> movimiento</h2>
+        <h2 id="estTitle">Balé Studio</h2>
         <div id="historia"></div>
       </div>
-      <article class="founder" data-reveal style="--r:1" aria-labelledby="mfName">
-        <span class="ini big" aria-hidden="true">MF</span>
-        <h3 id="mfName"></h3>
-        <p class="role"></p>
-        <p class="bio"></p>
-      </article>
-    </div>
-    <div class="barre" data-reveal>
-      <div>
-        <span class="b-kick">Barre</span>
-        <h2>¿Qué es el <em>barre</em>?</h2>
-        <p id="queBarre"></p>
-        <ul class="benef" aria-label="Qué trabaja el barre">
-          <li>Fuerza</li><li>Resistencia</li><li>Estabilidad</li><li>Equilibrio</li><li>Conciencia corporal</li>
-        </ul>
-      </div>
-      <div>
-        <span class="b-kick">Certificaciones de María Fernanda</span>
-        <ol class="certs" id="certs"></ol>
-      </div>
+      <figure class="estfoto" data-reveal style="--r:1">
+        <img src="img/estudio-logo.webp" srcset="img/estudio-logo-480.webp 480w, img/estudio-logo-800.webp 800w, img/estudio-logo.webp 1200w" sizes="(max-width:900px) 92vw, 400px" alt="Logo de balé en la pared del estudio: Barre, Ballet &amp; Pilates" width="1200" height="1500" loading="lazy" decoding="async">
+      </figure>
     </div>
   </section>
 
   <!-- 3. Clases -->
   <section class="band paper" id="clases" aria-labelledby="claTitle">
     <div class="shead" data-reveal>
-      <span class="b-kick">Tipos de clase</span>
-      <h2 id="claTitle">Nuestras <em>clases</em></h2>
+      <h2 id="claTitle">Nuestras clases</h2>
+      <p id="queBarre"></p>
     </div>
-    <div class="ctypes" id="ctypes"></div>
+    <div class="ctypes" id="ctypes" role="region" aria-label="Tipos de clase" tabindex="0"></div>
   </section>
 
   <!-- 4. Nuevo espacio de Reformer -->
@@ -133,7 +116,7 @@
     <div class="refo" data-reveal>
       <div class="refo-ph" id="refPh"></div>
       <div class="refo-tx">
-        <span class="b-kick">Pilates Reformer · Viernes</span>
+        <span class="b-kick">Pilates Reformer</span>
         <h2 id="refTitle"></h2>
         <p id="refText"></p>
         <p class="refo-meta" id="refMeta"></p>
@@ -145,8 +128,7 @@
   <!-- 5. Horario y reservas -->
   <section class="band paper" id="horario" aria-labelledby="schedTitle">
     <div class="shead" data-reveal>
-      <span class="b-kick">Reservar</span>
-      <h2 id="schedTitle">Horario <em>y</em> reservas</h2>
+      <h2 id="schedTitle">Horario y reservas</h2>
       <p>Elige el día y la clase. En las clases de barra escoges tu lugar en la sala.</p>
     </div>
     <div class="cal">
@@ -163,22 +145,13 @@
       <h3 class="dtitle" id="dTitle"></h3>
       <ol class="rows" id="rows"></ol>
     </div>
-
-    <div class="msgs" aria-labelledby="msgTitle">
-      <div class="shead">
-        <span class="b-kick">Mensajes automáticos</span>
-        <h3 id="msgTitle">Así te avisará <em>balé</em></h3>
-        <p><strong>Vista previa: los recordatorios automáticos llegan en la siguiente fase.</strong> Hoy la reserva se confirma por WhatsApp y el estudio recibe un aviso por correo.</p>
-      </div>
-      <div class="phone" id="bubbles"></div>
-    </div>
   </section>
 
   <!-- 6. Precios -->
   <section class="band" style="--bb:var(--b-bg)" id="precios" aria-labelledby="preTitle">
     <div class="shead" data-reveal>
       <span class="b-kick">Precios</span>
-      <h2 id="preTitle">Elige tu <em>ritmo</em></h2>
+      <h2 id="preTitle">Elige tu ritmo</h2>
       <p id="payTxt"></p>
     </div>
     <div class="prices" id="prices"></div>
@@ -189,17 +162,16 @@
   <section class="band blush" id="comunidad" aria-labelledby="comTitle">
     <div class="shead" data-reveal>
       <span class="b-kick">Comunidad</span>
-      <h2 id="comTitle">Más que <em>clases</em></h2>
+      <h2 id="comTitle">Más que clases</h2>
     </div>
     <div class="soon" id="soon"></div>
-    <div class="comu" id="comu"></div>
+    <div class="comu" id="comu" role="region" aria-label="Momentos de la comunidad" tabindex="0"></div>
   </section>
 
   <!-- 8. Equipo -->
   <section class="band paper" id="equipo" aria-labelledby="eqTitle">
     <div class="shead" data-reveal>
-      <span class="b-kick">Team</span>
-      <h2 id="eqTitle">Nuestro <em>equipo</em></h2>
+      <h2 id="eqTitle">Nuestro equipo</h2>
       <p id="eqText"></p>
     </div>
     <div class="team" id="team"></div>
@@ -209,7 +181,7 @@
   <section class="band" style="--bb:var(--b-bg)" id="faq" aria-labelledby="faqTitle">
     <div class="shead" data-reveal>
       <span class="b-kick">Preguntas frecuentes</span>
-      <h2 id="faqTitle">Antes de tu <em>primera clase</em></h2>
+      <h2 id="faqTitle">Antes de tu primera clase</h2>
     </div>
     <div class="faq" id="faqList"></div>
   </section>
@@ -219,7 +191,7 @@
     <div class="ubic" data-reveal>
       <div>
         <span class="b-kick">Ubicación</span>
-        <h2 id="ubTitle">Te esperamos <em>en balé</em></h2>
+        <h2 id="ubTitle">Te esperamos en balé</h2>
         <p class="where" id="where"></p>
         <p class="city">La Vega, República Dominicana</p>
         <p id="addr" class="addr"></p>
@@ -237,7 +209,7 @@
 <div id="vistaEstudio" hidden>
   <section class="vhead">
     <span class="b-kick">balé · demo</span>
-    <h1>Vista del <em>estudio</em></h1>
+    <h1>Vista del estudio</h1>
     <p>Lo que vería el equipo de balé: reservas por clase, clientas, pagos por confirmar y el calendario de cada instructora. Con datos de ejemplo más las reservas hechas en este navegador.</p>
     <button class="linkbtn" type="button" id="resetDemo">Borrar las reservas de la demo</button>
   </section>
@@ -283,7 +255,6 @@
 <footer class="bfoot">
   <div class="wrap">
     <span>balé · Barre, Ballet &amp; Pilates · La Vega, República Dominicana</span>
-    <span class="flinks"><a href="?vista=estudio" class="pubonly">Vista del estudio (demo)</a><a href="panel.html">Panel del negocio</a></span>
   </div>
 </footer>
 

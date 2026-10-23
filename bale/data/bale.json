@@ -7,22 +7,6 @@
     "Balé Studio nace en el corazón de La Vega de la unión de dos pasiones: la nutrición y el movimiento. Una médica nutrióloga y una comunicadora corporativa crearon un espacio de bienestar integral donde mujeres y niñas descubren el placer de ejercitarse y fortalecer su cuerpo.",
     "Más que un estudio de ejercicio, balé es una comunidad donde cada mujer y cada niña encuentra un espacio para crecer, sentirse fuerte, conectar consigo misma y disfrutar del movimiento."
   ],
-  "fundadora": {
-    "nombre": "María Fernanda Pimentel",
-    "apodo": "Marifer",
-    "rol": "CEO y coach principal",
-    "texto": "Licenciada en Comunicación Corporativa. Desde pequeña desarrolló una conexión especial con la danza a través del ballet clásico; años después, ese amor por el movimiento la llevó al barre, la pasión que inspiró Balé Studio.",
-    "certificaciones": [
-      {
-        "nombre": "Barre Intensity",
-        "detalle": "Se formó y certificó en México en esta metodología internacional, que combina pilates, danza y entrenamiento funcional con movimientos controlados y ejercicios de mayor intensidad."
-      },
-      {
-        "nombre": "Pilates Mat",
-        "detalle": "Certificaciones con ControlFit, como parte de su formación continua."
-      }
-    ]
-  },
   "que_es_barre": "Una disciplina inspirada en el ballet clásico que fusiona movimientos de danza, pilates y fortalecimiento muscular. Desarrolla fuerza, resistencia, estabilidad, equilibrio y conciencia corporal, y trabaja todo el cuerpo sin necesidad de experiencia previa en ballet.",
   "equipo_texto": "Un equipo de instructoras especializadas en ballet clásico, Pilates Reformer y barre, con una misma misión: una experiencia de movimiento de calidad, cercana, profesional y llena de energía.",
   "clases": [
@@ -32,16 +16,16 @@
         "Hot Barre"
       ],
       "grupo": "Barre",
-      "texto": "Integra ballet, yoga y Pilates usando la barra de ballet como apoyo. Para todos los niveles. Los sábados, sesión de primera clase.",
+      "texto": "",
       "dias": "Lun · Mié · Jue · Sáb con Marifer",
       "fotos": [
         {
-          "src": "img/hot-barre-clase.webp",
-          "alt": "Clase de Hot Barre: alumnas en sentadilla sobre los mats beige con el logo de balé"
-        },
-        {
           "src": "img/hot-barre-barra.webp",
           "alt": "Alumna con camiseta verde claro apoyada en la barra, con luces de colores en la pared"
+        },
+        {
+          "src": "img/hot-barre-luces.webp",
+          "alt": "Alumna de espaldas apoyada en la barra durante una clase de Hot Barre, con luces de colores en el espejo"
         }
       ]
     },
@@ -52,7 +36,7 @@
         "Barre Flow"
       ],
       "grupo": "Barre",
-      "texto": "Integra ballet, yoga y Pilates usando la barra de ballet como apoyo. Para todos los niveles. Flex: martes con Lynette. Flow: jueves a las 6:45 am con Marifer.",
+      "texto": "",
       "dias": "Mar con Lynette · Jue con Marifer",
       "fotos": [
         {
@@ -71,7 +55,7 @@
         "Pilates Reformer"
       ],
       "grupo": "Pilates",
-      "texto": "Pilates en máquina Reformer, en la sala nueva con espejos en arco. Grupos pequeños.",
+      "texto": "En máquina Reformer, en grupos pequeños de hasta 6 personas.",
       "dias": "Vie con Viviana",
       "fotos": [
         {
@@ -110,7 +94,7 @@
   ],
   "reformer": {
     "titulo": "Nuevo espacio de Reformer",
-    "texto": "Estrenamos sala: máquinas Reformer nuevas, luz natural y espejos en arco. Los viernes en la mañana, en grupos pequeños y con la guía de Viviana. Si nunca has probado el Reformer, este es el momento.",
+    "texto": "Tenemos una sala de Pilates Reformer. El Pilates Reformer es una modalidad de Pilates que se realiza sobre una máquina especializada llamada Reformer, equipada con resortes, poleas y una plataforma deslizante que permite trabajar todo el cuerpo mediante movimientos controlados. Ven a vivir la experiencia guiada con nuestra instructora Viviana.",
     "boton": "Reserva tu Reformer del viernes",
     "fotos": [
       {
@@ -133,26 +117,35 @@
       "completo": "María Fernanda Pimentel",
       "rol": "CEO y coach principal",
       "clases": "Hot Barre y Barre Flow",
-      "foto": null
+      "foto": "img/equipo/marifer.webp",
+      "avatar": "img/equipo/marifer-avatar.webp",
+      "bio": "Comunicadora Corporativa egresada de la Pontificia Universidad Católica Madre y Maestra (PUCMM). Apasionada por el baile, el movimiento y el bienestar físico. Coach de Barre certificada por Barre Intensity y de Pilates Mat por Controlfit. Su amor por la danza y el ejercicio la ha llevado a convertir su pasión en una profesión, motivando a otras mujeres a conectar con sus cuerpos a través del movimiento. Actualmente, es fundadora de Balé Studio."
     },
     {
       "nombre": "Lynette",
+      "completo": "Lynette Peralta",
       "rol": "Instructora",
       "clases": "Barre Flex",
-      "foto": null
+      "foto": "img/equipo/lynette.webp",
+      "avatar": "img/equipo/lynette-avatar.webp",
+      "bio": "Bailarina con más de 10 años de experiencia en ballet clásico, formada en Ballet Clásico Santiago. Desde muy pequeña, la danza ha sido una de sus grandes pasiones, y su amor por el movimiento y la enseñanza la llevó a descubrir el mundo del barre. Actualmente, forma parte de Balé Studio, donde imparte clases de Barre Flex, combinando su formación en danza con su pasión por inspirar, guiar y acompañar a otras mujeres a través del movimiento."
     },
     {
       "nombre": "Rusmairy",
+      "completo": "Rusmairy Mercado Ortega",
       "rol": "Instructora",
       "clases": "Ballet niñas",
-      "foto": null
+      "foto": "img/equipo/rusmairy.webp",
+      "avatar": "img/equipo/rusmairy-avatar.webp",
+      "bio": "Inició sus estudios de ballet en 2008, destacándose desde temprana edad por su talento y dedicación a la danza clásica. Es bailarina, maestra y coreógrafa profesional, con experiencia en concursos, bienales y encuentros nacionales e internacionales, donde ha obtenido importantes reconocimientos y premios por su desempeño artístico y coreográfico."
     },
     {
       "nombre": "Viviana",
       "completo": "Viviana Medina Sánchez",
       "rol": "Instructora",
       "clases": "Pilates Reformer",
-      "foto": null,
+      "foto": "img/equipo/viviana.webp",
+      "avatar": "img/equipo/viviana-avatar.webp",
       "bio": "Bailarina de ballet clásico e instructora con más de 10 años de experiencia en República Dominicana, formada en BodyBalance, Pilates Mat y Pilates Reformer."
     }
   ],
@@ -173,7 +166,7 @@
     "Pilates Reformer": 6,
     "Ballet niñas": 12,
     "nota": {
-      "Pilates Reformer": "Cupo estimado por fotos, por confirmar",
+      "Pilates Reformer": "",
       "Ballet niñas": "Cupo por confirmar"
     }
   },
@@ -413,8 +406,7 @@
   },
   "pendiente": [
     "Cuántos lugares hay con las barras nuevas (la web usa 2 filas de 8 = 16)",
-    "Cuántas máquinas de Reformer hay (la web usa 6, estimado por fotos) y cupo de Ballet niñas (la web usa 12)",
-    "Fotos del equipo y confirmar quién es quién (_insumos/equipo-por-confirmar.jpg)",
+    "Cupo de Ballet niñas (la web usa 12)",
     "Datos bancarios para las transferencias",
     "Si las medias antideslizantes son obligatorias",
     "Más fotos de Hot Barre con el mat beige de balé",

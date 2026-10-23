@@ -1,6 +1,6 @@
 # Cómo actualizar la página de balé
 
-**Lo más fácil: el panel del negocio** (`bale/panel.html`, enlace «Panel del negocio» al pie de la página). Ahí se cambian los datos de contacto, el aviso para las clientas, las clases canceladas, los cupos, los precios y los próximos eventos. Lo que guardas en el panel se ve **solo en ese navegador**. Para que lo vea todo el mundo: pulsa **Descargar archivos para publicar**, copia los 4 archivos que se descargan (`config.json`, `precios.json`, `comunidad.json` y `bale.json`) a la carpeta `bale/data/` reemplazando los que hay, y publica (último apartado de esta guía). Después pulsa «Restaurar los datos publicados» en el panel.
+**Lo más fácil: el panel del negocio.** Ya no tiene enlace en la página pública: entra escribiendo su dirección, https://caesar-valor.github.io/nutribel/bale/panel.html (en local, http://localhost:3000/bale/panel.html). La vista del estudio (demo) está en https://caesar-valor.github.io/nutribel/bale/?vista=estudio. Ahí se cambian los datos de contacto, el aviso para las clientas, las clases canceladas, los cupos, los precios y los próximos eventos. Lo que guardas en el panel se ve **solo en ese navegador**. Para que lo vea todo el mundo: pulsa **Descargar archivos para publicar**, copia los 4 archivos que se descargan (`config.json`, `precios.json`, `comunidad.json` y `bale.json`) a la carpeta `bale/data/` reemplazando los que hay, y publica (último apartado de esta guía). Después pulsa «Restaurar los datos publicados» en el panel.
 
 También se puede editar a mano. Todo el contenido está en la carpeta `bale/data/`. Son archivos de texto (JSON): ábrelos con VS Code, cambia solo lo que está entre comillas y guarda. Ojo con las comas: cada línea de una lista termina en coma menos la última.
 
@@ -49,15 +49,32 @@ Archivo: `bale/data/horario.json`, lista `clases`. Cada clase es así:
 
 Archivo: `bale/data/precios.json`. Cambia el número de `precio` (sin "RD$" ni comas: `6500`). La página le pone el formato.
 
-## Poner las fotos del equipo
+## Fotos del equipo
 
-La dueña va a mandar una foto por instructora. Antes de publicarlas, confirma con ella quién es quién (hoja `_insumos/equipo-por-confirmar.jpg`).
+Las fotos de Marifer, Lynette, Rusmairy y Viviana ya están puestas y confirmadas por la dueña (23/10/2026). Para una instructora nueva:
 
-1. Recorta cada foto vertical 4:5 (por ejemplo 600 × 750 px) y guárdala en WebP con estos nombres: `bale/img/equipo/marifer.webp`, `lynette.webp`, `rusmairy.webp`, `viviana.webp`.
-2. En `bale/data/bale.json` → `instructoras`, cambia `"foto": null` por la ruta, por ejemplo `"foto": "img/equipo/marifer.webp"`.
-3. La foto pasa a ocupar la parte de arriba de la tarjeta, en lugar de las iniciales.
+1. Recorta su foto vertical 4:5 (por ejemplo 600 × 750 px) en WebP: `bale/img/equipo/<nombre>.webp`, y un avatar cuadrado pequeño `bale/img/equipo/<nombre>-avatar.webp` (sale en el horario, en redondo).
+2. En `bale/data/bale.json` → `instructoras`, agrega `"foto"`, `"avatar"` y `"bio"`. No cambies `nombre`: el horario busca a cada instructora por ese campo.
+3. No publiques una cara con nombre sin confirmarlo con la dueña.
 
-Reglas: nunca caras de niñas, y solo fotos con el mat beige de balé (nada de mats negros, verdes ni marrones).
+Reglas de fotos: nunca caras de niñas; solo el mat beige con el logo de balé (nada de mats negros, verdes ni marrones); nada de la carpeta `cumple maria` (cumpleaños de la dueña) y ninguna foto en la que salga un hombre.
+
+## Colores y letra (pedido de la dueña, 22/10/2026)
+
+- Una sola letra: Montserrat, en negrita (600), media (500) y normal (400). Sin cursivas.
+- Fondos: crema `#F3E4D8`, papel `#FFFAF6`, rosadito `#F7E6E8`; detalles en rosa `#F4C5CE`; textos en espresso `#2E2723`.
+- **Marrón `#5A3426`** en todo lo que resalta (botones, día elegido, etiquetas pequeñas, enlaces).
+- **Fucsia `#E0264F`** solo en los botones principales de reservar, la etiqueta «Ideal para tu primera clase», la fecha del evento y la franja del certificado de regalo.
+- Nada de morado ni de rosados malva o lila. Los colores están en `bale/css/base.css` (`--brown`, `--pink`, `--fucsia`, `--cta`).
+
+## Rehacer el video de portada
+
+El script es `referencia/bale-recursos/video/generar-portada.py`. Usa seis fotos de Drive cuyos IDs están en `referencia/bale-recursos/video/fotos-portada.tsv` (Hot Barre con luces, que es también el póster; barras nuevas; clase de Pilates Reformer; arabesque en la barra; Hot Barre en la barra; mat con el logo).
+
+1. Descarga esas fotos de Drive a `_insumos/drive/` con los nombres de la primera columna (`b-DSC09385.jpg`, etc.).
+2. Desde la raíz del proyecto, ejecuta el script dos veces (necesita Python con Pillow y ffmpeg):
+   `python referencia/bale-recursos/video/generar-portada.py _insumos/drive <ruta de ffmpeg> bale/video horizontal` y lo mismo con `vertical`. Genera los videos y sus pósters en `bale/video/` con los mismos nombres, así que no hay que tocar el HTML.
+3. Para cambiar una toma, cambia su línea en el `.tsv` y en la lista `SHOTS` del script. Respeta las reglas de fotos de arriba.
 
 ## Cambiar WhatsApp, correo, Instagram o datos bancarios
 

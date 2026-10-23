@@ -1,0 +1,56 @@
+diff --git a/bale/css/bale.css b/bale/css/bale.css
+index 873f7d4..24194e9 100644
+--- a/bale/css/bale.css
++++ b/bale/css/bale.css
+@@ -380,6 +380,10 @@ body.no-intro{--base:0s}
+ .member .role{font:600 10px/1.4 var(--b-sans);letter-spacing:.18em;text-transform:uppercase;color:var(--rose);margin-top:6px}
+ .member .types{font-weight:600;color:var(--b-ink)}
+ .member .mbio{margin-top:8px;line-height:1.55}
++.member .mbio.clamp{display:-webkit-box;-webkit-line-clamp:4;line-clamp:4;-webkit-box-orient:vertical;overflow:hidden}
++.member .biomore{align-self:flex-start;margin-top:6px;padding:6px 0;background:none;border:0;font:600 12px var(--b-sans);letter-spacing:.06em;color:var(--b-ink);text-decoration:underline;text-underline-offset:3px;cursor:pointer}
++.crow .who .ava{width:26px;height:26px;border-radius:50%;object-fit:cover;flex:none}
++.crow.past .who .ava{filter:grayscale(1);opacity:.6}
+ 
+ /* ---------- Reserva: avisos ---------- */
+ .bkwarn{margin:0 0 12px;padding:10px 12px;border-radius:14px;background:var(--b-ink);color:var(--b-bg);font:600 13.5px/1.45 var(--b-sans)}
+diff --git a/bale/js/bale.js b/bale/js/bale.js
+index 094e4bd..9928e5a 100644
+--- a/bale/js/bale.js
++++ b/bale/js/bale.js
+@@ -176,12 +176,25 @@ function renderStatic(){
+     const full=p.completo||p.nombre;
+     return `<article class="member" data-reveal style="--r:${i%4}">
+       <div class="mph">${p.foto?`<img src="${esc(p.foto)}" alt="${esc(full)}, ${esc(p.rol.toLowerCase())} de balé" width="600" height="750" loading="lazy" decoding="async">`:`<span class="ini" aria-hidden="true">${esc(initials(full))}</span><span class="soonph">Foto próximamente</span>`}</div>
+-      <div class="mtx"><h3>${esc(full)}</h3>${p.completo&&p.completo!==p.nombre?`<p class="nick">«${esc(p.nombre)}»</p>`:""}
++      <div class="mtx"><h3>${esc(full)}</h3>${p.completo&&!p.completo.startsWith(p.nombre)?`<p class="nick">«${esc(p.nombre)}»</p>`:""}
+       <p class="role">${esc(p.rol)}</p>
+       <p class="types">${esc(p.clases)}</p>
+-      ${p.bio?`<p class="mbio">${esc(p.bio)}</p>`:""}</div>
++      ${p.bio?`<p class="mbio" id="bio-${i}">${esc(p.bio)}</p><button class="biomore" type="button" aria-expanded="false" aria-controls="bio-${i}" hidden>Leer más</button>`:""}</div>
+     </article>`;
+   }).join("");
++  // Bio: 4 líneas y "Leer más" solo si el texto no cabe
++  document.querySelectorAll("#team .mbio").forEach(b=>{
++    const btn=b.nextElementSibling;
++    b.classList.add("clamp");
++    if(b.scrollHeight<=b.clientHeight+2){ b.classList.remove("clamp"); return; }
++    btn.hidden=false;
++    btn.addEventListener("click",()=>{
++      const open=btn.getAttribute("aria-expanded")==="true";
++      b.classList.toggle("clamp",open);
++      btn.setAttribute("aria-expanded",String(!open));
++      btn.textContent=open?"Leer más":"Leer menos";
++    });
++  });
+ 
+   renderCommunity();
+ 
+@@ -316,7 +329,7 @@ function renderRows(){
+         <h4>${esc(clsName(c))}</h4>
+         ${T?(T.destacado?`<span class="badge">${esc(T.destacado)}</span><span class="note">${esc(T.texto)}</span>`:`<span class="badge soft">${esc(T.texto)}</span>`):""}
+         ${c.edad?`<span class="note">${esc(c.edad)}</span>`:""}
+-        <span class="who"><i class="ini sm" aria-hidden="true">${esc(initials(inst.completo||inst.nombre))}</i>${esc(c.instructora)}</span>
++        <span class="who">${inst.avatar?`<img class="ava" src="${esc(inst.avatar)}" alt="" width="26" height="26" loading="lazy" decoding="async">`:`<i class="ini sm" aria-hidden="true">${esc(initials(inst.completo||inst.nombre))}</i>`}${esc(c.instructora)}</span>
+       </div>
+       <div class="ac">
+         <span class="cupo">${st==="past"||st==="cancel"?"":st==="full"?`0 de ${N} libres${w?` · ${w} en espera`:""}`:`<b>${libres}</b> de ${N} libres`}${(st==="open"||st==="full")&&!isBarra(c)&&cupoNota(c)?`<small class="tbc">${esc(cupoNota(c))}</small>`:""}</span>

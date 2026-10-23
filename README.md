@@ -80,7 +80,7 @@ Página propia y **autónoma**: tiene su copia mínima de la base (`bale/css/bas
 
 ```
 bale/index.html          la página (telón de entrada, modo oscuro, ?vista=estudio)
-bale/panel.html          panel del negocio de balé (demo, enlace en el pie)
+bale/panel.html          panel del negocio de balé (demo, sin enlace: se entra por su dirección)
 bale/css/base.css        tokens, modo oscuro, formularios, aviso emergente
 bale/css/bale.css        estilos de balé
 bale/js/core.js          datos, WhatsApp de balé, modo oscuro (API global BALE)
@@ -97,7 +97,7 @@ bale/COMO-ACTUALIZAR.md  guía sencilla para cambiar horario, precios, eventos y
 bale/PRUEBA-RESERVA.md   cómo hacer la prueba de reserva con la dueña y qué es real y qué es demo
 ```
 
-**Identidad:** Cormorant Garamond (titulares) y Montserrat (textos); crema `#F3E4D8` y espresso `#2E2723` del logo, rosa `#F4C5CE` y acento `#ED2F59` de sus redes (con moderación: botón principal y etiquetas; para rellenos con texto blanco se usa `#E0264F`, 4,6:1). Telón de entrada que se salta con un clic o una tecla y no aparece con movimiento reducido; todas las animaciones terminan.
+**Identidad:** una sola letra, Montserrat 400/500/600, sin cursivas. Crema `#F3E4D8`, papel `#FFFAF6`, rosadito `#F7E6E8` y rosa `#F4C5CE`, espresso `#2E2723` para textos. Fucsia `#E0264F`, de sus redes, solo en los botones principales de reservar (token `--cta`), la etiqueta de primera clase, la fecha del evento y la franja del regalo. Marrón `#5A3426` (hover `#46281E`) en todo lo demás que resalta. Nada de morado ni de rosados malva o lila (tono de unos 330°). En modo oscuro, el marrón pasa a rosadito. Telón de entrada (terciopelo marrón, logo crema y cinta rosada) que se salta con un clic o una tecla y no aparece con movimiento reducido; todas las animaciones terminan.
 
 **Contacto (data/config.json):** WhatsApp +1 849-638-6337 (`wa.me/18496386337`, el de la bio de Instagram), Instagram @balestudio.rd, correo de reservas de la dueña, dirección C. José Horacio Rodríguez #30, frente al Country Club, La Vega. El número de NutriBEL no aparece en `bale/`.
 
@@ -107,11 +107,11 @@ bale/PRUEBA-RESERVA.md   cómo hacer la prueba de reserva con la dueña y qué e
 
 **Precios (data/precios.json):** tabla oficial en tres bloques (clase individual, con membresía y clase infantil con uniformes y accesorios), más el certificado de regalo. "Lo quiero", "Inscribir a mi hija" y "Regalar un paquete" abren WhatsApp de balé con el mensaje escrito; "Reservar" lleva al horario. Pago: transferencia, datos por confirmar.
 
-**Panel del negocio (`bale/panel.html`, enlace en el pie):** como el de NutriBEL, guarda en el navegador y la página lo aplica al momento. Permite cambiar WhatsApp, Instagram, dirección, enlace de Maps y correo (o alias de FormSubmit); poner un aviso para las clientas (franja arriba de la página); cancelar una clase en una fecha concreta (sale "Cancelada" y no se puede reservar); ajustar las máquinas de Reformer, el cupo de Ballet niñas y la sala (filas × lugares); cambiar cada precio, y agregar, editar o quitar próximos eventos. Solo guarda lo que difiere de los JSON publicados. **"Descargar archivos para publicar"** genera `config.json`, `precios.json`, `comunidad.json` y `bale.json` ya actualizados: se reemplazan en `bale/data/` y se publican para que todas las clientas vean los cambios. "Restaurar los datos publicados" borra los cambios del panel. Un cupo confirmado desde el panel deja de mostrarse como "por confirmar". En producción haría falta un acceso con contraseña y guardar en un servidor.
+**Panel del negocio (`bale/panel.html`, sin enlace en la página: se entra por su dirección):** como el de NutriBEL, guarda en el navegador y la página lo aplica al momento. Permite cambiar WhatsApp, Instagram, dirección, enlace de Maps y correo (o alias de FormSubmit); poner un aviso para las clientas (franja arriba de la página); cancelar una clase en una fecha concreta (sale "Cancelada" y no se puede reservar); ajustar las máquinas de Reformer, el cupo de Ballet niñas y la sala (filas × lugares); cambiar cada precio, y agregar, editar o quitar próximos eventos. Solo guarda lo que difiere de los JSON publicados. **"Descargar archivos para publicar"** genera `config.json`, `precios.json`, `comunidad.json` y `bale.json` ya actualizados: se reemplazan en `bale/data/` y se publican para que todas las clientas vean los cambios. "Restaurar los datos publicados" borra los cambios del panel. Un cupo confirmado desde el panel deja de mostrarse como "por confirmar". En producción haría falta un acceso con contraseña y guardar en un servidor.
 
-**Vista del estudio (`bale/?vista=estudio`, enlace en el pie):** reservas por clase con el esquema de la sala, clientes, pagos por aprobar y calendario `.ics` por instructora. Usa datos de ejemplo (`demo`) más las reservas de ese navegador.
+**Vista del estudio (`bale/?vista=estudio`, sin enlace: se entra por su dirección):** reservas por clase con el esquema de la sala, clientes, pagos por aprobar y calendario `.ics` por instructora. Usa datos de ejemplo (`demo`) más las reservas de ese navegador.
 
-**Portada:** videos de 15 s (vertical y horizontal, < 3 MB) generados con `referencia/bale-recursos/video/generar-portada.py` a partir de seis fotos de Drive (Hot Barre con mats de balé, barras nuevas, sala de Reformer, arabesque, barra con luces y el mat con logo). Muted, en bucle, con póster y sin reproducirse con movimiento reducido.
+**Portada:** videos de 15 s (vertical y horizontal, < 3 MB) generados con `referencia/bale-recursos/video/generar-portada.py` a partir de seis fotos de Drive (Hot Barre con luces, también póster; barras nuevas; clase de Pilates Reformer; arabesque en la barra; Hot Barre en la barra y mat con el logo; IDs en `fotos-portada.tsv`). Nada de la carpeta `cumple maria` ni fotos con hombres. Muted, en bucle, con póster y sin reproducirse con movimiento reducido.
 
 **Reglas de balé:**
 - Nunca caras de niñas: de ballet infantil solo piernas, medias, zapatillas y piso.

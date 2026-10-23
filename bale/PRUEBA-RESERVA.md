@@ -33,7 +33,7 @@ La dueña quiere reservar una clase ella misma y ver cómo le llega. Esta prueba
 
 **Todavía es demo**
 
-- **Recordatorios de 24 h y 2 h antes:** la página solo muestra una vista previa. Hoy no se envía nada automático.
+- **Recordatorios de 24 h y 2 h antes:** todavía no existen y la página no los anuncia. Hoy no se envía nada automático.
 - **Lista de espera:** se guarda solo en el teléfono de quien se anotó; el estudio no se entera salvo por el WhatsApp.
 - **Cupos y lugares ocupados:** los que se ven son de ejemplo. Una reserva hecha en un teléfono no ocupa el lugar en los demás teléfonos: la confirmación real es la que da el estudio por WhatsApp.
 - **Vista del estudio y lista de clientes** (`?vista=estudio`): datos de ejemplo más las reservas de ese mismo navegador.

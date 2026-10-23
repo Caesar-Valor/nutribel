@@ -2,15 +2,14 @@
    balé — panel del negocio (panel.html, demo: guarda en este navegador)
    ========================================================= */
 .panel-page{padding:30px 20px 40px}
-.phead h1{font:500 clamp(40px,6vw,60px)/1 var(--b-serif);color:var(--b-ink);margin:10px 0 12px}
-.phead h1 em{font-style:italic;color:var(--rose)}
+.phead h1{font:600 clamp(30px,4.6vw,46px)/1.1 var(--b-sans);letter-spacing:-.01em;color:var(--b-ink);margin:10px 0 12px}
 .phead p{margin:0 0 10px;color:var(--muted);max-width:70ch;line-height:1.65}
 .phead code{font-size:13px;background:var(--blush);border-radius:6px;padding:1px 5px}
-.phead .plinks a{color:var(--rose);font-weight:600}
+.phead .plinks a{color:var(--brown);font-weight:600}
 .pgrid{display:grid;gap:16px;align-items:start;margin-top:18px}
 .col{display:grid;gap:16px}
 .pbox{background:var(--paper);border:1px solid var(--line);border-radius:24px;padding:18px 18px 16px}
-.pbox h2{font:600 27px/1.1 var(--b-serif);color:var(--b-ink);margin:0 0 10px}
+.pbox h2{font:600 20px/1.2 var(--b-sans);color:var(--b-ink);margin:0 0 10px}
 .pbox .privacy{margin:0 0 10px}
 .pbox .form{gap:10px}
 .pbox .form.two{grid-template-columns:1fr 1fr}
@@ -19,19 +18,19 @@
 
 /* Cancelar clases */
 .pbox .weekbar{margin:4px 0 8px}
-.cday{font:500 italic 19px/1.2 var(--b-serif);color:var(--b-ink);margin:12px 0 4px}
+.cday{font:500 16px/1.3 var(--b-sans);color:var(--b-ink);margin:12px 0 4px}
 .cday::first-letter{text-transform:uppercase}
 .citem{display:flex;align-items:center;gap:10px;padding:8px 10px;border:1px solid var(--line);border-radius:14px;margin-bottom:6px;font-size:14px;background:var(--b-bg)}
-.citem input{width:20px;height:20px;accent-color:var(--hot-fill);flex:none}
-.citem .t{font-weight:700;min-width:64px;color:var(--b-ink)}
+.citem input{width:20px;height:20px;accent-color:var(--brown);flex:none}
+.citem .t{font-weight:600;min-width:64px;color:var(--b-ink)}
 .citem .n{flex:1;color:var(--b-ink)}
 .citem .n small{display:block;color:var(--muted)}
-.citem.on{border-color:var(--hot-fill);background:var(--blush)}
+.citem.on{border-color:var(--brown);background:var(--blush)}
 .citem.on .n{text-decoration:line-through}
 .citem.past{opacity:.6}
 
 /* Precios */
-.pgroup{font:600 10.5px var(--b-sans);letter-spacing:.2em;text-transform:uppercase;color:var(--rose);margin:14px 0 6px}
+.pgroup{font:600 10.5px var(--b-sans);letter-spacing:.16em;text-transform:uppercase;color:var(--brown);margin:14px 0 6px}
 .pgroup:first-child{margin-top:0}
 .prow{display:grid;grid-template-columns:1fr 120px;gap:10px;align-items:center;padding:6px 0;border-top:1px solid var(--line)}
 .prow span{font-size:14px;color:var(--b-ink)}
@@ -44,13 +43,13 @@
 .ev .full{grid-column:1/-1}
 .ev .evfoot{display:flex;justify-content:space-between;align-items:center;margin-top:8px;gap:8px}
 .ev .evfoot small{color:var(--muted);font-size:12.5px}
-.ev .evfoot small.gone{color:var(--rose);font-weight:600}
+.ev .evfoot small.gone{color:var(--brown);font-weight:600}
 .ev input,.ev textarea{background:var(--paper)!important}
 
 /* Barra de guardado */
 .savebar{position:sticky;bottom:calc(12px + env(safe-area-inset-bottom,0px));z-index:15;margin-top:18px;display:flex;flex-wrap:wrap;gap:10px;align-items:center;justify-content:space-between;background:var(--paper);border:1px solid var(--line);border-radius:20px;padding:12px 14px;box-shadow:0 10px 30px rgba(46,39,35,.14)}
 .savebar .state{font-size:14px;color:var(--muted)}
-.savebar .state.dirty{color:var(--hot-fill);font-weight:600}
+.savebar .state.dirty{color:var(--brown);font-weight:600}
 .savebar .sbtns{display:flex;flex-wrap:wrap;gap:8px}
 .resetrow{margin:14px 0 0;text-align:right}
 .resetrow .linkbtn{font-size:14px}

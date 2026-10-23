@@ -9,19 +9,20 @@
 :root{
   color-scheme:light;
   --body:"Montserrat", system-ui, -apple-system, "Segoe UI", sans-serif;
-  --b-serif:"Cormorant Garamond", "Cormorant", Georgia, serif;
   --b-sans:"Montserrat", system-ui, -apple-system, "Segoe UI", sans-serif;
   --top-h:64px;
   --b-bg:#F3E4D8;            /* fondo del logo */
   --b-ink:#2E2723;           /* espresso del logo */
-  --rose:#7A3E5C;            /* acento rosado */
-  --rose-2:#B06A8B;
-  --blush:#F7E6E8;
-  --rose-soft:#F4C5CE;       /* rosa del material de redes de balé */
-  --hot:#ED2F59;             /* acento de redes: con moderación */
-  --hot-fill:#E0264F;        /* el mismo rosa, más profundo para rellenos con texto blanco: 4,6:1 */
+  --blush:#F7E6E8;            /* rosadito claro de las bandas */
+  --pink:#F4C5CE;             /* rosa de la marca: círculos, chips, separadores */
+  --fucsia:#E0264F;           /* fucsia de sus redes: letra blanca encima 4,6:1 */
+  --fucsia-2:#C81E45;         /* hover del fucsia */
+  --brown:#5A3426;            /* marrón de la marca: todo lo que resalta (crema encima 10,4:1) */
+  --brown-2:#46281E;          /* hover del marrón */
+  --on-brown:#FFFAF6;         /* letra sobre el marrón */
+  --cta:var(--fucsia);        /* solo botones principales de reservar */
   --cream:#F3E4D8; --paper:#FFFAF6; --ink:#2E2723; --muted:#6B5A52; --line:#E3CFC2;
-  --ring:#7A3E5C;
+  --ring:var(--brown);
   --dur-theme:650ms; --ease-in-out:cubic-bezier(.65,0,.35,1); --ease-out:cubic-bezier(.2,.8,.2,1);
   box-sizing:border-box;
   padding-top:env(safe-area-inset-top,0px); padding-bottom:env(safe-area-inset-bottom,0px);
@@ -30,8 +31,8 @@ html{scroll-behavior:smooth;scroll-padding-top:calc(env(safe-area-inset-top,0px)
 
 /* ---------- Modo oscuro (solo con el botón luna/sol) ---------- */
 :root[data-mode="dark"]{color-scheme:dark;
-  --b-bg:#1d1715; --b-ink:#F3E4D8; --rose:#EBB5CD; --rose-2:#D08DAB; --blush:#2a1e24; --rose-soft:#4a3440;
-  --cream:#1d1715; --paper:#271f1c; --ink:#F3E4D8; --muted:#C9B6AC; --line:#3d302b; --ring:#EBB5CD}
+  --b-bg:#1d1715; --b-ink:#F3E4D8; --brown:#F4C5CE; --brown-2:#F9DCE2; --on-brown:#1d1715; --pink:#43302B; --blush:#2A201D;
+  --cream:#1d1715; --paper:#271f1c; --ink:#F3E4D8; --muted:#C9B6AC; --line:#3d302b}
 
 /* ---------- Transición entre modos ---------- */
 ::view-transition-old(root),::view-transition-new(root){animation:none;mix-blend-mode:normal}
@@ -69,7 +70,7 @@ label.fld{display:block;font-size:13px;font-weight:600;color:var(--muted)}
 .form input,.form select,.form textarea{width:100%;border:1.5px solid var(--line);background:var(--cream);border-radius:10px;padding:10px 12px;min-height:44px;margin-top:4px}
 .privacy{font-size:13px;color:var(--muted);margin:0}
 .note{font-size:13px;color:var(--muted);background:var(--blush);border-radius:10px;padding:10px 12px;margin:0 0 12px}
-.linkbtn{background:none;border:0;color:var(--rose);text-decoration:underline;font-weight:600;padding:0}
+.linkbtn{background:none;border:0;color:var(--brown);text-decoration:underline;font-weight:600;padding:0}
 .empty-state{border:2px dashed var(--line);border-radius:22px;padding:26px;color:var(--muted)}
 
 /* ---------- Pie ---------- */
@@ -81,7 +82,7 @@ footer .wrap{display:flex;flex-wrap:wrap;gap:12px;justify-content:space-between;
 .toast.show{transform:translate(-50%,0);opacity:1;visibility:visible}
 
 /* ---------- Aviso de servidor local (solo en desarrollo) ---------- */
-.devnote{background:#F7E6E8;color:#2E2723;border-bottom:2px solid #7A3E5C;padding:10px 20px;font-size:14px}
+.devnote{background:#F7E6E8;color:#2E2723;border-bottom:2px solid #5A3426;padding:10px 20px;font-size:14px}
 
 @media (prefers-reduced-motion:reduce){
   *{transition:none!important;scroll-behavior:auto!important}
