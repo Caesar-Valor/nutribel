@@ -6,8 +6,11 @@
    de regalo, comunidad, equipo, preguntas frecuentes y ubicación.
    Reserva: abre WhatsApp de balé con la reserva completa, avisa al estudio por
    correo (FormSubmit) y ofrece el .ics de la clase.
+   Ocupación: lugares fijos de las miembros (bale.json → fijos, se marcan en el
+   panel) más las reservas hechas en este navegador. Ballet niñas no se reserva:
+   el botón "Inscripción" abre WhatsApp para pedir el formulario.
    Vista del estudio (?vista=estudio): demo con reservas por clase, clientes,
-   pagos y calendario .ics por instructora.
+   pagos y calendario .ics por instructora; solo ahí se suman los datos de ejemplo.
    Panel del negocio (panel.html): sus cambios (guardados en este navegador,
    "bale-panel") se aplican aquí con applyPanel().
    Lo que se guarda en este navegador ("bale-reservas") es solo para la demo.
@@ -59,17 +62,20 @@ function save(){ try{ localStorage.setItem(KEY,JSON.stringify(store)); }catch(e)
 const uid = ()=>Date.now().toString(36)+Math.random().toString(36).slice(2,6);
 
 /* ---------- Cambios del panel del negocio ----------
-   Precios, cupos, sala, próximos eventos, clases canceladas y aviso. Lo que
-   no se cambió en el panel sale de los JSON (bale.json → canceladas y aviso). */
+   Precios, cupos, sala, lugares fijos de miembros, próximos eventos, clases
+   canceladas y aviso. Lo que no se cambió en el panel sale de los JSON
+   (bale.json → fijos, canceladas y aviso). */
 function applyPanel(){
   const P=NB.panel.read(), pr=D.precios, num=v=>typeof v==="number"&&isFinite(v)&&v>=0;
   pr.individual.items.concat(pr.membresia.items).forEach(it=>{ if(num(P.precios[it.id])) it.precio=P.precios[it.id]; });
   if(num(P.precios["inf-inscripcion"])) pr.infantil.inscripcion=P.precios["inf-inscripcion"];
   if(num(P.precios["inf-mensualidad"])) pr.infantil.mensualidad=P.precios["inf-mensualidad"];
   pr.infantil.accesorios.forEach((a,i)=>{ if(num(P.precios["acc-"+i])) a.precio=P.precios["acc-"+i]; });
+  if(pr.medias) pr.medias.items.forEach(it=>{ if(num(P.precios[it.id])) it.precio=P.precios[it.id]; });
   // Un cupo puesto en el panel lo da el estudio: deja de ser "por confirmar"
   Object.entries(P.cupos).forEach(([k,v])=>{ if(+v>0){ D.cupos[k]=+v; if(D.cupos.nota) D.cupos.nota[k]=""; } });
   if(P.sala&&+P.sala.filas>0&&+P.sala.por_fila>0){ D.sala.filas=+P.sala.filas; D.sala.por_fila=+P.sala.por_fila; }
+  D.fijos=P.fijos||D.fijos||{};
   if(P.eventos) D.comunidad.proximos=P.eventos;
   D.canceladas=new Set(P.canceladas||D.canceladas||[]);
   D.aviso=P.aviso!=null?P.aviso:(D.aviso||"");
@@ -90,15 +96,20 @@ const clsById = id=>D.horario.find(c=>c.id===id);
 const isBarra = c=>D.barra_tipos.includes(c.clase);
 const cap = c=>isBarra(c) ? D.sala.lugares.length : (+D.cupos[c.clase]||12);
 const cupoNota = c=>{ const n=D.cupos.nota||{}; return c.clase in n ? n[c.clase] : "Cupo por confirmar"; };
-function demoSeats(c){ const v=D.demo.ocupados[c.id]; return Array.isArray(v)?v.filter(n=>n<=D.sala.lugares.length):[]; }
-const demoCount = c=>{ const v=D.demo.ocupados[c.id]; return Array.isArray(v)?v.length:Math.min(+v||0,cap(c)); };
+// Lugares fijos de las miembros (bale.json → fijos, o el panel): se repiten todas las semanas.
+// Barra: lista de lugares. Reformer: cuántas máquinas están tomadas.
+function fixedSeats(c){ const v=D.fijos[c.id]; return Array.isArray(v)?v.filter(n=>n>=1&&n<=D.sala.lugares.length):[]; }
+const fixedCount = c=>{ const v=D.fijos[c.id]; return Array.isArray(v)?v.length:Math.max(0,+v||0); };
+// Datos de ejemplo (bale.json → demo): solo en la vista del estudio, nunca en la página pública
+function demoSeats(c){ if(!ESTUDIO) return []; const v=D.demo.ocupados[c.id], f=new Set(fixedSeats(c)); return Array.isArray(v)?v.filter(n=>n<=D.sala.lugares.length&&!f.has(n)):[]; }
+const demoCount = c=>{ if(!ESTUDIO) return 0; const v=D.demo.ocupados[c.id]; return Array.isArray(v)?v.length:+v||0; };
 function taken(c,fecha){
-  const k=occKey(c,fecha), s=new Set(demoSeats(c));
+  const k=occKey(c,fecha), s=new Set(fixedSeats(c).concat(demoSeats(c)));
   store.reservas.forEach(r=>{ if(r.occ===k) s.add(r.lugar); });
   return s;
 }
 const webRes = (c,fecha)=>store.reservas.filter(r=>r.occ===occKey(c,fecha));
-const used = (c,fecha)=>isBarra(c) ? taken(c,fecha).size : demoCount(c)+webRes(c,fecha).length;
+const used = (c,fecha)=>isBarra(c) ? taken(c,fecha).size : Math.min(cap(c),fixedCount(c)+demoCount(c))+webRes(c,fecha).length;
 const free = (c,fecha)=>cap(c)-used(c,fecha);
 const waitlist = (c,fecha)=>store.espera.filter(e=>e.occ===occKey(c,fecha));
 const isBallet = c=>/ballet/i.test(c.clase);
@@ -114,15 +125,17 @@ const digits = s=>String(s||"").replace(/\D/g,"");
 const fmtWa = s=>{ const d=digits(s).replace(/^1(?=\d{10}$)/,""); return d.length===10?`${d.slice(0,3)}-${d.slice(3,6)}-${d.slice(6)}`:s; };
 const imgTag = (f,sizes,w,h,extra="")=>`<img src="${esc(f.src||f.foto)}" srcset="${esc(NB.srcset(f.src||f.foto))}" sizes="${sizes}" alt="${esc(f.alt)}" width="${w}" height="${h}" loading="lazy" decoding="async"${extra}>`;
 
-// Lista de alumnas de una clase: las de ejemplo más las reservas de este navegador.
+// Lista de alumnas de una clase: lugares fijos de miembros, las de ejemplo y las reservas de este navegador.
 function roster(c,fecha){
   const cl=D.demo.clientes;
   const off=parseInt(c.inicio,10)+c.dia.length;
   const person=(i,lugar)=>{ const p=cl[(i+off)%cl.length];
     return {lugar, nombre:isBallet(c)?`Alumna de ejemplo ${i+1}`:p.nombre, tutor:isBallet(c)?p.nombre:"", wa:p.whatsapp, demo:true}; };
-  const demo=isBarra(c) ? demoSeats(c).map((n,i)=>person(i,n)) : Array.from({length:demoCount(c)},(_,i)=>person(i,null));
+  const fijo=lugar=>({lugar, nombre:"Miembro con lugar fijo", tutor:"", wa:"", fijo:true});
+  const fixed=isBarra(c) ? fixedSeats(c).map(fijo) : Array.from({length:Math.min(cap(c),fixedCount(c))},()=>fijo(null));
+  const demo=isBarra(c) ? demoSeats(c).map((n,i)=>person(i,n)) : Array.from({length:Math.max(0,Math.min(cap(c)-fixed.length,demoCount(c)))},(_,i)=>person(i,null));
   const web=webRes(c,fecha).map(r=>({lugar:r.lugar||null, nombre:r.nina||r.nombre, tutor:r.nina?r.nombre:"", wa:r.wa, pago:r.pago, id:r.id}));
-  const all=demo.concat(web);
+  const all=fixed.concat(demo,web);
   if(isBarra(c)) all.sort((a,b)=>a.lugar-b.lugar);
   return all.map((r,i)=>Object.assign(r,{pos:r.lugar||i+1}));
 }
@@ -141,7 +154,7 @@ function renderStatic(){
     const ph=t.fotos.length
       ? `<div class="phs n${Math.min(t.fotos.length,2)}">${t.fotos.slice(0,2).map(f=>imgTag(f,"(max-width:700px) 50vw, 220px",1200,1500)).join("")}</div>`
       : `<div class="phs none"><span class="pending-mark">Foto por confirmar</span></div>`;
-    return `<article class="ctype" data-reveal style="--r:${i%3}">
+    return `<article class="ctype">
       ${ph}
       <div class="ct">
         <span class="b-kick">${esc(t.grupo)}</span>
@@ -194,7 +207,7 @@ function renderStatic(){
   renderCommunity();
 
   // Preguntas frecuentes
-  $("#faqList").innerHTML=D.faq.map((q,i)=>`<details data-reveal style="--r:${i%3}"><summary>${esc(q.p)}</summary>
+  $("#faqList").innerHTML=D.faq.map((q,i)=>`<details><summary>${esc(q.p)}</summary>
     <div><p>${esc(q.r)}</p>${q.pendiente?`<span class="pending-mark">${esc(q.pendiente)}</span>`:""}</div></details>`).join("");
 
   // Aviso para las clientas (panel del negocio)
@@ -212,30 +225,45 @@ function renderStatic(){
   $("#payLine").textContent=`Pago: ${CFG.pago.texto}.`;
 }
 
-/* ---------- Precios: individual, membresía e infantil ---------- */
+/* ---------- Precios: individual, membresía, infantil, medias y regalo ---------- */
+const sockList = (S,sep)=>S.items.map(it=>`${it.nombre.toLowerCase()} ${NB.money(it.precio)}`).join(sep);
+// Foto cuadrada de cada medida: 400 y 720 px (img/x.webp → img/x-400.webp)
+const sockImg = it=>it.foto?`<img src="${esc(it.foto)}" srcset="${esc(it.foto.replace(/\.webp$/,"-400.webp"))} 400w, ${esc(it.foto)} 720w" sizes="(min-width:900px) 260px, 45vw" width="720" height="720" loading="lazy" decoding="async" alt="${esc(it.alt||`Medias antideslizantes ${it.nombre.toLowerCase()}`)}">`:"";
 function renderPrices(){
   const P=D.precios, m=NB.money;
   $("#payTxt").textContent=`Pago por ${CFG.pago.texto.charAt(0).toLowerCase()+CFG.pago.texto.slice(1)}.`;
   const I=P.individual, M=P.membresia, K=P.infantil, G=P.regalo;
   $("#prices").innerHTML=`
-    <article class="pblock" data-reveal>
+    <article class="pblock">
       <span class="b-kick">${esc(I.nota)}</span><h3>${esc(I.titulo)}</h3>
       <ul class="plist">${I.items.map(it=>`<li><span class="pn">${esc(it.nombre)}</span><b>${esc(m(it.precio))}</b>
-        <button class="bbtn line sm" type="button" data-book-type="${esc(it.tipo)}" aria-label="Reservar una clase de ${esc(it.nombre)}">Reservar</button></li>`).join("")}</ul>
+        ${it.tipo.split("|").some(t=>isBallet({clase:t}))
+          ? `<button class="bbtn line sm" type="button" data-kid-any aria-label="Inscripción a ${esc(it.nombre)} por WhatsApp">Inscripción</button>`
+          : `<button class="bbtn line sm" type="button" data-book-type="${esc(it.tipo)}" aria-label="Reservar una clase de ${esc(it.nombre)}">Reservar</button>`}</li>`).join("")}</ul>
     </article>
-    <article class="pblock mem" data-reveal style="--r:1">
+    <article class="pblock mem">
       <span class="b-kick">${esc(M.nota)}</span><h3>${esc(M.titulo)}</h3>
       <ul class="plist">${M.items.map(it=>`<li class="${it.destacado?"star":""}"><span class="pn">${esc(it.nombre)}<small>${esc(it.detalle)}</small></span><b>${esc(m(it.precio))}</b>
         <button class="bbtn ${it.destacado?"hot":"solid"} sm" type="button" data-pack="${esc(it.id)}" aria-label="Lo quiero: ${esc(it.nombre)}, ${esc(it.detalle)}">Lo quiero</button></li>`).join("")}</ul>
+      ${M.aviso?`<p class="pnote">${esc(M.aviso)}</p>`:""}
     </article>
-    <article class="pblock kid" data-reveal style="--r:2">
+    <article class="pblock kid">
       <span class="b-kick">${esc(K.edades)}</span><h3>${esc(K.titulo)}</h3>
       <p class="kname">${esc(K.nombre)}</p>
       <ul class="plist"><li><span class="pn">Inscripción</span><b>${esc(m(K.inscripcion))}</b></li><li><span class="pn">Mensualidad</span><b>${esc(m(K.mensualidad))}</b></li></ul>
-      <button class="bbtn solid" type="button" id="kidBtn">Inscribir a mi hija</button>
+      <button class="bbtn solid" type="button" id="kidBtn" data-kid-any aria-label="Inscripción a ${esc(K.nombre)} por WhatsApp">Inscripción</button>
       <h4>${esc(K.accesorios_titulo)}</h4>
       <ul class="plist acc">${K.accesorios.map(a=>`<li><span class="pn">${esc(a.nombre)}</span><b>${esc(m(a.precio))}</b></li>`).join("")}</ul>
+      ${K.nota_accesorios?`<p class="pnote">${esc(K.nota_accesorios)}</p>`:""}
     </article>`;
+  const S=P.medias, sk=$("#socks");
+  sk.hidden=!S;
+  if(S){
+    sk.innerHTML=`
+    <div class="mpair">${S.items.map(it=>`<figure>${sockImg(it)}<figcaption><span>${esc(it.nombre)}</span><b>${esc(m(it.precio))}</b></figcaption></figure>`).join("")}</div>
+    <div class="sktx"><span class="b-kick">Obligatorias</span><h3 id="sockTitle">${esc(S.titulo)}</h3><p>${esc(S.texto)}</p>
+      <button class="bbtn solid" type="button" id="sockBtn">${esc(S.boton||"Pedir mis medias")}</button></div>`;
+  }
   $("#gift").innerHTML=`
     <div class="gcard" aria-hidden="true"><img src="img/bale-logo-transparente.webp" alt="" width="1040" height="538"><span>Certificado de regalo</span><i></i></div>
     <div class="gtx"><span class="b-kick">Certificado de regalo</span><h3 id="giftTitle">${esc(G.titulo)}</h3><p>${esc(G.texto)}</p>
@@ -250,7 +278,7 @@ function renderCommunity(){
   $("#soon").hidden=!next.length;
   $("#soon").innerHTML=next.map(e=>{
     const d=fromIso(e.fecha), h=e.hora?NB.fmtH(toH(e.hora)):"";
-    return `<article class="event" data-reveal>
+    return `<article class="event">
       <div class="edate" aria-hidden="true"><b>${d.getDate()}</b><span>${esc(d.toLocaleDateString("es-DO",{month:"short"}).replace(".",""))}</span></div>
       <div class="etx"><span class="b-kick">Próximo evento</span><h3>${esc(e.titulo)}</h3>
       <p class="emeta">${esc(fmtDay(d))}${h?` · ${esc(h)}`:""}${e.precio!=null?` · ${esc(NB.money(e.precio))}`:""}</p>
@@ -258,7 +286,7 @@ function renderCommunity(){
       ${e.mensaje?`<button class="bbtn hot" type="button" data-wa="${esc(e.mensaje)}">${esc(e.boton||"Reservar por WhatsApp")}</button>`:""}
     </article>`;
   }).join("");
-  $("#comu").innerHTML=(C.momentos||[]).map((k,i)=>`<article class="ccard" data-reveal style="--r:${i%2}">
+  $("#comu").innerHTML=(C.momentos||[]).map((k,i)=>`<article class="ccard">
       ${k.foto?`<figure>${imgTag({src:k.foto,alt:k.alt},"(max-width:700px) 90vw, 260px",1200,1500)}</figure>`:""}
       <div><span class="b-kick">${esc(k.kick)}${k.fecha_texto?` · ${esc(k.fecha_texto)}`:""}</span><h3>${esc(k.titulo)}</h3><p>${esc(k.texto)}</p>
       ${k.mensaje?`<button class="bbtn line" type="button" data-wa="${esc(k.mensaje)}">${esc(k.boton)}</button>`:""}</div>
@@ -280,8 +308,21 @@ function setType(v){
   sel.value=v;
 }
 
+/* Pastilla del día elegido: una sola, se desliza hasta el día que se toca.
+   Solo se anima transform; al cambiar de semana aparece sin deslizarse. */
+let pillWeek=null;
+function placePill(slide){
+  const strip=$("#strip"), b=strip.querySelector('[aria-pressed="true"]'); let pill=strip.querySelector(".dpill");
+  if(!b){ if(pill) pill.remove(); return; }
+  if(!pill){ pill=document.createElement("span"); pill.className="dpill"; pill.setAttribute("aria-hidden","true"); strip.prepend(pill); }
+  const to=`translate(${b.offsetLeft}px,${b.offsetTop}px)`;
+  pill.style.width=b.offsetWidth+"px"; pill.style.height=b.offsetHeight+"px";
+  if(!slide){ pill.classList.add("still"); pill.style.transform=to; pill.getBoundingClientRect(); pill.classList.remove("still"); return; }
+  requestAnimationFrame(()=>{ pill.style.transform=to; });
+}
 function renderWeek(){
   $("#wLabel").textContent=weekLabel(week);
+  const old=$("#strip .dpill"), from=old&&old.style.transform, slide=pillWeek===week&&!!from;
   $("#prevW").disabled=week<=0;
   $("#nextW").disabled=week>=WEEKS_AHEAD;
   const t=todayIx();
@@ -290,11 +331,16 @@ function renderWeek(){
     return `<button type="button" class="dbtn ${hoy?"hoy":""} ${past?"past":""}" data-d="${i}" aria-pressed="${i===dayIx}">
       <span class="dw" aria-hidden="true">${hoy?"Hoy":s}</span><span class="dn" aria-hidden="true">${d.getDate()}</span><i class="${n?"has":""}"></i><span class="sr-only">${esc(fmtDay(d))}${hoy?", hoy":""}: ${n?`${n} ${n===1?"clase":"clases"}`:"sin clases"}</span></button>`;
   }).join("");
+  // La pastilla nueva nace donde estaba la anterior y se mueve en el siguiente cuadro
+  if(slide){ const p=document.createElement("span"); p.className="dpill still"; p.setAttribute("aria-hidden","true");
+    p.style.cssText=old.style.cssText; $("#strip").prepend(p); p.getBoundingClientRect(); p.classList.remove("still"); }
+  placePill(slide); pillWeek=week;
   renderRows();
 }
 
 function rowState(c,fecha){
   if(isCancel(c,fecha)) return "cancel";
+  if(isBallet(c)) return "kid";            // inscripción al grupo por WhatsApp, sin reserva ni cupos
   if(startOf(c,fecha)<new Date()) return "past";
   return free(c,fecha)>0 ? "open" : "full";
 }
@@ -315,6 +361,7 @@ function renderRows(){
     const lbl=`${clsName(c)}, ${fmtDay(d)} a las ${NB.fmtH(toH(c.inicio))}`;
     let action;
     if(st==="cancel") action=`<span class="state full">Cancelada</span>`;
+    else if(st==="kid") action=`<button class="rbtn" type="button" data-kid="${c.id}" aria-label="Inscripción por WhatsApp: ${esc(lbl)}">Inscripción</button>`;
     else if(st==="past") action=`<span class="state">Finalizada</span>`;
     else if(st==="full") action=`<span class="state full">Llena</span><button class="rbtn line" type="button" data-wait="${c.id}" aria-label="Lista de espera: ${esc(lbl)}">Lista de espera</button>`;
     else action=`<button class="rbtn" type="button" data-book="${c.id}" aria-label="Reservar ${esc(lbl)}">Reservar</button>`;
@@ -327,7 +374,7 @@ function renderRows(){
         <span class="who">${inst.avatar?`<img class="ava" src="${esc(inst.avatar)}" alt="" width="26" height="26" loading="lazy" decoding="async">`:`<i class="ini sm" aria-hidden="true">${esc(initials(inst.completo||inst.nombre))}</i>`}${esc(c.instructora)}</span>
       </div>
       <div class="ac">
-        <span class="cupo">${st==="past"||st==="cancel"?"":st==="full"?`0 de ${N} libres${w?` · ${w} en espera`:""}`:`<b>${libres}</b> de ${N} libres`}${(st==="open"||st==="full")&&!isBarra(c)&&cupoNota(c)?`<small class="tbc">${esc(cupoNota(c))}</small>`:""}</span>
+        <span class="cupo">${st==="past"||st==="cancel"||st==="kid"?"":st==="full"?`0 de ${N} libres${w?` · ${w} en espera`:""}`:`<b>${libres}</b> de ${N} libres`}${(st==="open"||st==="full")&&!isBarra(c)&&cupoNota(c)?`<small class="tbc">${esc(cupoNota(c))}</small>`:""}</span>
         ${action}
       </div>
     </li>`;
@@ -358,10 +405,6 @@ function openBook(c,fecha,wait){
   warn.hidden=!T; warn.className="bkwarn"+(T&&T.destacado?" good":"");
   if(T) warn.textContent=T.destacado?`${T.destacado}: ${T.texto.toLowerCase()}.`:T.aviso;
   $("#stDatos").reset();
-  const kid=isBallet(c);
-  $("#kids").hidden=!kid;
-  $("#nameWrap").hidden=kid;
-  $("#waLbl").textContent=kid?"WhatsApp del padre, la madre o el tutor":"WhatsApp";
   $("#memWrap").hidden=!(T&&T.confirmar);
   if(T&&T.confirmar) $("#memTxt").textContent=T.confirmar;
   $("#payLine").hidden=wait;
@@ -374,7 +417,7 @@ function openBook(c,fecha,wait){
   if(!ci.hidden){ const n=free(c,fecha); ci.textContent=`Esta clase no tiene lugar fijo: quedan ${n} de ${cap(c)} ${n===1?"cupo":"cupos"}${cupoNota(c)?` (${cupoNota(c).toLowerCase()})`:""}.`; }
   if(direct) show("stDatos"); else { renderSeats(); show("stLugar"); }
   dlg.showModal();
-  const first=direct?(kid?$("#kName"):$("#fName")):$("#seats button:not(:disabled)");
+  const first=direct?$("#fName"):$("#seats button:not(:disabled)");
   if(first) first.focus();
 }
 function show(id){
@@ -384,8 +427,6 @@ function show(id){
 function renderSeats(){
   const set=taken(bk.c,bk.fecha), S=D.sala;
   $("#sala").innerHTML=salaSVG(set,bk.lugar,true);
-  const f=$("#salaFoto"); if(!f.src){ f.src=S.foto; f.srcset=NB.srcset(S.foto); f.sizes="200px"; f.alt=S.alt; }
-  $("#salaNota").textContent=S.nota;
   let html="";
   for(let r=1;r<=S.filas;r++){
     const name=`Fila ${r}`;
@@ -401,18 +442,23 @@ function renderSeats(){
   $("#toDatos").disabled=!L;
 }
 function pickSeat(n){
-  bk.lugar=n; renderSeats();
+  bk.lugar=n;
+  const set=taken(bk.c,bk.fecha), L=lugarOf(n);
+  document.querySelectorAll("#seats .seat").forEach(s=>{
+    const k=+s.dataset.n, mine=k===n, busy=set.has(k), row=s.closest(".srow").getAttribute("aria-label");
+    s.setAttribute("aria-pressed",String(mine));
+    s.setAttribute("aria-label",`Lugar ${k}, ${row}${busy?", ocupado":mine?", elegido":", libre"}`);
+  });
+  $("#sala").innerHTML=salaSVG(set,n,true);
+  $("#pick").textContent=L?`Elegiste el ${lugarTxt(L).toLowerCase()}.`:"";
+  $("#toDatos").disabled=!L;
   const b=$(`#seats [data-n="${n}"]`); if(b) b.focus();
 }
 
 function invalid(el,msg){ el.setAttribute("aria-invalid","true"); NB.toast(msg); el.focus(); return false; }
 function validate(){
   dlg.querySelectorAll("[aria-invalid]").forEach(e=>e.removeAttribute("aria-invalid"));
-  const kid=isBallet(bk.c);
-  if(kid){
-    if(!$("#kName").value.trim()) return invalid($("#kName"),"Escribe el nombre de la niña.");
-    if(!$("#gName").value.trim()) return invalid($("#gName"),"Escribe el nombre del padre, la madre o el tutor.");
-  }else if(!$("#fName").value.trim()) return invalid($("#fName"),"Escribe tu nombre.");
+  if(!$("#fName").value.trim()) return invalid($("#fName"),"Escribe tu nombre.");
   const wa=digits($("#fWa").value);
   if(wa.length<10||wa.length>11) return invalid($("#fWa"),"Escribe un WhatsApp de 10 dígitos, por ejemplo 809-000-0000.");
   if(!$("#memWrap").hidden&&!$("#fMem").checked) return invalid($("#fMem"),"Esta clase es exclusiva para miembros: confirma que tienes una membresía activa.");
@@ -424,10 +470,9 @@ function submit(e){
   e.preventDefault();
   if(!validate()) return;
   store=readStore(); prune();              // por si otra pestaña reservó mientras tanto
-  const c=bk.c, kid=isBallet(c);
+  const c=bk.c;
   const base={id:uid(), occ:occKey(c,bk.fecha), claseId:c.id, fecha:bk.fecha,
-    nombre:(kid?$("#gName"):$("#fName")).value.trim(), wa:fmtWa($("#fWa").value.trim()),
-    nina:kid?$("#kName").value.trim():"", creada:new Date().toISOString()};
+    nombre:$("#fName").value.trim(), wa:fmtWa($("#fWa").value.trim()), nina:"", creada:new Date().toISOString()};
   if(store.reservas.some(r=>r.occ===base.occ&&digits(r.wa)===digits(base.wa)&&(r.nina||"")===base.nina)){
     NB.toast("Ya hay una reserva con ese WhatsApp en esta clase."); return;
   }
@@ -555,6 +600,13 @@ function initHero(){
   pick();
 }
 
+// Ballet niñas: inscripción formal por WhatsApp (el estudio envía el formulario)
+function kidWA(c,d){
+  if(!c){ NB.whatsapp(`Hola, balé. Quiero inscribir a mi hija en ${D.precios.infantil.nombre}. ¿Me envían el formulario de inscripción?`); return; }
+  const dia=d.toLocaleDateString("es-DO",{weekday:"long"});
+  NB.whatsapp(`Hola, balé. Quiero inscribir a mi hija en ${clsName(c)}, grupo de ${c.edad} (${dia} ${NB.fmtH(toH(c.inicio))} con ${c.instructora}). ¿Me envían el formulario de inscripción?`);
+}
+
 // Lleva el horario al primer día (desde hoy) con una clase que cumpla "test"
 function goToClass(test,type){
   fInst=""; $("#fInst").value=""; setType(type||"");
@@ -571,12 +623,16 @@ function initPublic(){
   // "Reserva tu primera clase": va al próximo sábado de primera clase
   $("#firstBtn").addEventListener("click",()=>goToClass(c=>c.etiqueta==="primera"));
   $("#refBtn").addEventListener("click",()=>{ goToClass(c=>c.clase==="Pilates Reformer","Pilates Reformer"); scrollToHorario(); });
+  addEventListener("resize",()=>placePill(false));
+  if(document.fonts&&document.fonts.ready) document.fonts.ready.then(()=>placePill(false));
   $("#prevW").addEventListener("click",()=>{ if(week>0){ week--; dayIx=week===0?todayIx():0; renderWeek(); } });
   $("#nextW").addEventListener("click",()=>{ if(week<WEEKS_AHEAD){ week++; dayIx=0; renderWeek(); } });
   $("#strip").addEventListener("click",e=>{ const b=e.target.closest("[data-d]"); if(!b) return; dayIx=+b.dataset.d; renderWeek(); $(`#strip [data-d="${dayIx}"]`).focus(); });
   $("#fInst").addEventListener("change",e=>{ fInst=e.target.value; renderWeek(); });
   $("#fType").addEventListener("change",e=>{ fType=e.target.value; renderWeek(); });
   $("#rows").addEventListener("click",e=>{
+    const k=e.target.closest("[data-kid]");
+    if(k){ kidWA(clsById(k.dataset.kid),dayDate(week,dayIx)); return; }
     const b=e.target.closest("[data-book],[data-wait]"); if(!b) return;
     const c=clsById(b.dataset.book||b.dataset.wait), fecha=iso(dayDate(week,dayIx));
     if(rowState(c,fecha)==="past"||rowState(c,fecha)==="cancel"){ renderRows(); return; }
@@ -590,13 +646,14 @@ function initPublic(){
   });
   // Precios
   $("#precios").addEventListener("click",e=>{
+    if(e.target.closest("[data-kid-any]")){ kidWA(null); return; }
+    if(e.target.closest("#sockBtn")){ const S=D.precios.medias;
+      NB.whatsapp(`Hola, balé. Quiero pedir medias antideslizantes (${sockList(S," / ")}). ¿Cómo hago el pago?`); return; }
     const t=e.target.closest("[data-book-type]");
     if(t){ const types=t.dataset.bookType.split("|"); goToClass(c=>types.includes(c.clase),t.dataset.bookType); scrollToHorario(); return; }
     const b=e.target.closest("[data-pack]");
     if(b){ const it=D.precios.membresia.items.find(x=>x.id===b.dataset.pack);
       NB.whatsapp(`Hola, balé. Quiero ${packLabel(it)} (${NB.money(it.precio)}). ¿Cómo hago el pago?`); return; }
-    if(e.target.closest("#kidBtn")){ const K=D.precios.infantil;
-      NB.whatsapp(`Hola, balé. Quiero inscribir a mi hija en ${K.nombre} (inscripción ${NB.money(K.inscripcion)} y mensualidad ${NB.money(K.mensualidad)}). ¿Cómo hago el pago?`); return; }
     if(e.target.closest("#giftBtn")) NB.whatsapp(D.precios.regalo.mensaje);
   });
   // Comunidad: botones de WhatsApp
@@ -605,7 +662,7 @@ function initPublic(){
   // Diálogo
   $("#seats").addEventListener("click",e=>{ const b=e.target.closest("[data-n]"); if(b&&!b.disabled) pickSeat(+b.dataset.n); });
   $("#sala").addEventListener("click",e=>{ const m=e.target.closest("[data-n]"); if(m) pickSeat(+m.dataset.n); });
-  $("#toDatos").addEventListener("click",()=>{ show("stDatos"); (isBallet(bk.c)?$("#kName"):$("#fName")).focus(); });
+  $("#toDatos").addEventListener("click",()=>{ show("stDatos"); $("#fName").focus(); });
   $("#backLugar").addEventListener("click",()=>{ renderSeats(); show("stLugar"); const s=$(`#seats [aria-pressed="true"]`); if(s) s.focus(); });
   $("#stDatos").addEventListener("submit",submit);
   $("#stDatos").addEventListener("input",e=>e.target.removeAttribute("aria-invalid"));
@@ -656,7 +713,7 @@ function renderVWeek(){
     const head=o.i!==lastDay?`<li class="vday">${esc(fmtDay(fromIso(o.fecha)))}</li>`:""; lastDay=o.i;
     return head+`<li><button type="button" class="vcls" data-occ="${k}" aria-pressed="${k===vSel}">
       <span class="t">${esc(NB.fmtH(toH(o.c.inicio)))}</span><span class="n">${esc(clsName(o.c))}<small>${esc(o.c.instructora)}</small></span>
-      <span class="c ${n>=N||isCancel(o.c,o.fecha)?"full":""}">${isCancel(o.c,o.fecha)?"Cancelada":`${n}/${N}${w?` · ${w} en espera`:""}`}</span></button></li>`;
+      <span class="c ${(n>=N&&!isBallet(o.c))||isCancel(o.c,o.fecha)?"full":""}">${isCancel(o.c,o.fecha)?"Cancelada":isBallet(o.c)?`${n} ${n===1?"alumna":"alumnas"}`:`${n}/${N}${w?` · ${w} en espera`:""}`}</span></button></li>`;
   }).join("")||`<li class="empty-state">Sin clases esta semana.</li>`;
   renderVDetail();
   renderCalPrev();
@@ -668,12 +725,12 @@ function renderVDetail(){
   const [id,fecha]=vSel.split("@"), c=clsById(id), list=roster(c,fecha), wl=waitlist(c,fecha), barra=isBarra(c);
   const extra=c.edad||tagTxt(c);
   box.innerHTML=`<h2>${esc(clsName(c))}${extra?` <small>${esc(extra)}</small>`:""}</h2>
-    <p class="meta">${esc(fmtDay(fromIso(fecha)))} · ${esc(range(c))} · ${esc(c.instructora)} · <b>${used(c,fecha)} de ${cap(c)}</b> lugares ocupados</p>
-    ${barra?`<div class="sala mini" aria-hidden="true">${salaSVG(taken(c,fecha),null,false)}</div>`:`<p class="cupoinfo">Cupo por número, sin lugar fijo: ${cap(c)}${cupoNota(c)?` (${esc(cupoNota(c).toLowerCase())})`:""}.</p>`}
+    <p class="meta">${esc(fmtDay(fromIso(fecha)))} · ${esc(range(c))} · ${esc(c.instructora)} · ${isBallet(c)?`<b>${list.length}</b> ${list.length===1?"alumna":"alumnas"}`:`<b>${used(c,fecha)} de ${cap(c)}</b> lugares ocupados`}</p>
+    ${barra?`<div class="sala mini" aria-hidden="true">${salaSVG(taken(c,fecha),null,false)}</div>`:isBallet(c)?`<p class="cupoinfo">Inscripción por WhatsApp con formulario; no se reserva por la web.</p>`:`<p class="cupoinfo">Cupo por número, sin lugar fijo: ${cap(c)}${cupoNota(c)?` (${esc(cupoNota(c).toLowerCase())})`:""}.</p>`}
     <h3>Alumnas</h3>
     <ol class="roster">${list.map(r=>`<li><span class="seatno" title="${barra?"Lugar":"Orden de reserva"}"><span class="sr-only">${barra?"Lugar":"Número"} </span>${r.pos}</span>
       <span class="nm">${esc(r.nombre)}${r.tutor?`<small>Tutor: ${esc(r.tutor)}</small>`:""}</span>
-      <span class="tagx ${r.demo?"":"web"}">${r.demo?"Ejemplo":r.pago==="aprobado"?"Web · pagado":"Web · pago por confirmar"}</span>
+      <span class="tagx ${r.demo?"":"web"}">${r.fijo?"Lugar fijo":r.demo?"Ejemplo":r.pago==="aprobado"?"Web · pagado":"Web · pago por confirmar"}</span>
       ${r.id?`<button class="linkbtn" type="button" data-cancel="${r.id}">Cancelar</button>`:""}</li>`).join("")||"<li>Sin reservas.</li>"}</ol>
     <h3>Lista de espera</h3>
     ${wl.length?`<ol class="roster">${wl.map((e,i)=>`<li><span class="seatno">${i+1}</span><span class="nm">${esc(e.nina||e.nombre)}${e.nina?`<small>Tutor: ${esc(e.nombre)}</small>`:""}</span><span class="tagx">${esc(e.wa)}</span></li>`).join("")}</ol>`:`<p class="privacy">Nadie en espera.</p>`}`;

@@ -15,15 +15,18 @@
   --b-ink:#2E2723;           /* espresso del logo */
   --blush:#F7E6E8;            /* rosadito claro de las bandas */
   --pink:#F4C5CE;             /* rosa de la marca: círculos, chips, separadores */
-  --fucsia:#E0264F;           /* fucsia de sus redes: letra blanca encima 4,6:1 */
-  --fucsia-2:#C81E45;         /* hover del fucsia */
   --brown:#5A3426;            /* marrón de la marca: todo lo que resalta (crema encima 10,4:1) */
   --brown-2:#46281E;          /* hover del marrón */
   --on-brown:#FFFAF6;         /* letra sobre el marrón */
-  --cta:var(--fucsia);        /* solo botones principales de reservar */
+  --cta:var(--brown);         /* botones principales de reservar: todo en la misma línea */
   --cream:#F3E4D8; --paper:#FFFAF6; --ink:#2E2723; --muted:#6B5A52; --line:#E3CFC2;
   --ring:var(--brown);
   --dur-theme:650ms; --ease-in-out:cubic-bezier(.65,0,.35,1); --ease-out:cubic-bezier(.2,.8,.2,1);
+  /* Movimiento: salir dura el 60–70 % de entrar */
+  --dur-fast:160ms;            /* hover, pulsar */
+  --dur-mid:280ms;             /* cambios de estado */
+  --dur-slow:700ms;            /* entradas */
+  --ease-spring:cubic-bezier(.34,1.56,.64,1);   /* rebote leve: solo al elegir lugar y día */
   box-sizing:border-box;
   padding-top:env(safe-area-inset-top,0px); padding-bottom:env(safe-area-inset-bottom,0px);
 }

@@ -56,6 +56,7 @@ const panel={
     s=s||{};
     return {cfg:s.cfg||{}, precios:s.precios||{}, cupos:s.cupos||{}, sala:s.sala||null,
       canceladas:Array.isArray(s.canceladas)?s.canceladas:null, eventos:Array.isArray(s.eventos)?s.eventos:null,
+      fijos:s.fijos&&typeof s.fijos==="object"&&!Array.isArray(s.fijos)?s.fijos:null,
       aviso:typeof s.aviso==="string"?s.aviso:null};
   },
   save(v){ try{ localStorage.setItem(PANEL_KEY,JSON.stringify(v)); return true; }catch(e){ return false; } },

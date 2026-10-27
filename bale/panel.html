@@ -30,7 +30,7 @@
   <section class="phead">
     <span class="b-kick">balé · panel del negocio</span>
     <h1>Panel del negocio</h1>
-    <p>Cambia los datos de contacto, avisa a tus clientas, cancela una clase, ajusta cupos y precios y agrega eventos. <strong>Demo:</strong> los cambios se guardan solo en este navegador. Para que los vea todo el mundo, pulsa «Descargar archivos para publicar» y súbelos a <code>bale/data/</code> (ver <code>COMO-ACTUALIZAR.md</code>).</p>
+    <p>Cambia los datos de contacto, avisa a tus clientas, cancela una clase, marca los lugares fijos de las miembros, ajusta cupos y precios y agrega eventos. <strong>Demo:</strong> los cambios se guardan solo en este navegador. Para que los vea todo el mundo, pulsa «Descargar archivos para publicar» y súbelos a <code>bale/data/</code> (ver <code>COMO-ACTUALIZAR.md</code>).</p>
     <p class="plinks"><a href="./?vista=estudio">Vista del estudio (reservas, clientes, pagos)</a></p>
   </section>
 
@@ -60,11 +60,20 @@
           <h2 id="h-cupos">Cupos y sala</h2>
           <div class="form two">
             <label class="fld">Máquinas de Reformer<input type="number" id="cupReformer" min="1" max="40" inputmode="numeric"></label>
-            <label class="fld">Cupo de Ballet niñas<input type="number" id="cupBallet" min="1" max="60" inputmode="numeric"></label>
             <label class="fld">Filas de barras<input type="number" id="salaFilas" min="1" max="6" inputmode="numeric"></label>
             <label class="fld">Lugares por fila<input type="number" id="salaPorFila" min="1" max="12" inputmode="numeric"></label>
           </div>
           <p class="privacy" id="salaTotal"></p>
+        </section>
+
+        <section class="pbox" aria-labelledby="h-fijos">
+          <h2 id="h-fijos">Lugares fijos de miembros</h2>
+          <p class="privacy">Marca el lugar de cada clienta con membresía. Se repite todas las semanas del mes. Para quitarlo, desmárcalo.</p>
+          <div class="form">
+            <label class="fld">Clase de la semana<select id="fClase"></select></label>
+          </div>
+          <div id="fBox" class="fbox"></div>
+          <div id="fSum"></div>
         </section>
       </div>
 

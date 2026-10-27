@@ -59,18 +59,23 @@
         "precio": 13500,
         "destacado": true
       }
-    ]
+    ],
+    "aviso": "Las membresías tienen un costo más elevado porque guardan tu espacio durante todo el mes: tenemos cupos limitados."
   },
   "infantil": {
     "titulo": "Clase infantil",
     "nombre": "Ballet clásico infantil",
-    "edades": "2 a 11 años",
+    "edades": "3 a 11 años",
     "inscripcion": 2500,
     "mensualidad": 3500,
     "accesorios_titulo": "Uniformes y accesorios",
     "accesorios": [
       {
-        "nombre": "Uniforme de ballet completo",
+        "nombre": "Leotardo (solo leotardo)",
+        "precio": 1200
+      },
+      {
+        "nombre": "Uniforme de ballet completo (leotardo + falda)",
         "precio": 3200
       },
       {
@@ -79,7 +84,7 @@
       },
       {
         "nombre": "Zapatillas",
-        "precio": 1250
+        "precio": 1600
       },
       {
         "nombre": "Medias antideslizantes cortas",
@@ -89,7 +94,30 @@
         "nombre": "Medias antideslizantes largas",
         "precio": 850
       }
-    ]
+    ],
+    "nota_accesorios": "Los uniformes se preordenan según la talla de cada niña. Te compartimos las fechas de pedido y entrega."
+  },
+  "medias": {
+    "titulo": "Medias antideslizantes",
+    "texto": "Son obligatorias en todas las clases. Te dan agarre en la barra, el mat y el Reformer; sobre todo en Hot Barre, donde con el sudor una media normal no agarra y te puedes resbalar. Son por tu seguridad.",
+    "items": [
+      {
+        "id": "med-tobillo",
+        "nombre": "De tobillo",
+        "precio": 450,
+        "foto": "img/medias-tobillo.webp",
+        "alt": "Medias antideslizantes negras de tobillo, con el logo de balé en la planta"
+      },
+      {
+        "id": "med-largas",
+        "nombre": "Largas",
+        "precio": 850,
+        "foto": "img/medias-largas.webp",
+        "alt": "Medias antideslizantes largas rosadas, con el logo de balé en la planta"
+      }
+    ],
+    "boton": "Pedir mis medias",
+    "_fotos": "Cada medida lleva su foto cuadrada (720 × 720, con versión -400) y su alt. El mensaje de WhatsApp se arma con los precios de items."
   },
   "regalo": {
     "titulo": "Regala balé",
