@@ -4,6 +4,12 @@
    Reformer, horario con reservas (tira de 7 días, filtros, esquema de la sala
    en las clases de barra y cupo por número en las demás), precios, certificado
    de regalo, comunidad, equipo, preguntas frecuentes y ubicación.
+   Con el sistema (config.json → sistema.activo, js/sistema.js): el horario,
+   los lugares ocupados y las reservas salen de la base de datos; la reserva
+   se confirma al momento, el correo lo manda el notificador y la clienta
+   recibe un enlace para ver o cancelar (mi-reserva.html#t=…). Su token se
+   guarda en este navegador ("bale-mis-reservas") para "Tus próximas reservas".
+   Sin sistema (o si la base de datos no responde), como siempre:
    Reserva: abre WhatsApp de balé con la reserva completa, avisa al estudio por
    correo (FormSubmit) y ofrece el .ics de la clase.
    Ocupación: lugares fijos de las miembros (bale.json → fijos, se marcan en el
@@ -20,20 +26,31 @@
 (function(){
 "use strict";
 const NB = window.BALE;
+const SIS = window.BALE_SISTEMA;
 const {$, esc} = NB;
 const KEY = "bale-reservas";        // {reservas:[], espera:[], aprobados:[]}
+const MIS_KEY = "bale-mis-reservas"; // [{t, fecha, inicio, clase, fl, hora}]: el token de cada reserva, sin datos personales
 const WEEKS_AHEAD = 3;
 const DKEYS = ["lunes","martes","miercoles","jueves","viernes","sabado","domingo"];
 const DSHORT = ["LUN","MAR","MIÉ","JUE","VIE","SÁB","DOM"];
 const ESTUDIO = new URLSearchParams(location.search).get("vista")==="estudio";
 
+/* ---------- Fechas (el calendario es el de La Vega, aunque la clienta esté de viaje) ---------- */
+const TZ="America/Santo_Domingo";
+function nowLV(){
+  const p={}; new Intl.DateTimeFormat("en-CA",{timeZone:TZ,year:"numeric",month:"2-digit",day:"2-digit",hour:"2-digit",minute:"2-digit",hourCycle:"h23"})
+    .formatToParts(new Date()).forEach(x=>{ p[x.type]=x.value; });
+  return {fecha:`${p.year}-${p.month}-${p.day}`, hora:`${p.hour}:${p.minute}`};
+}
+function todayLV(){ const [y,m,d]=nowLV().fecha.split("-").map(Number); return new Date(y,m-1,d); }
+function todayIx(){ return (todayLV().getDay()+6)%7; }        // lunes = 0
+function monday(w){ const d=todayLV(); d.setDate(d.getDate()-todayIx()+7*w); return d; }
+
 let D, CFG;
 let week=0, dayIx=todayIx(), fInst="", fType="";
 let vWeek=0, vInst="", vSel=null;
-
-/* ---------- Fechas ---------- */
-function todayIx(){ return (new Date().getDay()+6)%7; }        // lunes = 0
-function monday(w){ const d=new Date(); d.setHours(0,0,0,0); d.setDate(d.getDate()-todayIx()+7*w); return d; }
+// Sesiones de la base de datos por fecha (Map "YYYY-MM-DD" → [clases]); null = sin sistema
+let SES=null, sesAt=0;
 function dayDate(w,i){ const d=monday(w); d.setDate(d.getDate()+i); return d; }
 const iso = d=>`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}`;
 const fromIso = s=>{ const [y,m,d]=s.split("-").map(Number); return new Date(y,m-1,d); };
@@ -89,13 +106,44 @@ function buildLugares(){
   S.lugares=out;
 }
 
+/* ---------- Sistema: sesiones de la base de datos ----------
+   Cada sesión se convierte en una "clase" como las de horario.json, con su
+   fecha, su ocupación y su estado. Fechas y horas tal como vienen (La Vega). */
+const enLinea = ()=>!!(SIS&&SIS.activo()&&SES);
+function fromSes(s){
+  return {key:"s"+s.id, sid:s.id, id:s.horario_id||"s"+s.id, horario_id:s.horario_id, fecha:s.fecha,
+    dia:DKEYS[(fromIso(s.fecha).getDay()+6)%7], inicio:s.inicio, fin:s.fin, clase:s.clase, titulo:s.titulo||"",
+    instructora:s.instructora, etiqueta:s.etiqueta||undefined, edad:s.edad||undefined, modo:s.modo,
+    capacidad:+s.capacidad||0, ocupados:+s.ocupados||0, lugares:Array.isArray(s.lugares_ocupados)?s.lugares_ocupados:[],
+    estado:s.estado, abierta:!!s.abierta};
+}
+// Una sola llamada para las semanas que muestra la página (o solo una fecha, para refrescar)
+async function cargarSesiones(desde,hasta){
+  const a=desde||iso(dayDate(0,0)), b=hasta||iso(dayDate(WEEKS_AHEAD,6));
+  const j=await SIS.llamar("horario_publico",{p_desde:a,p_hasta:b});
+  if(!j.ok||!Array.isArray(j.sesiones)){ SIS.caer(); throw new Error(j.error||"horario"); }
+  const m=desde?new Map(SES||[]):new Map();
+  if(desde) for(const k of [...m.keys()]) if(k>=a&&k<=b) m.delete(k);
+  j.sesiones.forEach(s=>{ const o=fromSes(s); if(!m.has(o.fecha)) m.set(o.fecha,[]); m.get(o.fecha).push(o); });
+  SES=m; if(!desde) sesAt=Date.now();
+}
+const sesDe = fecha=>(SES&&SES.get(fecha))||[];
+// Se vuelve a pedir cuando hace falta; si falla, la página sigue sin sistema
+function refrescar(desde,hasta){
+  if(!enLinea()) return Promise.resolve(false);
+  return cargarSesiones(desde,hasta).then(()=>true,()=>{ sinSistema(); return false; });
+}
+
 /* ---------- Ocupación de cada clase en una fecha ---------- */
 const occKey = (c,fecha)=>`${c.id}@${fecha}`;
 const clsById = id=>D.horario.find(c=>c.id===id);
+// Clase de una fila del horario (data-book="lun-1730" sin sistema, "s123" con sistema)
+const rowClass = (key,fecha)=>enLinea() ? sesDe(fecha).find(c=>c.key===key) : clsById(key);
 // Clases de barra: lugar concreto en la sala. Las demás: cupo por número (bale.json → cupos)
-const isBarra = c=>D.barra_tipos.includes(c.clase);
-const cap = c=>isBarra(c) ? D.sala.lugares.length : (+D.cupos[c.clase]||12);
-const cupoNota = c=>{ const n=D.cupos.nota||{}; return c.clase in n ? n[c.clase] : "Cupo por confirmar"; };
+const isBarra = c=>c.modo ? c.modo==="lugares" : D.barra_tipos.includes(c.clase);
+const cap = c=>c.modo ? c.capacidad : isBarra(c) ? D.sala.lugares.length : (+D.cupos[c.clase]||12);
+// Con sistema el cupo es el de la base de datos: ya no hay "por confirmar"
+const cupoNota = c=>{ if(c.modo) return ""; const n=D.cupos.nota||{}; return c.clase in n ? n[c.clase] : "Cupo por confirmar"; };
 // Lugares fijos de las miembros (bale.json → fijos, o el panel): se repiten todas las semanas.
 // Barra: lista de lugares. Reformer: cuántas máquinas están tomadas.
 function fixedSeats(c){ const v=D.fijos[c.id]; return Array.isArray(v)?v.filter(n=>n>=1&&n<=D.sala.lugares.length):[]; }
@@ -104,18 +152,20 @@ const fixedCount = c=>{ const v=D.fijos[c.id]; return Array.isArray(v)?v.length:
 function demoSeats(c){ if(!ESTUDIO) return []; const v=D.demo.ocupados[c.id], f=new Set(fixedSeats(c)); return Array.isArray(v)?v.filter(n=>n<=D.sala.lugares.length&&!f.has(n)):[]; }
 const demoCount = c=>{ if(!ESTUDIO) return 0; const v=D.demo.ocupados[c.id]; return Array.isArray(v)?v.length:+v||0; };
 function taken(c,fecha){
+  if(c.modo) return new Set(c.lugares);
   const k=occKey(c,fecha), s=new Set(fixedSeats(c).concat(demoSeats(c)));
   store.reservas.forEach(r=>{ if(r.occ===k) s.add(r.lugar); });
   return s;
 }
 const webRes = (c,fecha)=>store.reservas.filter(r=>r.occ===occKey(c,fecha));
-const used = (c,fecha)=>isBarra(c) ? taken(c,fecha).size : Math.min(cap(c),fixedCount(c)+demoCount(c))+webRes(c,fecha).length;
-const free = (c,fecha)=>cap(c)-used(c,fecha);
-const waitlist = (c,fecha)=>store.espera.filter(e=>e.occ===occKey(c,fecha));
-const isBallet = c=>/ballet/i.test(c.clase);
+const used = (c,fecha)=>c.modo ? Math.max(c.ocupados,c.lugares.length) : isBarra(c) ? taken(c,fecha).size : Math.min(cap(c),fixedCount(c)+demoCount(c))+webRes(c,fecha).length;
+const free = (c,fecha)=>c.modo ? Math.max(0,cap(c)-used(c,fecha)) : cap(c)-used(c,fecha);
+// La lista de espera de la base de datos no es pública: con sistema no se cuenta aquí
+const waitlist = (c,fecha)=>c.modo ? [] : store.espera.filter(e=>e.occ===occKey(c,fecha));
+const isBallet = c=>c.modo ? c.modo==="inscripcion" : /ballet/i.test(c.clase);
 const initials = n=>n.split(/\s+/).filter(Boolean).slice(0,2).map(p=>p[0]).join("").toUpperCase();
 const instInfo = n=>D.instructoras.find(i=>i.nombre===n)||{nombre:n,rol:"Instructora"};
-const clsName = c=>c.clase;
+const clsName = c=>c.titulo||c.clase;
 const tagOf = c=>c.etiqueta?D.etiquetas[c.etiqueta]:null;
 const tagTxt = c=>{ const t=tagOf(c); return t?t.texto:""; };
 const lugarOf = n=>D.sala.lugares.find(l=>l.n===n);
@@ -295,7 +345,9 @@ function renderCommunity(){
 
 /* ---------- Horario: tira de días, filtros y filas ---------- */
 const matches = c=>(!fInst||c.instructora===fInst)&&(!fType||fType.split("|").includes(c.clase));
-const dayClasses = i=>D.horario.filter(c=>c.dia===DKEYS[i]&&matches(c)).sort((a,b)=>toH(a.inicio)-toH(b.inicio));
+const dayClasses = (i,w=week)=>(enLinea() ? sesDe(iso(dayDate(w,i))) : D.horario.filter(c=>c.dia===DKEYS[i]))
+  .filter(matches).sort((a,b)=>toH(a.inicio)-toH(b.inicio));
+let cargando=false;   // con sistema, mientras llega el horario de la base de datos
 
 function renderFilters(){
   const insts=D.instructoras.map(i=>i.nombre).filter(n=>D.horario.some(c=>c.instructora===n));
@@ -338,7 +390,15 @@ function renderWeek(){
   renderRows();
 }
 
+// Con sistema: ya empezó (Finalizada) o aún no, pero no se reserva por la web (Cerrada)
+const empezo = c=>{ const n=nowLV(); return `${c.fecha} ${c.inicio}`<=`${n.fecha} ${n.hora}`; };
 function rowState(c,fecha){
+  if(c.modo){
+    if(c.estado==="cancelada") return "cancel";
+    if(c.modo==="inscripcion") return "kid";
+    if(!c.abierta) return "past";
+    return free(c,fecha)>0 ? "open" : "full";
+  }
   if(isCancel(c,fecha)) return "cancel";
   if(isBallet(c)) return "kid";            // inscripción al grupo por WhatsApp, sin reserva ni cupos
   if(startOf(c,fecha)<new Date()) return "past";
@@ -349,6 +409,7 @@ function renderRows(){
   const d=dayDate(week,dayIx), fecha=iso(d), list=dayClasses(dayIx);
   const hoy=week===0&&dayIx===todayIx();
   $("#dTitle").textContent=(hoy?"Hoy, ":"")+fmtDay(d);
+  if(cargando){ $("#rows").innerHTML=`<li class="empty-state">Cargando el horario…</li>`; return; }
   if(!list.length){
     let next="";
     for(let k=1;k<=7&&!next;k++){ const j=(dayIx+k)%7; if(dayClasses(j).length) next=DSHORT[j]; }
@@ -361,10 +422,10 @@ function renderRows(){
     const lbl=`${clsName(c)}, ${fmtDay(d)} a las ${NB.fmtH(toH(c.inicio))}`;
     let action;
     if(st==="cancel") action=`<span class="state full">Cancelada</span>`;
-    else if(st==="kid") action=`<button class="rbtn" type="button" data-kid="${c.id}" aria-label="Inscripción por WhatsApp: ${esc(lbl)}">Inscripción</button>`;
-    else if(st==="past") action=`<span class="state">Finalizada</span>`;
-    else if(st==="full") action=`<span class="state full">Llena</span><button class="rbtn line" type="button" data-wait="${c.id}" aria-label="Lista de espera: ${esc(lbl)}">Lista de espera</button>`;
-    else action=`<button class="rbtn" type="button" data-book="${c.id}" aria-label="Reservar ${esc(lbl)}">Reservar</button>`;
+    else if(st==="kid") action=`<button class="rbtn" type="button" data-kid="${esc(c.key)}" aria-label="Inscripción por WhatsApp: ${esc(lbl)}">Inscripción</button>`;
+    else if(st==="past") action=`<span class="state">${c.modo&&!empezo(c)?"Cerrada":"Finalizada"}</span>`;
+    else if(st==="full") action=`<span class="state full">Llena</span><button class="rbtn line" type="button" data-wait="${esc(c.key)}" aria-label="Lista de espera: ${esc(lbl)}">Lista de espera</button>`;
+    else action=`<button class="rbtn" type="button" data-book="${esc(c.key)}" aria-label="Reservar ${esc(lbl)}">Reservar</button>`;
     return `<li class="crow ${st}" style="--i:${n}">
       <div class="tm"><b>${esc(NB.fmtH(toH(c.inicio)))}</b><small>${mins(c)} min</small></div>
       <div class="cn">
@@ -392,13 +453,12 @@ function salaSVG(set,mine,interactive){
 }
 
 /* ---------- Reserva (diálogo) ---------- */
-const bk={c:null, fecha:"", lugar:null, wait:false, last:null};
+const bk={c:null, fecha:"", lugar:null, wait:false, last:null, busy:false};
 const dlg=$("#book");
 
 function openBook(c,fecha,wait){
-  Object.assign(bk,{c,fecha,lugar:null,wait,last:null});
+  Object.assign(bk,{c,fecha,lugar:null,wait,last:null,busy:false});
   const d=fromIso(fecha), T=tagOf(c);
-  $("#bkKick").textContent=wait?"Lista de espera":"Reservar";
   $("#bkTitle").textContent=clsName(c)+(c.edad?` · ${c.edad}`:"");
   $("#bkMeta").textContent=`${fmtDay(d)} · ${range(c)} · con ${c.instructora}`;
   const warn=$("#bkWarn");
@@ -407,18 +467,77 @@ function openBook(c,fecha,wait){
   $("#stDatos").reset();
   $("#memWrap").hidden=!(T&&T.confirmar);
   if(T&&T.confirmar) $("#memTxt").textContent=T.confirmar;
-  $("#payLine").hidden=wait;
-  const barra=isBarra(c), direct=wait||!barra;
-  $("#datosH").textContent=wait?"Tus datos para la lista de espera":barra?"2. Tus datos":"Tus datos";
-  $("#confirmBtn").textContent=wait?"Unirme a la lista de espera":"Confirmar y enviar por WhatsApp";
-  $("#backLugar").hidden=direct;
-  const ci=$("#cupoInfo");
-  ci.hidden=wait||barra;
-  if(!ci.hidden){ const n=free(c,fecha); ci.textContent=`Esta clase no tiene lugar fijo: quedan ${n} de ${cap(c)} ${n===1?"cupo":"cupos"}${cupoNota(c)?` (${cupoNota(c).toLowerCase()})`:""}.`; }
+  hideErr(); modoCampos(); textosModo();
+  const direct=wait||!isBarra(c);
   if(direct) show("stDatos"); else { renderSeats(); show("stLugar"); }
   dlg.showModal();
   const first=direct?$("#fName"):$("#seats button:not(:disabled)");
   if(first) first.focus();
+  if(c.modo) refrescarClase();       // lugares frescos de la base de datos
+}
+// Textos que cambian entre reservar y la lista de espera (también al pasar de una a otra)
+function textosModo(){
+  const c=bk.c, wait=bk.wait, barra=isBarra(c), direct=wait||!barra;
+  $("#bkKick").textContent=wait?"Lista de espera":"Reservar";
+  $("#payLine").hidden=wait;
+  $("#datosH").textContent=wait?"Tus datos para la lista de espera":barra?"2. Tus datos":"Tus datos";
+  $("#confirmBtn").textContent=confirmTxt();
+  $("#backLugar").hidden=direct;
+  cupoInfo();
+}
+const confirmTxt = ()=>bk.wait?"Unirme a la lista de espera":enLinea()&&bk.c&&bk.c.modo?"Confirmar reserva":"Confirmar y enviar por WhatsApp";
+function cupoInfo(){
+  const c=bk.c, ci=$("#cupoInfo");
+  ci.hidden=bk.wait||isBarra(c);
+  if(!ci.hidden){ const n=free(c,bk.fecha); ci.textContent=`Esta clase no tiene lugar fijo: quedan ${n} de ${cap(c)} ${n===1?"cupo":"cupos"}${cupoNota(c)?` (${cupoNota(c).toLowerCase()})`:""}.`; }
+}
+// Correo, permiso de WhatsApp y aviso de privacidad: solo con el sistema
+function modoCampos(){
+  const on=enLinea()&&!!(bk.c&&bk.c.modo);
+  dlg.querySelectorAll(".en-linea").forEach(el=>{ el.hidden=!on; });
+  if(!bk.busy) $("#confirmBtn").textContent=confirmTxt();
+}
+// La clase del diálogo con los datos más recientes de la base de datos
+function syncClase(){
+  if(!bk.c||!bk.c.modo) return null;
+  const n=sesDe(bk.fecha).find(x=>x.sid===bk.c.sid);
+  if(n) bk.c=n;
+  return n||null;
+}
+function refrescarClase(){
+  const sid=bk.c.sid;
+  refrescar(bk.fecha,bk.fecha).then(ok=>{
+    renderRows();
+    if(!ok||!dlg.open||!bk.c||bk.c.sid!==sid||bk.last) return;
+    const n=syncClase(); if(!n) return;
+    if(bk.lugar&&n.lugares.includes(bk.lugar)) bk.lugar=null;
+    if(!$("#stLugar").hidden) renderSeats();
+    cupoInfo();
+    const st=rowState(n,bk.fecha);
+    if(st==="cancel") showErr("Esta clase se canceló. Elige otra en el horario.");
+    else if(st==="past") showErr("Las reservas de esta clase ya cerraron. Escríbenos por WhatsApp y te ayudamos.",[waAyuda()]);
+    else if(st==="full"&&!bk.wait) showErr("La clase se llenó. Puedes unirte a la lista de espera.",[{t:"Unirme a la lista de espera",fn:aEspera}]);
+    else if(st==="open"&&bk.wait) showErr("Todavía hay lugares en esta clase: puedes reservar.",[{t:"Reservar",fn:aReserva}]);
+  });
+}
+
+/* ---------- Mensajes de error en el diálogo (con sistema) ---------- */
+function showErr(msg,btns=[]){
+  const box=$("#bkErr");
+  $("#bkErrTxt").textContent=msg;
+  const wrap=$("#bkErrBtns"); wrap.innerHTML="";
+  btns.forEach(b=>{ const el=document.createElement("button"); el.type="button"; el.className="bbtn line sm"; el.textContent=b.t; el.addEventListener("click",b.fn); wrap.append(el); });
+  wrap.hidden=!btns.length; box.hidden=false;
+  box.scrollIntoView({block:"nearest"});
+}
+function hideErr(){ $("#bkErr").hidden=true; $("#bkErrTxt").textContent=""; $("#bkErrBtns").innerHTML=""; }
+const waAyuda = ()=>({t:"Escribir por WhatsApp",fn:()=>NB.whatsapp(`Hola, balé. Quiero reservar ${clsName(bk.c)} del ${fmtDay(fromIso(bk.fecha))} a las ${NB.fmtH(toH(bk.c.inicio))}.`)});
+// Pasar a la lista de espera (clase llena) o volver a reservar (se liberó un lugar), sin perder lo escrito
+function aEspera(){ bk.wait=true; hideErr(); textosModo(); show("stDatos"); $("#confirmBtn").focus(); }
+function aReserva(){
+  bk.wait=false; hideErr(); textosModo();
+  if(isBarra(bk.c)){ bk.lugar=null; renderSeats(); show("stLugar"); const f=$("#seats button:not(:disabled)"); if(f) f.focus(); }
+  else { show("stDatos"); $("#confirmBtn").focus(); }
 }
 function show(id){
   ["stLugar","stDatos","stListo"].forEach(s=>{ $("#"+s).hidden=s!==id; });
@@ -456,39 +575,166 @@ function pickSeat(n){
 }
 
 function invalid(el,msg){ el.setAttribute("aria-invalid","true"); NB.toast(msg); el.focus(); return false; }
+// Las mismas reglas que la base de datos (bale.normalizar_*)
+const nombreOk = s=>{ const n=s.trim().replace(/\s+/g," "); return n.length>=2&&n.length<=80; };
+const telOk = s=>{ let d=digits(s); if(d.length===10) d="1"+d; return /^1[2-9]\d{9}$/.test(d); };
+const correoOk = s=>{ const c=s.trim().toLowerCase(); return c.length>=6&&c.length<=254&&/^[^@\s]+@[^@\s]+\.[^@\s]{2,}$/.test(c); };
 function validate(){
   dlg.querySelectorAll("[aria-invalid]").forEach(e=>e.removeAttribute("aria-invalid"));
+  const sis=!$("#fMail").closest(".en-linea").hidden;
   if(!$("#fName").value.trim()) return invalid($("#fName"),"Escribe tu nombre.");
+  if(sis&&!nombreOk($("#fName").value)) return invalid($("#fName"),"Escribe tu nombre completo.");
   const wa=digits($("#fWa").value);
-  if(wa.length<10||wa.length>11) return invalid($("#fWa"),"Escribe un WhatsApp de 10 dígitos, por ejemplo 809-000-0000.");
+  if(wa.length<10||wa.length>11||(sis&&!telOk(wa))) return invalid($("#fWa"),"Escribe un WhatsApp de 10 dígitos, por ejemplo 809-000-0000.");
+  if(sis&&!correoOk($("#fMail").value)) return invalid($("#fMail"),"Escribe un correo válido, por ejemplo tucorreo@gmail.com.");
   if(!$("#memWrap").hidden&&!$("#fMem").checked) return invalid($("#fMem"),"Esta clase es exclusiva para miembros: confirma que tienes una membresía activa.");
+  if(sis&&!$("#fPriv").checked) return invalid($("#fPriv"),"Acepta el aviso de privacidad para continuar.");
   if(!$("#fPol").checked) return invalid($("#fPol"),"Acepta la política de cancelación para continuar.");
   return true;
 }
 
 function submit(e){
   e.preventDefault();
-  if(!validate()) return;
+  if(bk.busy||!validate()) return;
+  if(enLinea()&&bk.c.modo) submitSistema(); else submitLocal(null);
+}
+
+/* ---------- Reserva con el sistema ----------
+   WhatsApp se abre dentro del clic (si abrir_whatsapp_al_reservar): se abre ya
+   una pestaña vacía y se le pone la dirección cuando la reserva está hecha; si
+   la reserva no sale, se cierra. Si la base de datos no responde, sigue como
+   siempre (WhatsApp y FormSubmit) en esa misma pestaña. */
+function setBusy(on){
+  bk.busy=on;
+  const b=$("#confirmBtn");
+  b.disabled=on;
+  b.toggleAttribute("aria-busy",on); if(on) b.setAttribute("aria-busy","true");
+  b.textContent=on?(bk.wait?"Un momento…":"Reservando…"):confirmTxt();
+}
+async function submitSistema(){
+  const c=bk.c, abrir=!bk.wait&&SIS.cfg().abrir_whatsapp_al_reservar!==false;
+  const datos={p_sesion_id:c.sid, p_nombre:$("#fName").value.trim(), p_telefono:digits($("#fWa").value),
+    p_correo:$("#fMail").value.trim(), p_acepta_whatsapp:$("#fWaOk").checked, p_acepta_privacidad:$("#fPriv").checked};
+  let win=null;
+  if(abrir){ try{ win=window.open("","_blank"); if(win) win.opener=null; }catch(e){ win=null; } }
+  hideErr(); setBusy(true);
+  let j=null;
+  try{
+    j=bk.wait ? await SIS.llamar("lista_espera_unirse",datos)
+      : await SIS.llamar("reservar",Object.assign(datos,{p_lugar:isBarra(c)?bk.lugar:null, p_acepta_politica:$("#fPol").checked,
+          p_confirma_membresia:!$("#memWrap").hidden&&$("#fMem").checked}));
+  }catch(e){ j=null; }
+  setBusy(false);
+  if(!j){ sinSistema(); submitLocal(win); return; }    // sin conexión: la reserva sigue por WhatsApp
+  if(!j.ok){ if(win) win.close(); errorReserva(j); return; }
+  const persona={nombre:datos.p_nombre, wa:fmtWa($("#fWa").value.trim()), correo:datos.p_correo.toLowerCase()};
+  if(bk.wait) bk.last=Object.assign({pos:j.posicion, fecha:bk.fecha, sis:true},persona);
+  else{
+    bk.last=Object.assign({R:j.reserva},persona);
+    guardarMia(j.reserva); renderMias();
+    if(win) win.location.href=NB.waLink(waMessage());
+  }
+  renderDone();
+  refrescar(bk.fecha,bk.fecha).then(ok=>{ if(ok){ syncClase(); renderRows(); } });
+}
+function campoInvalido(){
+  if(!nombreOk($("#fName").value)) return $("#fName");
+  if(!telOk($("#fWa").value)) return $("#fWa");
+  return $("#fMail");
+}
+function marcar(el){ el.setAttribute("aria-invalid","true"); el.focus(); }
+// Cada error de la API (docs/API.md) tiene su respuesta; el mensaje viene de la base de datos
+function errorReserva(j){
+  const msg=j.mensaje||"No se pudo completar. Inténtalo de nuevo o escríbenos por WhatsApp.";
+  switch(j.error){
+    case "lugar_ocupado":
+      if(Array.isArray(j.lugares_ocupados)){ bk.c.lugares=j.lugares_ocupados; bk.c.ocupados=Math.max(bk.c.ocupados,j.lugares_ocupados.length); }
+      bk.lugar=null; renderSeats(); show("stLugar"); showErr(msg);
+      { const f=$("#seats button:not(:disabled)"); if(f) f.focus(); }
+      break;
+    case "clase_llena": showErr(msg,[{t:"Unirme a la lista de espera",fn:aEspera}]); break;
+    case "hay_lugares": showErr(msg,[{t:"Reservar",fn:aReserva}]); break;
+    case "clase_cerrada": case "fuera_de_ventana": case "limite_reservas": case "demasiados_intentos": case "clase_cancelada":
+      showErr(msg,[waAyuda()]); break;
+    case "datos_invalidos": showErr(msg); marcar(campoInvalido()); break;
+    case "falta_consentimiento": showErr(msg); marcar(!$("#fPriv").checked?$("#fPriv"):$("#fPol")); break;
+    case "solo_miembros": showErr(msg); if(!$("#memWrap").hidden) marcar($("#fMem")); break;
+    default: showErr(msg);
+  }
+  refrescar(bk.fecha,bk.fecha).then(ok=>{
+    if(!ok) return;
+    renderRows();
+    const n=syncClase();
+    if(n&&j.error==="lugar_ocupado"&&!$("#stLugar").hidden) renderSeats();
+  });
+}
+
+/* ---------- Mis reservas: solo el token de cada reserva (sin nombre ni teléfono) ---------- */
+const TOKEN_RE=/^\d{1,18}-[0-9a-f]{32}$/;
+function escribirMias(a){ try{ a.length?localStorage.setItem(MIS_KEY,JSON.stringify(a)):localStorage.removeItem(MIS_KEY); }catch(e){} }
+function leerMias(){
+  let a=null; try{ a=JSON.parse(localStorage.getItem(MIS_KEY)); }catch(e){}
+  a=Array.isArray(a)?a:[];
+  const hoy=nowLV().fecha;
+  const ok=a.filter(x=>x&&TOKEN_RE.test(x.t)&&/^\d{4}-\d{2}-\d{2}$/.test(x.fecha)&&x.fecha>=hoy);
+  if(ok.length!==a.length) escribirMias(ok);         // las de fechas pasadas se borran
+  return ok;
+}
+function guardarMia(R){
+  const a=leerMias().filter(x=>x.t!==R.token);
+  a.push({t:R.token, fecha:R.fecha, inicio:R.inicio, clase:R.clase, fl:R.fecha_larga, hora:R.hora});
+  a.sort((x,y)=>(x.fecha+x.inicio).localeCompare(y.fecha+y.inicio));
+  escribirMias(a.slice(0,20));
+}
+function renderMias(){
+  const box=$("#mias"); if(!box) return;
+  const a=enLinea()?leerMias():[];
+  box.hidden=!a.length;
+  $("#miasList").innerHTML=a.map(x=>`<li><a href="mi-reserva.html#t=${esc(x.t)}"><b>${esc(x.clase)}</b><span>${esc(x.fl)} · ${esc(x.hora)}</span></a></li>`).join("");
+}
+const enlaceMia = t=>new URL(`mi-reserva.html#t=${t}`,location.href).href;
+
+/* ---------- La base de datos no responde: la página sigue como siempre ---------- */
+let caidoUI=false;
+function sinSistema(){
+  if(caidoUI) return;
+  caidoUI=true; SES=null; cargando=false;
+  const msg=SIS?SIS.AVISO:"";
+  ["#sisAviso","#bkSis"].forEach(s=>{ const el=$(s); if(el){ el.textContent=msg; el.hidden=false; } });
+  textoHorario(); renderMias();
+  if(dlg.open&&!bk.last) modoCampos();
+  if(D) renderWeek();
+}
+let schedTxt0="";
+function textoHorario(){
+  const p=$("#schedTxt"); if(!p) return;
+  if(!schedTxt0) schedTxt0=p.textContent;
+  p.textContent=enLinea()||cargando ? "Elige el día y la clase. En las clases de barra escoges tu lugar en la sala. Tu reserva se confirma al momento y te llega por correo." : schedTxt0;
+}
+
+/* ---------- Reserva sin sistema (como siempre) ---------- */
+function submitLocal(win){
   store=readStore(); prune();              // por si otra pestaña reservó mientras tanto
   const c=bk.c;
   const base={id:uid(), occ:occKey(c,bk.fecha), claseId:c.id, fecha:bk.fecha,
     nombre:$("#fName").value.trim(), wa:fmtWa($("#fWa").value.trim()), nina:"", creada:new Date().toISOString()};
+  const no=()=>{ if(win) win.close(); };    // la pestaña de WhatsApp ya abierta no se usa
   if(store.reservas.some(r=>r.occ===base.occ&&digits(r.wa)===digits(base.wa)&&(r.nina||"")===base.nina)){
-    NB.toast("Ya hay una reserva con ese WhatsApp en esta clase."); return;
+    no(); NB.toast("Ya hay una reserva con ese WhatsApp en esta clase."); return;
   }
   if(bk.wait){
-    if(free(c,bk.fecha)>0){ NB.toast("¡Se liberó un lugar! Ya puedes reservarlo."); dlg.close(); renderWeek(); return; }
+    if(free(c,bk.fecha)>0){ no(); NB.toast("¡Se liberó un lugar! Ya puedes reservarlo."); dlg.close(); renderWeek(); return; }
     store.espera.push(base); save();
     bk.last=Object.assign({pos:waitlist(c,bk.fecha).length},base);
   }else{
-    if(isBarra(c)&&taken(c,bk.fecha).has(bk.lugar)){ NB.toast("Ese lugar se acaba de ocupar. Elige otro."); renderSeats(); show("stLugar"); return; }
-    if(!isBarra(c)&&free(c,bk.fecha)<=0){ NB.toast("La clase se acaba de llenar. Puedes unirte a la lista de espera."); dlg.close(); renderWeek(); return; }
+    if(isBarra(c)&&taken(c,bk.fecha).has(bk.lugar)){ no(); NB.toast("Ese lugar se acaba de ocupar. Elige otro."); renderSeats(); show("stLugar"); return; }
+    if(!isBarra(c)&&free(c,bk.fecha)<=0){ no(); NB.toast("La clase se acaba de llenar. Puedes unirte a la lista de espera."); dlg.close(); renderWeek(); return; }
     const r=Object.assign(base,{lugar:isBarra(c)?bk.lugar:null, pago:"por confirmar", metodo:"Transferencia"});
     store.reservas.push(r); save();
     bk.last=r;
   }
   // 1) WhatsApp de balé con la reserva completa (dentro del clic: no lo bloquea el navegador)
-  NB.whatsapp(waMessage());
+  if(win) win.location.href=NB.waLink(waMessage()); else NB.whatsapp(waMessage());
   renderDone();
   // 2) Aviso al estudio por correo (si falla, la reserva sigue por WhatsApp)
   if(!bk.wait) sendMail(bk.last,c); else $("#mailSt").textContent="";
@@ -502,20 +748,58 @@ function summary(r,c){
     r.nina?["Alumna",r.nina]:null,[r.nina?"Padre, madre o tutor":"Nombre",r.nombre],["WhatsApp",r.wa],
     wait?null:["Pago",CFG.pago.texto]].filter(Boolean);
 }
+// Reserva confirmada por la base de datos: los textos vienen de ella (fecha, hora, lugar y pago)
+function summarySis(){
+  const L=bk.last, R=L.R, c=bk.c;
+  return [["Clase",R.clase+(c.edad?` (${c.edad})`:"")+(tagTxt(c)?` · ${tagTxt(c)}`:"")],["Fecha",R.fecha_larga],["Hora",range({inicio:R.inicio,fin:R.fin})],
+    ["Instructora",R.instructora],["Lugar",R.lugar_texto],["Nombre",L.nombre],["WhatsApp",L.wa],["Pago",R.pago_texto]];
+}
+const dlRows = rows=>rows.map(([k,v])=>`<div><dt>${esc(k)}</dt><dd>${esc(v)}</dd></div>`).join("");
 function renderDone(){
-  const r=bk.last, c=bk.c;
+  const r=bk.last, c=bk.c, R=r.R, sisWait=bk.wait&&r.sis;
+  $("#payBox").hidden=true; $("#payBox").innerHTML="";
+  $("#verMia").hidden=!R;
+  $("#sendWa").hidden=sisWait;
+  if(R){
+    $("#okTitle").textContent="¡Reserva confirmada!";
+    $("#okMsg").textContent=`Te enviamos la confirmación a ${r.correo}. Ahí está el enlace para ver o cancelar tu reserva.`;
+    $("#sum").innerHTML=dlRows(summarySis())+(R.cancelacion_texto?`<div class="pol"><dt>Cancelación</dt><dd>${esc(R.cancelacion_texto)}</dd></div>`:"");
+    pintarPago(R);
+    $("#sendWa").textContent=SIS.cfg().abrir_whatsapp_al_reservar!==false?"Enviar la reserva por WhatsApp":"Escribir al estudio";
+    $("#icsMine").hidden=false;
+    $("#verMia").href=`mi-reserva.html#t=${R.token}`;
+    $("#mailSt").textContent=""; $("#mailSt").className="mailst";
+    show("stListo"); $("#stListo").focus();
+    return;
+  }
   $("#okTitle").textContent=bk.wait?"Estás en la lista de espera":"¡Reserva enviada!";
-  $("#okMsg").textContent=bk.wait?"Te escribimos por WhatsApp si se libera un lugar."
+  $("#okMsg").textContent=sisWait?`Estás en la lista de espera (posición ${r.pos}). Si se libera un lugar te avisamos por correo y, si lo marcaste, por WhatsApp.`
+    :bk.wait?"Te escribimos por WhatsApp si se libera un lugar."
     :"Se abrió WhatsApp con tu reserva: envía el mensaje y el estudio te la confirma. Si no se abrió, usa el botón de abajo.";
-  $("#sum").innerHTML=summary(r,c).map(([k,v])=>`<div><dt>${esc(k)}</dt><dd>${esc(v)}</dd></div>`).join("")+
+  $("#sum").innerHTML=dlRows(summary(r,c))+
     (bk.wait?"":`<div class="pol"><dt>Cancelación</dt><dd>${esc(CFG.cancelacion.texto)}</dd></div>`);
   $("#sendWa").textContent=bk.wait?"Avisar por WhatsApp":"Enviar la reserva por WhatsApp";
   $("#icsMine").hidden=bk.wait;
   $("#mailSt").textContent=bk.wait?"":"Avisando al estudio por correo…"; $("#mailSt").className="mailst";
   show("stListo"); $("#stListo").focus();
 }
+// Pago de una reserva confirmada: enlace de CardNET, datos de transferencia y comprobante
+function pintarPago(R){
+  const box=$("#payBox");
+  if(R.pago_estado==="membresia"){ box.innerHTML=`<p class="payinc">Incluida en tu membresía</p>`; box.hidden=false; return; }
+  if(R.pago_estado!=="pendiente") return;
+  const T=R.pago_transferencia&&typeof R.pago_transferencia==="object"?R.pago_transferencia:null;
+  const url=/^https:\/\/[^\s"'<>]+$/i.test(R.pago_cardnet_url||"")?R.pago_cardnet_url:"";
+  const fila=(k,v,extra="")=>`<div><dt>${esc(k)}</dt><dd>${esc(v)}${extra}</dd></div>`;
+  box.innerHTML=`<p class="paytit">Pago${typeof R.monto==="number"?` · ${esc(NB.money(R.monto))}`:""}</p>
+    ${url?`<a class="bbtn solid" href="${esc(url)}" target="_blank" rel="noopener">Pagar con tarjeta</a>`:""}
+    ${T?`<dl class="bankd">${fila("Banco",T.banco)}${fila("Tipo de cuenta",T.tipo_cuenta)}${fila("Número",T.cuenta,` <button class="linkbtn" type="button" data-copy="${esc(T.cuenta)}">Copiar número</button>`)}${fila("Titular",T.titular)}</dl>`:""}
+    <button class="bbtn line" type="button" id="comprobante">Enviar comprobante por WhatsApp</button>`;
+  box.hidden=false;
+}
 function waMessage(){
   const r=bk.last, c=bk.c;
+  if(r.R) return "Hola, balé. Reservé esta clase en la página:\n"+summarySis().map(([k,v])=>`${k}: ${v}`).join("\n")+(r.R.cancelacion_texto?`\n\n${r.R.cancelacion_texto}`:"");
   const head=bk.wait?"Hola, balé. Me anoté en la lista de espera:":"Hola, balé. Quiero reservar esta clase:";
   return head+"\n"+summary(r,c).map(([k,v])=>`${k}: ${v}`).join("\n")+(bk.wait?"":`\n\n${CFG.cancelacion.texto}`);
 }
@@ -537,40 +821,23 @@ function sendMail(r,c){
     }).catch(()=>{ clearTimeout(t); fail(); });
 }
 
-/* ---------- Calendario .ics ---------- */
-// Texto iCalendar: escapa y pliega líneas a 75 octetos (RFC 5545)
-const icsEsc = s=>String(s).replace(/\\/g,"\\\\").replace(/;/g,"\\;").replace(/,/g,"\\,").replace(/\r?\n/g,"\\n");
-function fold(line){
-  const enc=new TextEncoder(); let out="", cur="", n=0;
-  for(const ch of line){
-    const b=enc.encode(ch).length;
-    if(n+b>(out?74:75)){ out+=(out?"\r\n ":"")+cur; cur=""; n=0; }
-    cur+=ch; n+=b;
-  }
-  return out+(out?"\r\n ":"")+cur;
+/* ---------- Calendario .ics (js/calendario.js) ---------- */
+const icsFile = (name,events)=>window.BALE_ICS.archivo(name,events.map(ev=>({uid:ev.uid, fecha:ev.fecha, inicio:ev.c.inicio, fin:ev.c.fin,
+  resumen:ev.summary, descripcion:ev.desc, lugar:`balé, ${CFG.direccion}`})));
+const download = (text,file)=>window.BALE_ICS.descargar(text,file);
+// js/calendario.js solo hace falta al pulsar "Agregar a mi calendario": se carga después de la página
+function cargarIcs(){
+  if(window.BALE_ICS||document.querySelector('script[src="js/calendario.js"]')) return;
+  const s=document.createElement("script"); s.src="js/calendario.js"; document.head.append(s);
 }
-const utc = d=>new Date(d.getTime()).toISOString().replace(/[-:]/g,"").replace(/\.\d{3}/,"");
-const localStamp = (fecha,t)=>fecha.replace(/-/g,"")+"T"+t.replace(":","")+"00";
-// La Vega usa UTC−4 todo el año (sin horario de verano)
-const VTZ=["BEGIN:VTIMEZONE","TZID:America/Santo_Domingo","BEGIN:STANDARD","DTSTART:19700101T000000","TZOFFSETFROM:-0400","TZOFFSETTO:-0400","TZNAME:AST","END:STANDARD","END:VTIMEZONE"];
-function icsFile(name,events){
-  const lines=["BEGIN:VCALENDAR","VERSION:2.0","PRODID:-//bale//Reservas//ES","CALSCALE:GREGORIAN","METHOD:PUBLISH",`X-WR-CALNAME:${icsEsc(name)}`,"X-WR-TIMEZONE:America/Santo_Domingo"].concat(VTZ);
-  const now=utc(new Date());
-  events.forEach(ev=>lines.push("BEGIN:VEVENT",`UID:${ev.uid}`,`DTSTAMP:${now}`,
-    `DTSTART;TZID=America/Santo_Domingo:${localStamp(ev.fecha,ev.c.inicio)}`,`DTEND;TZID=America/Santo_Domingo:${localStamp(ev.fecha,ev.c.fin)}`,
-    `SUMMARY:${icsEsc(ev.summary)}`,`DESCRIPTION:${icsEsc(ev.desc)}`,`LOCATION:${icsEsc(`balé, ${CFG.direccion}`)}`,"END:VEVENT"));
-  lines.push("END:VCALENDAR");
-  return lines.map(fold).join("\r\n")+"\r\n";
-}
-function download(text,file){
-  const blob=new Blob([text],{type:"text/calendar;charset=utf-8"});
-  const a=document.createElement("a");
-  a.href=URL.createObjectURL(blob); a.download=file;
-  document.body.append(a); a.click(); a.remove();
-  setTimeout(()=>URL.revokeObjectURL(a.href),1000);
-}
+if(document.readyState==="complete") setTimeout(cargarIcs,0); else addEventListener("load",()=>setTimeout(cargarIcs,0),{once:true});
 function myIcs(){
   const r=bk.last, c=bk.c; if(!r||bk.wait) return;
+  if(r.R){
+    const R=r.R, desc=`Clase de ${R.clase} con ${R.instructora}.\n${R.lugar_texto}.\n\n${R.cancelacion_texto||CFG.cancelacion.texto}\nPara ver o cancelar tu reserva: ${enlaceMia(R.token)}`;
+    download(icsFile("balé",[{uid:`reserva-${R.id}@bale`,fecha:R.fecha,c:{inicio:R.inicio,fin:R.fin},summary:`balé · ${R.clase}`,desc}]),`bale-${R.fecha}-${R.inicio.replace(":","")}.ics`);
+    return;
+  }
   const desc=`Clase de ${clsName(c)} con ${c.instructora}.\n${seatTxt(r)}.\n\n${CFG.cancelacion.texto}\nPara cancelar, escríbenos por WhatsApp: ${CFG.whatsapp_texto}.`;
   download(icsFile("balé",[{uid:`${r.id}@bale`,fecha:r.fecha,c,summary:`balé · ${clsName(c)}`,desc}]),`bale-${c.id}-${r.fecha}.ics`);
 }
@@ -612,30 +879,41 @@ function goToClass(test,type){
   fInst=""; $("#fInst").value=""; setType(type||"");
   const now=new Date();
   search: for(let w=0;w<=WEEKS_AHEAD;w++) for(let i=0;i<7;i++){
-    if(D.horario.some(c=>test(c)&&c.dia===DKEYS[i]&&startOf(c,iso(dayDate(w,i)))>now)){ week=w; dayIx=i; break search; }
+    const fecha=iso(dayDate(w,i));
+    const hay=enLinea() ? sesDe(fecha).some(c=>test(c)&&["open","full","kid"].includes(rowState(c,fecha)))
+      : D.horario.some(c=>test(c)&&c.dia===DKEYS[i]&&startOf(c,fecha)>now);
+    if(hay){ week=w; dayIx=i; break search; }
   }
   renderWeek();
 }
 function scrollToHorario(){ $("#horario").scrollIntoView({behavior:matchMedia("(prefers-reduced-motion: reduce)").matches?"auto":"smooth"}); }
 
+// Cambio de semana: con sistema, se vuelve a pedir el horario si pasó más de un minuto
+function semana(){
+  renderWeek();
+  if(enLinea()&&Date.now()-sesAt>60000) refrescar().then(ok=>{ if(ok) renderWeek(); });
+}
 function initPublic(){
+  if(SIS) SIS.alCaer(sinSistema);
+  if(SIS&&SIS.activo()){ cargando=true; textoHorario(); }
   renderStatic(); renderFilters(); renderWeek(); initHero();
+  if(cargando) cargarSesiones().then(()=>{ cargando=false; renderWeek(); renderMias(); },()=>sinSistema());
   // "Reserva tu primera clase": va al próximo sábado de primera clase
   $("#firstBtn").addEventListener("click",()=>goToClass(c=>c.etiqueta==="primera"));
   $("#refBtn").addEventListener("click",()=>{ goToClass(c=>c.clase==="Pilates Reformer","Pilates Reformer"); scrollToHorario(); });
   addEventListener("resize",()=>placePill(false));
   if(document.fonts&&document.fonts.ready) document.fonts.ready.then(()=>placePill(false));
-  $("#prevW").addEventListener("click",()=>{ if(week>0){ week--; dayIx=week===0?todayIx():0; renderWeek(); } });
-  $("#nextW").addEventListener("click",()=>{ if(week<WEEKS_AHEAD){ week++; dayIx=0; renderWeek(); } });
+  $("#prevW").addEventListener("click",()=>{ if(week>0){ week--; dayIx=week===0?todayIx():0; semana(); } });
+  $("#nextW").addEventListener("click",()=>{ if(week<WEEKS_AHEAD){ week++; dayIx=0; semana(); } });
   $("#strip").addEventListener("click",e=>{ const b=e.target.closest("[data-d]"); if(!b) return; dayIx=+b.dataset.d; renderWeek(); $(`#strip [data-d="${dayIx}"]`).focus(); });
   $("#fInst").addEventListener("change",e=>{ fInst=e.target.value; renderWeek(); });
   $("#fType").addEventListener("change",e=>{ fType=e.target.value; renderWeek(); });
   $("#rows").addEventListener("click",e=>{
-    const k=e.target.closest("[data-kid]");
-    if(k){ kidWA(clsById(k.dataset.kid),dayDate(week,dayIx)); return; }
+    const fecha=iso(dayDate(week,dayIx)), k=e.target.closest("[data-kid]");
+    if(k){ const c=rowClass(k.dataset.kid,fecha); if(c) kidWA(c,dayDate(week,dayIx)); return; }
     const b=e.target.closest("[data-book],[data-wait]"); if(!b) return;
-    const c=clsById(b.dataset.book||b.dataset.wait), fecha=iso(dayDate(week,dayIx));
-    if(rowState(c,fecha)==="past"||rowState(c,fecha)==="cancel"){ renderRows(); return; }
+    const c=rowClass(b.dataset.book||b.dataset.wait,fecha);
+    if(!c||rowState(c,fecha)==="past"||rowState(c,fecha)==="cancel"){ renderRows(); return; }
     openBook(c,fecha,!!b.dataset.wait);
   });
   // "Ver horario" desde una tarjeta de clase: filtra por ese tipo y va al primer día con clase
@@ -668,6 +946,14 @@ function initPublic(){
   $("#stDatos").addEventListener("input",e=>e.target.removeAttribute("aria-invalid"));
   $("#sendWa").addEventListener("click",()=>NB.whatsapp(waMessage()));
   $("#icsMine").addEventListener("click",myIcs);
+  // Pago (con sistema): copiar el número de cuenta y mandar el comprobante
+  $("#payBox").addEventListener("click",e=>{
+    const cp=e.target.closest("[data-copy]");
+    if(cp){ const v=cp.dataset.copy, ok=()=>NB.toast("Número de cuenta copiado"), no=()=>NB.toast(`Número de cuenta: ${v}`);
+      if(navigator.clipboard&&navigator.clipboard.writeText) navigator.clipboard.writeText(v).then(ok,no); else no(); return; }
+    if(e.target.closest("#comprobante")&&bk.last&&bk.last.R){ const R=bk.last.R;
+      NB.whatsapp(`Hola, balé. Te envío el comprobante de pago de mi reserva: ${R.clase}, ${R.fecha_larga}, ${R.hora}. Nombre: ${bk.last.nombre}.`); }
+  });
   $("#bkClose").addEventListener("click",()=>dlg.close());
   $("#bkDone").addEventListener("click",()=>dlg.close());
   dlg.addEventListener("click",e=>{ if(e.target===dlg) dlg.close(); });   // clic en el fondo
@@ -830,14 +1116,17 @@ function prune(){
   const ok=r=>D.horario.some(c=>c.id===r.claseId);
   store.reservas=store.reservas.filter(ok); store.espera=store.espera.filter(ok);
 }
-Promise.all([NB.load("bale"),NB.load("horario"),NB.load("precios"),NB.load("comunidad"),NB.ready]).then(([b,h,p,com,cfg])=>{
+Promise.all([NB.load("bale"),NB.load("horario"),NB.load("precios"),NB.load("comunidad"),NB.ready,SIS?SIS.listo:null]).then(([b,h,p,com,cfg])=>{
+  // Con el sistema, la vista del estudio de verdad es estudio.html (con sesión iniciada)
+  if(ESTUDIO&&SIS&&SIS.activo()){ location.replace("estudio.html"); return; }
   D=Object.assign({},b,{horario:h.clases, etiquetas:h.etiquetas, precios:p, comunidad:com});
+  D.horario.forEach(c=>{ c.key=c.id; });
   CFG=cfg;
   applyPanel(); buildLugares(); prune();
   if(ESTUDIO) initStudio(); else initPublic();
   setTimeout(watchReveal,0);
   // Otra pestaña cambió las reservas: vuelve a pintar
-  addEventListener("storage",e=>{ if(e.key===NB.PANEL_KEY){ location.reload(); return; } if(e.key!==KEY) return; store=readStore(); prune();
+  addEventListener("storage",e=>{ if(e.key===NB.PANEL_KEY){ location.reload(); return; } if(e.key===MIS_KEY){ renderMias(); return; } if(e.key!==KEY||enLinea()) return; store=readStore(); prune();
     if(ESTUDIO){ renderVWeek(); renderClients(); renderPays(); } else renderWeek(); });
 }).catch(()=>{});
 

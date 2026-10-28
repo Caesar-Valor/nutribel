@@ -46,7 +46,22 @@ function render(){
   events=JSON.parse(JSON.stringify(P.eventos||COM.proximos||[]));
   fijos=JSON.parse(JSON.stringify(P.fijos||BL.fijos||{}));
   renderCancel(); renderFijos(); renderPrices(P); renderEvents();
+  modoSistema();
   setDirty(false);
+}
+/* Con el sistema de reservas (config.json → sistema.activo), los lugares fijos y las
+   clases canceladas se manejan en el área del estudio (estudio.html), que es lo que
+   usa la base de datos. Precios, eventos, contacto y aviso siguen aquí. */
+const conSistema = ()=>{ const s=CFG.sistema||{}; return s.activo===true&&!!s.url&&/^sb_publishable_/.test(s.clave_publicable||""); };
+function modoSistema(){
+  if(!conSistema()) return;
+  // Se esconde lo de antes (sin borrarlo: el resto del panel sigue igual) y se deja el aviso
+  const mover=(h,txt)=>{ const box=$(h).closest(".pbox"); if(box.querySelector(".a-estudio")) return;
+    [...box.children].forEach(el=>{ if(el.tagName!=="H2") el.hidden=true; });
+    box.insertAdjacentHTML("beforeend",`<p class="note a-estudio">${txt} <a href="estudio.html">Abrir el área del estudio</a></p>`); };
+  mover("#h-fijos","Los lugares fijos ahora se manejan en el Área del estudio (Clientas → membresía → lugares fijos).");
+  mover("#h-cancel","Las clases canceladas ahora se manejan en el Área del estudio (Clases → la clase → Cancelar clase), que además avisa a las alumnas.");
+  if(!$("#preNota")) $("#priceList").insertAdjacentHTML("beforebegin",`<p class="note" id="preNota">Si cambias un precio aquí, cámbialo también en el <a href="estudio.html">Área del estudio</a> (Ajustes → Precios): es el que usa la base de datos para cobrar las reservas.</p>`);
 }
 function salaTotal(){
   const f=+$("#salaFilas").value||0, n=+$("#salaPorFila").value||0;

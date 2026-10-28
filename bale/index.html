@@ -34,6 +34,7 @@
 <link rel="stylesheet" href="css/base.css">
 <link rel="stylesheet" href="css/bale.css">
 <script src="js/core.js" defer></script>
+<script src="js/sistema.js" defer></script>
 <script src="js/bale.js" defer></script>
 </head>
 <body data-page="bale">
@@ -129,8 +130,13 @@
   <section class="band paper" id="horario" aria-labelledby="schedTitle">
     <div class="shead" data-reveal>
       <h2 id="schedTitle">Horario y reservas</h2><span class="cinta" aria-hidden="true"></span>
-      <p>Elige el día y la clase. En las clases de barra escoges tu lugar en la sala. Tu reserva se confirma por WhatsApp.</p>
+      <p id="schedTxt">Elige el día y la clase. En las clases de barra escoges tu lugar en la sala. Tu reserva se confirma por WhatsApp.</p>
     </div>
+    <p class="note sisaviso" id="sisAviso" role="status" hidden></p>
+    <aside class="mias" id="mias" aria-labelledby="miasT" hidden>
+      <h3 id="miasT">Tus próximas reservas</h3>
+      <ul id="miasList"></ul>
+    </aside>
     <div class="cal">
       <div class="weekbar">
         <button class="arrow" type="button" id="prevW" aria-label="Semana anterior"><span aria-hidden="true">‹</span></button>
@@ -256,6 +262,7 @@
 <footer class="bfoot">
   <div class="wrap">
     <span>balé · Barre, Ballet &amp; Pilates · La Vega, República Dominicana</span>
+    <a href="privacidad.html">Aviso de privacidad</a>
   </div>
 </footer>
 
@@ -271,6 +278,8 @@
       <button class="x" type="button" id="bkClose" aria-label="Cerrar">×</button>
     </header>
     <p class="bkwarn" id="bkWarn" hidden></p>
+    <p class="note sisaviso" id="bkSis" role="status" hidden></p>
+    <div class="bkerr" id="bkErr" role="alert" hidden><p id="bkErrTxt"></p><div class="bkbtns" id="bkErrBtns"></div></div>
 
     <div class="step" id="stLugar">
       <p class="steph">1. Elige tu lugar</p>
@@ -286,8 +295,11 @@
       <p class="cupoinfo" id="cupoInfo" hidden></p>
       <label class="fld">Nombre<input id="fName" autocomplete="name"></label>
       <label class="fld">WhatsApp<input id="fWa" type="tel" inputmode="tel" autocomplete="tel" placeholder="809-000-0000"></label>
+      <label class="fld en-linea" hidden>Correo (te enviamos la confirmación y el enlace para cancelar)<input id="fMail" type="email" inputmode="email" autocomplete="email" placeholder="tucorreo@ejemplo.com"></label>
       <p class="payline" id="payLine"></p>
       <label class="check" id="memWrap" hidden><input type="checkbox" id="fMem"> <span id="memTxt"></span></label>
+      <label class="check en-linea" hidden><input type="checkbox" id="fWaOk"> <span>Quiero recibir la confirmación y los recordatorios por WhatsApp</span></label>
+      <label class="check en-linea" hidden><input type="checkbox" id="fPriv"> <span>Acepto el <a href="privacidad.html" target="_blank" rel="noopener">aviso de privacidad</a>: balé guarda mi nombre, WhatsApp y correo para gestionar mis reservas</span></label>
       <label class="check"><input type="checkbox" id="fPol"> <span>Acepto la política de cancelación. <small id="polTxt"></small></span></label>
       <p class="privacy">No escribas datos de salud aquí.</p>
       <div class="bkbtns">
@@ -302,10 +314,12 @@
       <span class="cinta" aria-hidden="true"></span>
       <p class="okmsg" id="okMsg"></p>
       <dl class="sum" id="sum"></dl>
+      <div class="paybox" id="payBox" hidden></div>
       <p class="mailst" id="mailSt" aria-live="polite"></p>
       <div class="bkbtns">
         <button class="bbtn solid" type="button" id="sendWa">Enviar la reserva por WhatsApp</button>
         <button class="bbtn line" type="button" id="icsMine">Agregar a mi calendario</button>
+        <a class="bbtn line" id="verMia" href="mi-reserva.html" hidden>Ver mi reserva</a>
         <button class="bbtn line" type="button" id="bkDone">Listo</button>
       </div>
     </div>

@@ -1,47 +1,33 @@
 # Prueba de reserva con la dueña de balé
 
-La dueña quiere reservar una clase ella misma y ver cómo le llega. Esta prueba se hace en la página publicada: https://caesar-valor.github.io/nutribel/bale/
+Marifer quiere reservar ella misma y ver cómo le llega por correo (y por WhatsApp). Esta prueba es **con el sistema de reservas** (Supabase + notificador). Si el sistema todavía no está activo, al final está la prueba de siempre.
 
-## Paso a paso
+## Antes (César)
 
-**Antes (una sola vez): activar el aviso por correo**
+1. El proyecto de Supabase listo (`bale-sistema/docs/CONFIGURAR-SUPABASE.md`), con la cuenta de Marifer creada.
+2. `bale/data/config.json → sistema`: `activo: true`, la URL y la clave publicable. Publicado.
+3. El notificador encendido (`bale-sistema/docs/NOTIFICADOR.md`). Para la prueba con Marifer, **`MODO_PRUEBA=false`** (si no, los correos te llegan a ti) y `CORREO_RESPONDER_A` con su correo. Primero pruébalo tú en modo prueba.
+4. En el área del estudio → **Avisos** debe decir "Correo: funcionando".
 
-1. Haz tú una primera reserva de prueba (pasos de abajo). FormSubmit le enviará a **Mariapimentel1609@gmail.com** un correo de activación ("Confirm your email").
-2. Pídele a la dueña que abra ese correo y pulse el botón de activar. Si no lo ve, que busque en Spam o Promociones.
-3. Después de activar, FormSubmit da un alias (una cadena de letras y números). Cámbialo en `bale/data/config.json` → `aviso_correo.endpoint`: `https://formsubmit.co/ajax/<alias>`. Así el correo no queda a la vista en el código. Publica el cambio.
+## La prueba con ella
 
-**La prueba con ella**
+1. En su teléfono, que abra https://caesar-valor.github.io/nutribel/bale/ y elija una clase de barra (que no sea hoy, para probar también cancelar sin cargo).
+2. Que elija un lugar, pulse **Continuar** y escriba su nombre, su WhatsApp y **su correo**. Si quiere, que marque "Quiero recibir la confirmación y los recordatorios por WhatsApp". Que acepte el aviso de privacidad y la política de cancelación y pulse **Confirmar reserva**.
+3. Sale **¡Reserva confirmada!** con el resumen, el pago y **Ver mi reserva**. (Si `abrir_whatsapp_al_reservar` sigue en `true`, también se abre WhatsApp con la reserva, como antes.)
+4. Revisar juntos:
+   - **Su correo:** "Tu reserva en balé: …" con la clase, el día, la hora, el lugar, el pago y el botón **Ver o cancelar mi reserva**. Si no aparece en un minuto, mirar en Spam o Promociones.
+   - **El correo del estudio** (`correo_estudio`): "Nueva reserva: …" con su nombre, WhatsApp y correo.
+   - **Área del estudio** (`estudio.html`, con su cuenta) → **Clases** → esa clase: ella sale en la lista con su lugar; la sala lo marca ocupado. En **Clientas** aparece su ficha con su correo.
+   - **WhatsApp** (solo si ya está vinculado el número viejo y encendido en Avisos): la confirmación.
+5. **Cancelar con el enlace:** en el correo, **Ver o cancelar mi reserva** → **Cancelar mi reserva** → **Sí, cancelar**. Sale "Tu reserva quedó cancelada" sin cargo (no es el mismo día). Llega el correo de cancelación, y al estudio "Cancelación: …". En el área del estudio la reserva ya no está.
+6. **Opcional, cargo tardío:** reservar una clase de hoy y cancelarla: el enlace avisa del cargo de RD$300 y en **Cobros** aparece para marcarlo **Cobrado** o **Perdonado**.
 
-1. Que abra la página en su teléfono y pulse **Reserva tu primera clase** (o elija cualquier clase en el horario).
-2. En una clase de barra, que elija un lugar en el esquema de la sala y pulse **Continuar**.
-3. Que escriba su nombre y su WhatsApp, marque la política de cancelación y pulse **Confirmar y enviar por WhatsApp**.
-4. Se abre WhatsApp con el mensaje de la reserva ya escrito, dirigido al +1 849-638-6337. Que lo envíe.
-5. Revisar juntos:
-   - **WhatsApp de balé:** llegó el mensaje con clase, fecha, hora, instructora, lugar, nombre, teléfono y la línea del cargo de RD$300.
-   - **Correo** Mariapimentel1609@gmail.com: llegó "Nueva reserva · {clase} {fecha} {hora}" con una tabla con los mismos datos.
-   - **Calendario:** en la pantalla de confirmación, **Agregar a mi calendario** descarga un archivo `.ics`. En el iPhone se abre y se agrega al Calendario; en Android, con Google Calendar. Debe salir a la hora correcta, con la dirección y la política de cancelación.
-6. Si el correo no llega, la página lo dice con un mensaje amable y la reserva sigue por WhatsApp.
+## Qué es real y qué falta
 
-## Qué es real y qué es demo (honesto)
+**Real con el sistema:** cupos y lugares compartidos por todos los teléfonos (nadie se queda con el mismo lugar), correo de confirmación y al estudio, enlace para ver o cancelar, cargo tardío automático, lista de espera con aviso cuando se libera un lugar, recordatorios (el día antes a las 6:00 pm por correo y WhatsApp, y 2 horas antes por WhatsApp), lugares fijos de las miembros y área del estudio con contraseña.
 
-**Ya funciona de verdad**
+**Falta o depende de ella:** datos bancarios y enlace de CardNET (Ajustes → Pago; mientras falten, la confirmación dice "te enviamos los datos por WhatsApp"), los lugares fijos de cada miembro, WhatsApp automático (número viejo con Baileys, no la API oficial) y las cuentas de su asistente e instructoras.
 
-- El mensaje de WhatsApp con la reserva completa al número de balé.
-- El aviso por correo a la dueña (después de activar FormSubmit).
-- El archivo `.ics` para agregar la clase al calendario.
-- Horario, precios, eventos y textos se cambian editando los JSON (ver `COMO-ACTUALIZAR.md`).
+## Sin el sistema (como antes)
 
-**Todavía es demo**
-
-- **Recordatorios de 24 h y 2 h antes:** todavía no existen y la página no los anuncia. Hoy no se envía nada automático.
-- **Lista de espera:** se guarda solo en el teléfono de quien se anotó; el estudio no se entera salvo por el WhatsApp.
-- **Cupos y lugares ocupados:** salen de los lugares fijos de las miembros (se marcan en el panel y se publican) más las reservas hechas en ese mismo teléfono. Una reserva hecha en un teléfono no ocupa el lugar en los demás teléfonos: la confirmación real es la que da el estudio por WhatsApp.
-- **Vista del estudio y lista de clientes** (`?vista=estudio`): lugares fijos, datos de ejemplo (solo aquí, no en la página pública) y las reservas de ese mismo navegador.
-- **Panel del negocio** (`panel.html`): los cambios se ven al momento solo en el navegador donde se hicieron. Para todos, hay que descargar los archivos y publicarlos (ver `COMO-ACTUALIZAR.md`). No tiene contraseña.
-- **Pagos:** se acuerdan por WhatsApp; los datos bancarios están por confirmar.
-
-**Qué hace falta para que lo de demo sea real**
-
-- Un lugar común donde se guarden las reservas para todos los teléfonos: un backend pequeño, o **Google Sheets con Apps Script** (lo más sencillo y barato para empezar). Con eso, los cupos, la lista de espera y la lista de clientes serían los de verdad.
-- **API de WhatsApp Business** (por ejemplo, con Meta directamente o con un proveedor como Twilio) para enviar los recordatorios de 24 h y 2 h y los avisos de lista de espera sin que nadie los mande a mano.
-- Un acceso con contraseña para la vista del estudio y el panel del negocio, y que el panel guarde en ese mismo lugar común (así sus cambios se publican solos).
+Si `sistema.activo` es `false` o la base de datos no responde, la página avisa "Ahora mismo no podemos confirmar en línea…" y la reserva sigue por WhatsApp: se abre WhatsApp con la reserva completa al +1 849-638-6337, el estudio recibe el aviso por correo de FormSubmit (después de activarlo: ver `COMO-ACTUALIZAR.md`) y la clienta puede descargar el `.ics`. En ese modo, una reserva hecha en un teléfono no ocupa el lugar en los demás: la confirmación real la da el estudio por WhatsApp.

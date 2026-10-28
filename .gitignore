@@ -3,3 +3,13 @@ Thumbs.db
 .DS_Store
 *.log
 _insumos/
+
+# Secretos y sistema de balé: nunca en este repo (se publica en GitHub Pages)
+.env
+.env.*
+*.env
+bale-base-de-datos/
+bale-sistema/
+.auth-whatsapp/
+*.dump
+*.gpg

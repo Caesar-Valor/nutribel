@@ -6,7 +6,27 @@ También se puede editar a mano. Todo el contenido está en la carpeta `bale/dat
 
 Antes de publicar, mira el cambio en tu computadora: en la carpeta del proyecto ejecuta `npx serve .` y abre http://localhost:3000/bale/index.html. Si la página sale en blanco, casi siempre falta o sobra una coma.
 
+## Con el sistema de reservas: qué se cambia dónde
+
+Cuando el sistema esté activo (`bale/data/config.json → sistema.activo: true`, ver `bale-sistema/docs/CONFIGURAR-SUPABASE.md`), parte de lo que antes se hacía en el panel pasa al **área del estudio** (`estudio.html`, con contraseña; guía: `GUIA-AREA-DEL-ESTUDIO.md`):
+
+| Qué | Dónde |
+|---|---|
+| Reservas, asistencia, cancelar una reserva o una clase, suplencias | Área del estudio → **Clases** |
+| Clientas, membresías, **lugares fijos** y renovar cada mes | Área del estudio → **Clientas** |
+| Pagos y cargos de RD$300 | Área del estudio → **Cobros** |
+| Enlace de CardNET, datos de transferencia, textos de los avisos, horario de la base de datos, personal | Área del estudio → **Ajustes** (solo la dueña) |
+| Precio que se **cobra** | Área del estudio → Ajustes → Precios **y también** el panel (el que se **muestra** en la página) |
+| Datos de contacto, aviso para las clientas, precios que se muestran, próximos eventos | Panel del negocio (como siempre) |
+| Horario que se ve sin sistema, textos, fotos | Los JSON de `bale/data/` (como siempre) |
+
+Con el sistema activo, la página ya no usa `bale.json → fijos` ni `canceladas`: el panel lo indica y remite al área del estudio. Si un día el sistema se apaga (`activo: false`), todo vuelve a funcionar como antes con los JSON.
+
+Para activar o cambiar el sistema, en `config.json → sistema` van solo la URL del proyecto y la clave **publicable** (`sb_publishable_…`). **Nunca** la clave secreta. `abrir_whatsapp_al_reservar` se pone en `false` cuando los WhatsApp automáticos ya funcionen.
+
 ## Lugares fijos de las miembros (al empezar cada mes)
+
+> Con el sistema activo esto se hace en el área del estudio (Clientas → Renovar / Agregar lugar fijo). Lo de abajo es para el modo sin sistema.
 
 Las clientas con membresía tienen su lugar guardado todo el mes; las demás reservan en la página. Para que la página no ofrezca un lugar que ya es de una miembro:
 

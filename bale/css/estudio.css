@@ -1,0 +1,104 @@
+/* =========================================================
+   balé — Área del estudio (estudio.html)
+   Herramienta para el teléfono, entre clases: botones grandes (44 px o más),
+   una columna en el teléfono y lista + detalle en el escritorio. Sin
+   animaciones de entrada. Reutiliza la vista del estudio de bale.css.
+   ========================================================= */
+.est{padding:18px 16px 50px}
+.est [hidden]{display:none!important}
+.btop .quien{font:600 11px/1.3 var(--b-sans);letter-spacing:.08em;color:var(--muted);text-align:right;max-width:40vw}
+.btop button.tores{border:0;cursor:pointer}
+.estaviso{margin:0 0 14px;padding:12px 14px;border-radius:14px;background:var(--blush);color:var(--b-ink);font:500 14.5px/1.5 var(--b-sans)}
+.estaviso.mal{background:var(--paper);border:1.5px solid var(--brown);font-weight:600}
+.ebox{background:var(--paper);border:1px solid var(--line);border-radius:22px;padding:16px;margin:0 0 14px}
+.ebox h2,.est .vdetail h2{font:600 20px/1.25 var(--b-sans);color:var(--b-ink);margin:0 0 10px}
+.ebox.form{display:grid;gap:12px}
+.ebox.form h2{margin:0}
+.entrar{max-width:440px;margin:20px auto}
+.entrar h1{font:600 30px/1.15 var(--b-sans);color:var(--b-ink);margin:10px 0 14px}
+.entrar .linkbtn{justify-self:start;min-height:44px}
+.est .form input,.est .form select,.est .form textarea,.edlg input:not([type=checkbox]):not([type=radio]),.edlg select,.edlg textarea{
+  width:100%;border:1.5px solid var(--line);background:var(--cream);border-radius:12px;padding:10px 12px;min-height:46px;margin-top:4px;font:inherit;color:var(--ink)}
+.est textarea,.edlg textarea{resize:vertical}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.eacc{display:flex;flex-wrap:wrap;gap:8px;margin:12px 0 4px}
+.est .bbtn,.edlg .bbtn{min-height:46px}
+.est .bbtn.sm{min-height:44px}
+.bbtn.peligro{border-color:#8f2f22;color:#8f2f22}
+.bbtn.peligro:hover:not(:disabled),.bbtn.solid.peligro{background:#8f2f22;border-color:#8f2f22;color:#fff}
+:root[data-mode="dark"] .bbtn.peligro{border-color:#f0a596;color:#f0a596}
+:root[data-mode="dark"] .bbtn.solid.peligro,:root[data-mode="dark"] .bbtn.peligro:hover:not(:disabled){background:#f0a596;border-color:#f0a596;color:#1d1715}
+.est .tabs{position:sticky;top:calc(env(safe-area-inset-top,0px) + var(--top-h));z-index:5;background:var(--cream)}
+.est [role="tab"]{min-height:48px;padding:12px 14px}
+.est .vweek{margin-bottom:12px}
+.est .vcls{min-height:56px}
+.vcls.cli{grid-template-columns:1fr auto}
+.vcls.cli .n{letter-spacing:0;text-transform:none;font-size:14.5px}
+.est .vdetail{padding:16px}
+.est .vdetail:empty{display:none}
+.roster.est li{gap:8px 10px;padding:10px 0}
+.roster .tgs{display:flex;flex-wrap:wrap;gap:4px}
+.roster .rev{color:var(--brown)!important;font-weight:600!important}
+.roster .vacio{color:var(--muted)}
+.tagx.prim{background:var(--brown);color:var(--on-brown);border-color:transparent}
+.tagx.pend{border-color:var(--brown);color:var(--brown)}
+.asis{display:inline-flex;gap:4px}
+.abtn{min-height:44px;min-width:72px;border-radius:999px;border:1.5px solid var(--line);background:var(--b-bg);color:var(--b-ink);font:600 12px var(--b-sans);padding:0 12px}
+.abtn[aria-pressed="true"]{background:var(--brown);border-color:var(--brown);color:var(--on-brown)}
+.abtn[data-asis="falto"][aria-pressed="true"]{background:var(--b-ink);border-color:var(--b-ink);color:var(--b-bg)}
+.abtn:disabled{opacity:.5;cursor:not-allowed}
+.roster .linkbtn{min-height:44px;padding:0 4px}
+.ebuscar{display:grid;gap:10px;margin:0 0 12px}
+.ebuscar input{width:100%;border:1.5px solid var(--line);background:var(--paper);border-radius:12px;padding:10px 12px;min-height:46px;margin-top:4px}
+.mem{border:1px solid var(--line);border-radius:16px;padding:12px;margin:0 0 10px;background:var(--b-bg)}
+.mem.off{opacity:.75}
+.mem .mt{margin:0}
+.mem .mt small{display:block;color:var(--muted);font-size:13px;margin-top:2px}
+.fijos,.lista{list-style:none;margin:8px 0 0;padding:0}
+.fijos li,.lista li{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:center;gap:4px 10px;padding:8px 0;border-top:1px solid var(--line);font-size:14px;color:var(--b-ink)}
+.fijos small,.lista small{display:block;color:var(--muted);font-size:12.5px}
+.lista .linkbtn{min-height:40px}
+.estado{list-style:none;margin:0 0 8px;padding:0;display:grid;gap:6px}
+.estado li{padding:10px 12px;border-radius:12px;background:var(--b-bg);border:1px solid var(--line);color:var(--b-ink)}
+.estado li.bien{border-color:var(--brown)}
+.estado li.mal{border:1.5px solid #8f2f22;font-weight:600}
+.switches{display:grid;gap:10px;margin:10px 0}
+.est .check{min-height:44px;align-items:center}
+.est .check input{width:22px;height:22px}
+.prow{display:grid;grid-template-columns:1fr 120px;gap:10px;align-items:center;padding:6px 0;border-top:1px solid var(--line)}
+.prow span{font-size:14px;color:var(--b-ink)}
+.prow span small{display:block;color:var(--muted);font-size:12px}
+.prow input{text-align:right}
+.previa{white-space:pre-wrap;font:500 13.5px/1.55 var(--b-sans);background:var(--b-bg);border:1px dashed var(--line);border-radius:12px;padding:12px;margin:0;color:var(--b-ink)}
+.est code{font-size:12px;background:var(--blush);border-radius:6px;padding:1px 4px}
+.est .pays li{gap:10px}
+.est .pays .eacc{margin:0}
+/* Diálogo */
+.edlg .bk header{margin-bottom:6px}
+.edlg .bk header h2{margin:0}
+.edlg #dlgBody{display:grid;gap:12px}
+.edlg #dlgBody p{margin:0;color:var(--b-ink)}
+.edlg .opts{border:1px solid var(--line);border-radius:14px;padding:10px 12px;margin:0;display:grid;gap:6px}
+.edlg .opts legend{font:600 12px var(--b-sans);color:var(--muted);padding:0 4px}
+.edlg .radio{min-height:40px;align-items:center;font-weight:500}
+.edlg .pick-cli{list-style:none;margin:0;padding:0;display:grid;gap:4px}
+.edlg .pick-cli small{color:var(--muted);font-weight:400}
+.edlg details{border:1px solid var(--line);border-radius:14px;padding:10px 12px}
+.edlg details[open]{display:grid;gap:10px}
+.edlg summary{cursor:pointer;font-weight:600;color:var(--brown);min-height:32px}
+.dlgerr{margin:12px 0 0;padding:10px 12px;border-radius:12px;border:1.5px solid #8f2f22;color:var(--b-ink);font-weight:600}
+:root[data-mode="dark"] .dlgerr,:root[data-mode="dark"] .estado li.mal{border-color:#f0a596}
+.edlg .seats{margin-top:0}
+.edlg[open]{animation:none}
+@media (min-width:640px){
+  .ebuscar{grid-template-columns:1fr auto;align-items:end}
+}
+@media (min-width:900px){
+  .est{padding:26px 20px 60px}
+}
+@media (max-width:420px){
+  .two{grid-template-columns:1fr}
+  .prow{grid-template-columns:1fr 100px}
+  .btop .quien{display:none}
+}
+.btop .linkbtn.clave{font:600 11px/1 var(--b-sans);letter-spacing:.08em;min-height:44px;padding:0 6px}

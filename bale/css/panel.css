@@ -70,3 +70,5 @@
   .pbox .form.two,.ev .form{grid-template-columns:1fr}
   .prow{grid-template-columns:1fr 100px}
 }
+.pbox [hidden]{display:none}
+.a-estudio a{color:var(--brown);font-weight:600}

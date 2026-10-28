@@ -65,6 +65,8 @@ La imagen para compartir de NutriBEL (`assets/img/og/nutribel-og.jpg`, 1200×630
 | `nutribel-pedido` | productos del pedido y modalidad de entrega (sin nombre, dirección ni notas) |
 | `nutribel-panel` | cambios del panel demo: agotados, etiquetas, info nutricional, plato de la semana, datos del negocio |
 | `bale-mode` | modo oscuro de balé |
+| `bale-mis-reservas` | con el sistema: tokens de las reservas hechas en ese navegador (como mucho 20, sin nombre ni teléfono) para "Tus próximas reservas" |
+| `bale-estudio-auth` | sesión del área del estudio (Supabase Auth) |
 | `bale-panel` | cambios del panel de balé: datos de contacto, aviso, clases canceladas, cupos, sala, lugares fijos de miembros, precios y próximos eventos (solo lo que difiere de los JSON) |
 | `bale-reservas` | reservas hechas en ese navegador (clase, fecha, lugar, nombre y WhatsApp), lista de espera y pagos aprobados de la vista del estudio |
 
@@ -86,6 +88,12 @@ bale/css/bale.css        estilos de balé
 bale/js/core.js          datos, WhatsApp de balé, modo oscuro (API global BALE)
 bale/js/bale.js          página pública, reservas y vista del estudio
 bale/js/panel.js         panel del negocio
+bale/js/sistema.js       conexión con la base de datos (Supabase), sin librerías
+bale/js/calendario.js    archivos .ics (página, mi-reserva y área del estudio)
+bale/mi-reserva.html     ver o cancelar una reserva con el enlace del correo (#t=…)
+bale/privacidad.html     aviso de privacidad (Ley 172-13)
+bale/estudio.html        área del estudio (Supabase Auth; js/estudio.js, css/estudio.css, js/vendor/supabase.js)
+bale/GUIA-AREA-DEL-ESTUDIO.md  guía de una página para la dueña
 bale/css/panel.css       estilos del panel
 bale/data/config.json    WhatsApp, correo de reservas, Instagram, dirección, Maps, pago, cancelación, aviso por correo
 bale/data/horario.json   horario oficial (18 clases) con etiquetas
@@ -110,6 +118,8 @@ bale/PRUEBA-RESERVA.md   cómo hacer la prueba de reserva con la dueña y qué e
 **Precios (data/precios.json):** tabla oficial en tres bloques (clase individual, con membresía y clase infantil con uniformes y accesorios), más el certificado de regalo. Bloque de medias antideslizantes (obligatorias, `precios.json → medias`) con "Pedir mis medias". "Lo quiero", "Inscripción", "Pedir mis medias" y "Regalar un paquete" abren WhatsApp de balé con el mensaje escrito; "Reservar" lleva al horario. Pago: transferencia, datos por confirmar.
 
 **Panel del negocio (`bale/panel.html`, sin enlace en la página: se entra por su dirección):** como el de NutriBEL, guarda en el navegador y la página lo aplica al momento. Permite cambiar WhatsApp, Instagram, dirección, enlace de Maps y correo (o alias de FormSubmit); poner un aviso para las clientas (franja arriba de la página); cancelar una clase en una fecha concreta (sale "Cancelada" y no se puede reservar); ajustar las máquinas de Reformer y la sala (filas × lugares); marcar los **lugares fijos de las miembros** por clase de la semana (barra: en el esquema de la sala; Reformer: cuántas máquinas; solo números, nunca nombres; van en `bale.json → fijos`); cambiar cada precio, y agregar, editar o quitar próximos eventos. Solo guarda lo que difiere de los JSON publicados. **"Descargar archivos para publicar"** genera `config.json`, `precios.json`, `comunidad.json` y `bale.json` ya actualizados: se reemplazan en `bale/data/` y se publican para que todas las clientas vean los cambios. "Restaurar los datos publicados" borra los cambios del panel. Un cupo confirmado desde el panel deja de mostrarse como "por confirmar". En producción haría falta un acceso con contraseña y guardar en un servidor.
+
+**Sistema de reservas (Supabase):** la base de datos, el notificador de correos y WhatsApp y los respaldos están en el repo privado `bale-sistema` (junto a este, nunca dentro). Se activa en `bale/data/config.json → sistema` con la URL y la clave **publicable**; con él, la reserva se confirma al momento, llega por correo y la clienta puede verla o cancelarla en `mi-reserva.html`. Sin sistema, o si la base de datos no responde, la página funciona como antes (WhatsApp + FormSubmit). Nunca van en este repo la clave secreta, la cadena de conexión ni la contraseña de Gmail. Guías: `bale-sistema/docs/CONFIGURAR-SUPABASE.md` y `bale/GUIA-AREA-DEL-ESTUDIO.md`.
 
 **Vista del estudio (`bale/?vista=estudio`, sin enlace: se entra por su dirección):** reservas por clase con el esquema de la sala, clientes, pagos por aprobar y calendario `.ics` por instructora. Usa los lugares fijos, datos de ejemplo (`demo`, solo aquí) y las reservas de ese navegador.
 

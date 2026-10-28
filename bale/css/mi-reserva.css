@@ -1,0 +1,17 @@
+/* =========================================================
+   balé — mi-reserva.html y privacidad.html (páginas sencillas de una columna)
+   ========================================================= */
+.mres,.priv{max-width:620px;padding:34px 20px 50px}
+.mres h1,.priv h1{font:600 clamp(28px,6vw,40px)/1.15 var(--b-sans);color:var(--b-ink);margin:12px 0 12px}
+.mres .cinta,.priv .cinta{margin:0 0 18px}
+.mrmsg,.mrcarga{margin:0 0 16px;color:var(--b-ink);font-size:16px;line-height:1.6}
+.mrcarga{color:var(--muted)}
+.mres .sum{margin-bottom:4px}
+.mres .bkbtns[hidden],.mres [hidden]{display:none}
+.mrdlg h2{font:600 22px/1.2 var(--b-sans);color:var(--b-ink);margin:4px 0 8px}
+.mrdlg p{margin:0 0 12px;color:var(--b-ink)}
+.priv h2{font:600 18px/1.3 var(--b-sans);color:var(--b-ink);margin:26px 0 8px}
+.priv p,.priv li{color:var(--muted);line-height:1.7}
+.priv ul{padding-left:20px;margin:0}
+.priv a{color:var(--brown);font-weight:600}
+.priv .fecha{font-size:13px;color:var(--muted)}

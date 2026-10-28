@@ -26,5 +26,12 @@
     "servicio": "FormSubmit",
     "endpoint": "https://formsubmit.co/ajax/Mariapimentel1609@gmail.com",
     "nota": "La primera reserva envía a la dueña un correo de activación de FormSubmit. Después de activarlo, cambia el correo de este endpoint por el alias que da FormSubmit (así el correo no queda visible en el código)."
+  },
+  "sistema": {
+    "activo": true,
+    "url": "https://exhcazzmcumiqdimolhu.supabase.co",
+    "clave_publicable": "sb_publishable_piyaE6FJG7xhFlV1VsjByg_FVtQb2Ie",
+    "abrir_whatsapp_al_reservar": true,
+    "_nota": "activo=true cuando Supabase esté listo. Solo la clave PUBLICABLE (sb_publishable_…). abrir_whatsapp_al_reservar=false cuando el WhatsApp automático funcione."
   }
 }
