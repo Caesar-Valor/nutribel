@@ -53,8 +53,38 @@ async function llamar(fn,args){
   return j;
 }
 
+// CardNET por cobro (no hay enlace fijo): el botón pide el cobro con la firma del enlace de la
+// reserva (pedir_enlace_pago) y abre el WhatsApp del estudio con el texto que arma la base de
+// datos (nombre, clase, fecha, monto y n.º de reserva; nunca el token). WhatsApp se abre dentro
+// del clic, como al reservar.
+const NOTA_TARJETA = "El cobro te llega por WhatsApp de CardNET a nombre de NUTRIBEL NUTRICION PERSONALIZADA Y BIENESTAR.";
+function tarjetaHtml(R){
+  const pedido=R.cobro_tarjeta==="pedido"||R.cobro_tarjeta==="enviado";
+  return `<div class="paycard"><button class="bbtn solid" type="button" data-tarjeta>Pagar con tarjeta</button>
+    <p class="paynote">${pedido?"Ya pediste el cobro. ":""}${NB.esc(NOTA_TARJETA)}</p></div>`;
+}
+async function pedirTarjeta(R,boton){
+  let win=null;
+  try{ win=window.open("","_blank"); if(win) win.opener=null; }catch(e){ win=null; }
+  const txt=boton.textContent;
+  boton.disabled=true; boton.setAttribute("aria-busy","true"); boton.textContent="Un momento…";
+  let j=null;
+  try{ j=await llamar("pedir_enlace_pago",{p_token:R.token}); }catch(e){ j=null; }
+  boton.disabled=false; boton.removeAttribute("aria-busy"); boton.textContent=txt;
+  if(!j||!j.ok){
+    if(win) win.close();
+    NB.toast((j&&j.mensaje)||"Ahora mismo no podemos pedir el cobro. Escríbenos por WhatsApp y te lo enviamos.");
+    return false;
+  }
+  const url=NB.waLink(j.texto);
+  if(win) win.location.href=url; else location.href=url;
+  R.cobro_tarjeta=j.cobro||"pedido";
+  return true;
+}
+
 window.BALE_SISTEMA = {
   activo, llamar, listo, caer, AVISO,
+  tarjeta:{html:tarjetaHtml, pedir:pedirTarjeta},
   cfg:()=>Object.assign({abrir_whatsapp_al_reservar:true},S||{}),
   alCaer:fn=>{ oyentes.push(fn); }
 };

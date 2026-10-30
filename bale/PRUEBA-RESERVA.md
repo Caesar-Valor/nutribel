@@ -26,7 +26,7 @@ Marifer quiere reservar ella misma y ver cómo le llega por correo (y por WhatsA
 
 **Real con el sistema:** cupos y lugares compartidos por todos los teléfonos (nadie se queda con el mismo lugar), correo de confirmación y al estudio, enlace para ver o cancelar, cargo tardío automático, lista de espera con aviso cuando se libera un lugar, recordatorios (el día antes a las 6:00 pm por correo y WhatsApp, y 2 horas antes por WhatsApp), lugares fijos de las miembros y área del estudio con contraseña.
 
-**Falta o depende de ella:** datos bancarios y enlace de CardNET (Ajustes → Pago; mientras falten, la confirmación dice "te enviamos los datos por WhatsApp"), los lugares fijos de cada miembro, WhatsApp automático (número viejo con Baileys, no la API oficial) y las cuentas de su asistente e instructoras.
+**Falta o depende de ella:** datos bancarios (Ajustes → Pago; mientras falten, la confirmación dice "te enviamos los datos por WhatsApp"; la tarjeta va por cobro desde Cobros → Enlaces por enviar), los lugares fijos de cada miembro, WhatsApp automático (número viejo con Baileys, no la API oficial) y las cuentas de su asistente e instructoras.
 
 ## Sin el sistema (como antes)
 

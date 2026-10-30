@@ -15,7 +15,7 @@ Cuando el sistema esté activo (`bale/data/config.json → sistema.activo: true`
 | Reservas, asistencia, cancelar una reserva o una clase, suplencias | Área del estudio → **Clases** |
 | Clientas, membresías, **lugares fijos** y renovar cada mes | Área del estudio → **Clientas** |
 | Pagos y cargos de RD$300 | Área del estudio → **Cobros** |
-| Enlace de CardNET, datos de transferencia, textos de los avisos, horario de la base de datos, personal | Área del estudio → **Ajustes** (solo la dueña) |
+| Datos de transferencia, textos de los avisos, horario de la base de datos, personal | Área del estudio → **Ajustes** (solo la dueña). La tarjeta (CardNET) va por cobro: **Cobros → Enlaces por enviar** |
 | Precio que se **cobra** | Área del estudio → Ajustes → Precios **y también** el panel (el que se **muestra** en la página) |
 | Datos de contacto, aviso para las clientas, precios que se muestran, próximos eventos | Panel del negocio (como siempre) |
 | Horario que se ve sin sistema, textos, fotos | Los JSON de `bale/data/` (como siempre) |
@@ -38,14 +38,11 @@ Las clientas con membresía tienen su lugar guardado todo el mes; las demás res
 
 Se repite todas las semanas del mes. Cuando cambie el mes, entra de nuevo, ajusta los lugares y vuelve a publicar. En el archivo quedan solo números, por ejemplo `"fijos": { "lun-1730": [3, 7, 12], "vie-0800": 2 }`: **nunca escribas nombres de clientas**, porque `bale.json` es público.
 
-## Activar el aviso por correo (FormSubmit)
+## Aviso por correo sin sistema (FormSubmit): apagado
 
-Si al reservar sale «No pudimos avisar al estudio por correo», es que FormSubmit todavía no está activado. La reserva sigue por WhatsApp, pero el correo no llega.
+Desde el 30/10/2026 los correos al estudio y a las clientas los manda el sistema (Supabase). FormSubmit solo servía cuando la base de datos no responde y dejaba el correo de la dueña a la vista en `config.json`, así que está apagado (`aviso_correo.endpoint` vacío). En ese caso, la confirmación dice «Escríbenos por WhatsApp para confirmar» y la reserva sigue por WhatsApp como siempre.
 
-1. Haz una reserva de prueba en la página publicada. FormSubmit envía a **Mariapimentel1609@gmail.com** un correo «Confirm your email» (si no aparece, buscar en Spam o Promociones).
-2. La dueña abre ese correo y pulsa el botón de activar. Desde ese momento, cada reserva le llega por correo.
-3. FormSubmit le da un **alias** (letras y números) para no dejar el correo a la vista. Ponlo en `bale/data/config.json` → `aviso_correo.endpoint`: `https://formsubmit.co/ajax/<alias>` (o en el panel, campo «Correo de reservas o alias de FormSubmit», y descarga los archivos). Publica.
-4. Haz otra reserva de prueba y comprueba que llega el correo «Nueva reserva · …».
+Si algún día se quiere volver a usar: activar FormSubmit con el correo del estudio, pedir el **alias** y ponerlo en `aviso_correo.endpoint` como `https://formsubmit.co/ajax/<alias>` (nunca el correo).
 
 ## Agregar un evento o un momento
 

@@ -204,19 +204,31 @@ let TAB="";
 function montarTabs(){
   const t=YO.rol==="instructora" ? [["clases","Mis clases"]]
     : [["clases","Clases"],["clientas","Clientas"],["cobros","Cobros"],["avisos","Avisos"]].concat(esDuena()?[["ajustes","Ajustes"],["exportar","Exportar"]]:[]);
-  $("#tabs").innerHTML=t.map(([id,n],i)=>`<button role="tab" type="button" id="t-${id}" aria-controls="p-${id}" aria-selected="${i===0}" tabindex="${i?-1:0}">${n}</button>`).join("");
+  $("#tabs").innerHTML=t.map(([id,n],i)=>`<button role="tab" type="button" id="t-${id}" aria-controls="p-${id}" aria-selected="${i===0}" tabindex="${i?-1:0}">${n}${id==="cobros"?' <span class="tcnt" id="cntEnlaces" hidden></span>':""}</button>`).join("");
   $("#tabs").hidden=t.length<2;
   ["clases","clientas","cobros","avisos","ajustes","exportar"].forEach(id=>{ $("#p-"+id).hidden=true; });
   $("#cInstW").hidden=YO.rol==="instructora";
   $("#icsWrap").hidden=YO.rol!=="instructora";
   $("#cInst").innerHTML=opt("","Todas")+CAT.instructoras.map(i=>opt(i.nombre,i.nombre)).join("");
   abrirTab(t[0][0]);
+  if(YO.rol!=="instructora") contarEnlaces();
+}
+// Contador de "Enlaces por enviar" (cobros con tarjeta que la clienta pidió y nadie ha enviado)
+function pintarContador(n){
+  const b=$("#cntEnlaces"); if(!b) return;
+  b.hidden=!n; b.textContent=n||"";
+  $("#t-cobros").setAttribute("aria-label",n?`Cobros, ${n} ${n===1?"enlace":"enlaces"} por enviar`:"Cobros");
+}
+async function contarEnlaces(){   // en silencio: el contador es una ayuda, no un error
+  try{ const r=await rpc("estudio_enlaces_por_enviar",{}); if(r&&r.ok) pintarContador(+r.por_enviar||0); return r; }
+  catch(e){ return null; }
 }
 function abrirTab(id){
   TAB=id;
   document.querySelectorAll('#tabs [role="tab"]').forEach(b=>{ const on=b.id==="t-"+id; b.setAttribute("aria-selected",on); b.tabIndex=on?0:-1; });
   ["clases","clientas","cobros","avisos","ajustes","exportar"].forEach(x=>{ $("#p-"+x).hidden=x!==id; });
   ({clases:cargarSemana, clientas:abrirClientas, cobros:cargarCobros, avisos:cargarAvisos, ajustes:cargarAjustes, exportar:()=>{}})[id]();
+  if(id!=="cobros"&&YO&&YO.rol!=="instructora") contarEnlaces();
 }
 
 /* =========================================================
@@ -430,6 +442,7 @@ function pintarFicha(){
         ${m.estado==="activa"?`<button class="linkbtn" type="button" data-quitar-fijo="${f.id}">Quitar</button>`:""}</li>`).join("")||`<li class="privacy">Sin lugares fijos.</li>`}</ul>
       ${m.estado==="activa"&&!c.anonimizada?`<div class="eacc"><button class="bbtn solid sm" type="button" data-fijo="${m.id}">Agregar lugar fijo</button>
         <button class="bbtn line sm" type="button" data-renovar="${m.id}" data-hasta="${esc(m.hasta)}" data-nombre="${esc(c.nombre)}">Renovar</button>
+        ${m.pago_estado==="pendiente"&&+m.precio>0?`<button class="bbtn line sm" type="button" data-cobro-mem="${m.id}">Cobrar con tarjeta</button>`:""}
         <button class="bbtn line sm" type="button" data-mem="${m.id}">Editar</button>
         <button class="bbtn line sm peligro" type="button" data-cancel-mem="${m.id}">Cancelar membresía</button></div>`:""}
     </div>`).join("")||`<p class="privacy">Sin membresías.</p>`}
@@ -543,10 +556,20 @@ async function borrarDatos(id){
 /* =========================================================
    COBROS
    ========================================================= */
+const soloDigitos = t=>String(t||"").replace(/\D/g,"").replace(/^1(?=\d{10}$)/,"");
 async function cargarCobros(){
-  const r=await hacer("estudio_pendientes"); if(!r) return;
+  const [r,e]=await Promise.all([hacer("estudio_pendientes"),contarEnlaces()]); if(!r) return;
+  const E=(e&&e.cobros)||[];
+  $("#cobEnlaces").innerHTML=E.map(x=>`<li><div><b>${esc(x.nombre)} · ${esc(dinero(+x.monto))}</b><small>${esc(x.concepto)}</small>
+      <small>WhatsApp ${esc(x.telefono)} <button class="linkbtn" type="button" data-copiar="${esc(soloDigitos(x.whatsapp))}" data-que="Teléfono">Copiar teléfono</button>
+        · <button class="linkbtn" type="button" data-copiar="${esc(String(Math.round(+x.monto)))}" data-que="Monto">Copiar monto</button></small>
+      <small>${x.estado==="enviado"?`Enlace enviado el ${esc(fmtCorta(String(x.enviado_en).slice(0,10)))}: falta que pague`:x.origen==="web"?"Lo pidió la clienta desde la web":"Lo pidió el estudio"}</small></div>
+    <div class="eacc">${x.estado==="pedido"?`<button class="bbtn solid sm" type="button" data-enlace="enviado" data-id="${x.id}" data-q="${esc(x.nombre)}">Enlace enviado</button>`
+      :`<button class="bbtn solid sm" type="button" data-enlace="pagado" data-id="${x.id}" data-q="${esc(x.nombre)}">Pagada (tarjeta)</button>`}
+      <button class="bbtn line sm" type="button" data-enlace="anulado" data-id="${x.id}" data-q="${esc(x.nombre)}">Quitar</button></div></li>`).join("")
+    ||`<li class="empty-state">No hay cobros con tarjeta pendientes.</li>`;
   $("#cobClases").innerHTML=(r.clases||[]).map(x=>`<li><div><b>${esc(x.nombre)}</b><small>${esc(x.clase)} · ${esc(fmtCorta(x.fecha))} · ${esc(x.hora)} · ${esc(dinero(x.monto))}</small><small>${esc(x.telefono)}</small></div>
-    <div class="eacc"><button class="bbtn solid sm" type="button" data-pagar="${x.reserva_id}" data-q="${esc(x.nombre)}">Marcar pagada</button><button class="bbtn line sm" type="button" data-cortesia="${x.reserva_id}" data-q="${esc(x.nombre)}">Cortesía</button></div></li>`).join("")
+    <div class="eacc"><button class="bbtn solid sm" type="button" data-pagar="${x.reserva_id}" data-q="${esc(x.nombre)}">Marcar pagada</button><button class="bbtn line sm" type="button" data-cobro-reserva="${x.reserva_id}">Cobrar con tarjeta</button><button class="bbtn line sm" type="button" data-cortesia="${x.reserva_id}" data-q="${esc(x.nombre)}">Cortesía</button></div></li>`).join("")
     ||`<li class="empty-state">No hay clases sin pagar.</li>`;
   $("#cobCargos").innerHTML=(r.cargos||[]).map(x=>`<li><div><b>${esc(x.nombre)} · ${esc(dinero(x.cargo))}</b><small>${esc(x.clase)} · ${esc(fmtCorta(x.fecha))} · ${esc(x.hora)}</small><small>${esc(x.telefono)}</small></div>
     <div class="eacc"><button class="bbtn solid sm" type="button" data-cargo="cobrado" data-r="${x.reserva_id}" data-q="${esc(x.nombre)}">Cobrado</button><button class="bbtn line sm" type="button" data-cargo="perdonado" data-r="${x.reserva_id}" data-q="${esc(x.nombre)}">Perdonado</button></div></li>`).join("")
@@ -557,6 +580,29 @@ async function pagar(id,nombre,cortesia){
     html:cortesia?`<p>La clase queda como cortesía del estudio (sin cobro).</p>`:`<label class="fld">¿Cómo pagó?<select name="m">${Object.entries(METODO).map(([k,n])=>opt(k,n)).join("")}</select></label>`,
     accion:async f=>{ const r=await hacer("estudio_pago",{p_reserva_id:+id,p_pago_estado:cortesia?"cortesia":"pagado",p_metodo:cortesia?null:v(f,"m")},{dlg:true}); if(!r) return null; return r.ok===false?r.mensaje:true; }});
   if(ok){ listo("Pago guardado"); cargarCobros(); }
+}
+async function enlace(id,estado,nombre){
+  if(estado==="enviado"){
+    const r=await hacer("estudio_enlace_pago",{p_id:+id,p_estado:"enviado"});
+    if(r&&r.ok!==false){ listo("Marcado: enlace enviado"); cargarCobros(); } else if(r) aviso(r.mensaje,"mal");
+    return;
+  }
+  const pagado=estado==="pagado";
+  const ok=await pedir({titulo:pagado?`¿${nombre} pagó con tarjeta?`:`¿Quitar el cobro de ${nombre}?`, ok:pagado?"Sí, pagada":"Quitar",
+    html:`<p>${pagado?"Mira primero en CardNET que el pago entró. La reserva (o la membresía) queda pagada con tarjeta."
+      :"El cobro sale de la lista; la reserva o la membresía siguen sin pagar. Úsalo si se pidió por error o pagó de otra forma."}</p>`,
+    accion:async()=>{ const r=await hacer("estudio_enlace_pago",{p_id:+id,p_estado:estado},{dlg:true}); if(!r) return null; return r.ok===false?r.mensaje:true; }});
+  if(ok){ listo(pagado?"Pago con tarjeta guardado":"Cobro quitado"); cargarCobros(); }
+}
+async function cobrarConTarjeta(args,despues){
+  const r=await hacer("estudio_cobro_tarjeta",args);
+  if(!r) return;
+  if(r.ok===false){ aviso(r.mensaje,"mal"); return; }
+  listo("Agregado a «Enlaces por enviar» (pestaña Cobros)"); contarEnlaces(); if(despues) despues();
+}
+function copiar(valor,que){
+  const ok=()=>NB.toast(`${que} copiado`), no=()=>NB.toast(`${que}: ${valor}`);
+  if(navigator.clipboard&&navigator.clipboard.writeText) navigator.clipboard.writeText(valor).then(ok,no); else no();
 }
 async function cargo(id,estado,nombre){
   const ok=await pedir({titulo:estado==="cobrado"?`¿Cobraste el cargo a ${nombre}?`:`¿Perdonar el cargo a ${nombre}?`, ok:estado==="cobrado"?"Sí, cobrado":"Sí, perdonar",
@@ -622,10 +668,9 @@ async function cargarAjustes(){
   const sec=(id,titulo,cuerpo,nota="")=>`<form class="ebox form" data-aj="${id}" novalidate><h2>${titulo}</h2>${nota?`<p class="privacy">${nota}</p>`:""}${cuerpo}<div class="eacc"><button class="bbtn solid sm" type="submit">Guardar</button></div></form>`;
   $("#ajustes").innerHTML=
     sec("pago","Pago",`<label class="fld">Texto del pago (sale en la confirmación y los avisos)<input name="texto" value="${esc(pago.texto||"")}" maxlength="200"></label>
-      <label class="fld">Enlace de pago de CardNET (https://…)<input name="cardnet" type="url" value="${esc(pago.cardnet_url||"")}" placeholder="Cuando el banco lo dé"></label>
       <div class="two"><label class="fld">Banco<input name="banco" value="${esc(sinPC(tr.banco))}"></label><label class="fld">Tipo de cuenta<input name="tipo" value="${esc(sinPC(tr.tipo_cuenta))}"></label></div>
       <div class="two"><label class="fld">Número de cuenta<input name="cuenta" value="${esc(sinPC(tr.cuenta))}"></label><label class="fld">Titular<input name="titular" value="${esc(sinPC(tr.titular))}"></label></div>`,
-      "Mientras falte algún dato de la transferencia, la confirmación dice «te enviamos los datos por WhatsApp».")+
+      "Mientras falte algún dato de la transferencia, la confirmación dice «te enviamos los datos por WhatsApp». La tarjeta (CardNET) va por cobro: la clienta pulsa «Pagar con tarjeta» y el cobro aparece en Cobros → Enlaces por enviar.")+
     sec("reservas","Reservas por la web",`<div class="two"><label class="fld">Cierran (minutos antes de la clase)<input name="cierre" type="number" min="0" max="1440" value="${esc(aj("cierre_reserva_min",30))}"></label>
       <label class="fld">Reservas sueltas pendientes por persona<input name="max" type="number" min="1" max="20" value="${esc(aj("max_reservas_futuras",3))}"></label></div>
       <label class="fld">Se puede reservar hasta (días adelante)<input name="dias" type="number" min="1" max="60" value="${esc(aj("dias_abiertos",28))}"></label>`)+
@@ -670,12 +715,10 @@ async function guardarAjustes(f){
   const num=(n,min,max)=>{ const x=+v(f,n); return Number.isInteger(x)&&x>=min&&x<=max?x:null; };
   let ok=true;
   if(id==="pago"){
-    const url=v(f,"cardnet");
-    if(url&&!/^https:\/\/\S+$/i.test(url)){ aviso("El enlace de CardNET debe empezar por https://","mal"); return; }
     const t={banco:v(f,"banco")||"POR CONFIRMAR",tipo_cuenta:v(f,"tipo")||"POR CONFIRMAR",cuenta:v(f,"cuenta")||"POR CONFIRMAR",titular:v(f,"titular")||"POR CONFIRMAR"};
     const conf=await pedir({titulo:"Guardar los datos de pago",ok:"Guardar",html:`<p>Estos datos salen en la confirmación de cada reserva por pagar. Revísalos bien.</p>`});
     if(!conf) return;
-    ok=!!await ajuste("pago",{texto:v(f,"texto")||"Pago por transferencia: te enviamos los datos por WhatsApp.",cardnet_url:url||null,transferencia:t});
+    ok=!!await ajuste("pago",{texto:v(f,"texto")||"Pago por transferencia: te enviamos los datos por WhatsApp.",cardnet_url:aj("pago",{}).cardnet_url||null,transferencia:t});   // el enlace fijo ya no se usa, pero no se borra
   }else if(id==="reservas"){
     const c=num("cierre",0,1440), m=num("max",1,20), d=num("dias",1,60);
     if(c==null||m==null||d==null){ aviso("Revisa los números de las reservas.","mal"); return; }
@@ -796,9 +839,10 @@ function eventos(){
   $("#qCli").addEventListener("input",()=>{ clearTimeout(qT); qT=setTimeout(buscarClientas,300); });
   $("#nuevaCli").addEventListener("click",nuevaClienta);
   $("#p-clientas").addEventListener("click",e=>{
-    const t=e.target.closest("[data-ficha],[data-renovar],[data-fijo],[data-quitar-fijo],[data-mem],[data-cancel-mem],[data-borrar]"); if(!t) return;
+    const t=e.target.closest("[data-ficha],[data-renovar],[data-fijo],[data-quitar-fijo],[data-mem],[data-cancel-mem],[data-borrar],[data-cobro-mem]"); if(!t) return;
     const d=t.dataset;
-    if(d.renovar) renovar(d.renovar,d.hasta,d.nombre);
+    if(d.cobroMem) cobrarConTarjeta({p_membresia_id:+d.cobroMem});
+    else if(d.renovar) renovar(d.renovar,d.hasta,d.nombre);
     else if(d.ficha) abrirFicha(+d.ficha);
     else if(d.fijo) agregarFijo(d.fijo);
     else if(d.quitarFijo) quitarFijo(d.quitarFijo);
@@ -811,7 +855,10 @@ function eventos(){
   $("#p-cobros").addEventListener("click",e=>{
     const p=e.target.closest("[data-pagar]"); if(p){ pagar(p.dataset.pagar,p.dataset.q,false); return; }
     const c=e.target.closest("[data-cortesia]"); if(c){ pagar(c.dataset.cortesia,c.dataset.q,true); return; }
-    const g=e.target.closest("[data-cargo]"); if(g) cargo(g.dataset.r,g.dataset.cargo,g.dataset.q);
+    const g=e.target.closest("[data-cargo]"); if(g){ cargo(g.dataset.r,g.dataset.cargo,g.dataset.q); return; }
+    const en=e.target.closest("[data-enlace]"); if(en){ enlace(en.dataset.id,en.dataset.enlace,en.dataset.q); return; }
+    const cp=e.target.closest("[data-copiar]"); if(cp){ copiar(cp.dataset.copiar,cp.dataset.que); return; }
+    const cr=e.target.closest("[data-cobro-reserva]"); if(cr) cobrarConTarjeta({p_reserva_id:+cr.dataset.cobroReserva},cargarCobros);
   });
   // Avisos y ajustes
   $("#p-avisos").addEventListener("change",e=>{ if(e.target.dataset.sw) interruptor(e.target); });

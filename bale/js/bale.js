@@ -783,16 +783,15 @@ function renderDone(){
   $("#mailSt").textContent=bk.wait?"":"Avisando al estudio por correo…"; $("#mailSt").className="mailst";
   show("stListo"); $("#stListo").focus();
 }
-// Pago de una reserva confirmada: enlace de CardNET, datos de transferencia y comprobante
+// Pago de una reserva confirmada: "Pagar con tarjeta" (CardNET por cobro), datos de transferencia y comprobante
 function pintarPago(R){
   const box=$("#payBox");
   if(R.pago_estado==="membresia"){ box.innerHTML=`<p class="payinc">Incluida en tu membresía</p>`; box.hidden=false; return; }
   if(R.pago_estado!=="pendiente") return;
   const T=R.pago_transferencia&&typeof R.pago_transferencia==="object"?R.pago_transferencia:null;
-  const url=/^https:\/\/[^\s"'<>]+$/i.test(R.pago_cardnet_url||"")?R.pago_cardnet_url:"";
   const fila=(k,v,extra="")=>`<div><dt>${esc(k)}</dt><dd>${esc(v)}${extra}</dd></div>`;
   box.innerHTML=`<p class="paytit">Pago${typeof R.monto==="number"?` · ${esc(NB.money(R.monto))}`:""}</p>
-    ${url?`<a class="bbtn solid" href="${esc(url)}" target="_blank" rel="noopener">Pagar con tarjeta</a>`:""}
+    ${R.pagar_con_tarjeta&&SIS.tarjeta?SIS.tarjeta.html(R):""}
     ${T?`<dl class="bankd">${fila("Banco",T.banco)}${fila("Tipo de cuenta",T.tipo_cuenta)}${fila("Número",T.cuenta,` <button class="linkbtn" type="button" data-copy="${esc(T.cuenta)}">Copiar número</button>`)}${fila("Titular",T.titular)}</dl>`:""}
     <button class="bbtn line" type="button" id="comprobante">Enviar comprobante por WhatsApp</button>`;
   box.hidden=false;
@@ -807,7 +806,7 @@ function waMessage(){
 /* ---------- Aviso por correo (FormSubmit) ---------- */
 function sendMail(r,c){
   const st=$("#mailSt"), A=CFG.aviso_correo;
-  const fail=()=>{ st.textContent="No pudimos avisar al estudio por correo. Tu reserva sigue por WhatsApp: asegúrate de enviar el mensaje."; st.className="mailst fail"; };
+  const fail=()=>{ st.textContent="Escríbenos por WhatsApp para confirmar."; st.className="mailst fail"; };
   if(!A||!A.endpoint||!window.fetch){ fail(); return; }
   const body={_subject:`Nueva reserva · ${clsName(c)} ${fmtDay(fromIso(r.fecha))} ${NB.fmtH(toH(c.inicio))}`,_template:"table",_captcha:"false"};
   summary(r,c).forEach(([k,v])=>{ body[k]=v; });
@@ -946,8 +945,10 @@ function initPublic(){
   $("#stDatos").addEventListener("input",e=>e.target.removeAttribute("aria-invalid"));
   $("#sendWa").addEventListener("click",()=>NB.whatsapp(waMessage()));
   $("#icsMine").addEventListener("click",myIcs);
-  // Pago (con sistema): copiar el número de cuenta y mandar el comprobante
+  // Pago (con sistema): pagar con tarjeta, copiar el número de cuenta y mandar el comprobante
   $("#payBox").addEventListener("click",e=>{
+    const tj=e.target.closest("[data-tarjeta]");
+    if(tj&&bk.last&&bk.last.R){ SIS.tarjeta.pedir(bk.last.R,tj).then(ok=>{ if(ok){ pintarPago(bk.last.R); const b=$("#payBox [data-tarjeta]"); if(b) b.focus(); } }); return; }
     const cp=e.target.closest("[data-copy]");
     if(cp){ const v=cp.dataset.copy, ok=()=>NB.toast("Número de cuenta copiado"), no=()=>NB.toast(`Número de cuenta: ${v}`);
       if(navigator.clipboard&&navigator.clipboard.writeText) navigator.clipboard.writeText(v).then(ok,no); else no(); return; }

@@ -10,7 +10,7 @@ Capturas de ejemplo (datos ficticios) en `referencia/capturas-sistema/despues/`.
 | **Clientas** | Fichas, membresías, lugares fijos, **renovar** al empezar el mes |
 | **Cobros** | Clases sin pagar y cargos de RD$300 por cancelación tardía |
 | **Avisos** | Si los correos y los WhatsApp automáticos están funcionando |
-| **Ajustes** y **Exportar** | Solo tú: pago, CardNET, textos de los avisos, horario, precios, personal y Excel |
+| **Ajustes** y **Exportar** | Solo tú: pago, textos de los avisos, horario, precios, personal y Excel |
 
 Tu asistente ve todo menos Ajustes y Exportar. Cada instructora ve solo **Mis clases**: sus alumnas, el lugar, quién viene por primera vez y la asistencia.
 
@@ -44,12 +44,23 @@ El lugar fijo se reserva solo cada semana mientras dure la membresía.
 
 ## Cobros
 
-**Cobros** → **Clases sin pagar**: **Marcar pagada** (transferencia, tarjeta o efectivo) o **Cortesía**. **Cargos por cancelación tardía**: **Cobrado** o **Perdonado**. Todo pide confirmación.
+**Cobros** → **Clases sin pagar**: **Marcar pagada** (transferencia, tarjeta o efectivo), **Cobrar con tarjeta** o **Cortesía**. **Cargos por cancelación tardía**: **Cobrado** o **Perdonado**. Todo pide confirmación.
+
+### Pagos con tarjeta (CardNET)
+
+CardNET no tiene un enlace fijo: cada cobro lo creas tú con el monto, y CardNET le escribe a la clienta por WhatsApp. El cobro le llega a nombre de **NUTRIBEL NUTRICION PERSONALIZADA Y BIENESTAR** (la página ya se lo avisa).
+
+1. La clienta pulsa **Pagar con tarjeta** (en la confirmación o en "Ver mi reserva"). Te escribe por WhatsApp con su nombre, la clase, el monto y el número de reserva, y el cobro aparece en **Cobros → Enlaces por enviar**. La pestaña **Cobros** muestra cuántos hay por enviar.
+2. En CardNET, crea el cobro: **Copiar monto** y **Copiar teléfono** te ayudan. Luego pulsa **Enlace enviado**.
+3. Cuando el pago entre en CardNET, pulsa **Pagada (tarjeta)**: la reserva queda pagada con tarjeta.
+4. **Quitar** saca el cobro de la lista sin marcarlo pagado (si se pidió por error o pagó de otra forma).
+
+**Membresías:** en la ficha de la clienta, **Cobrar con tarjeta** en la membresía. Sigue el mismo camino.
 
 ## Cancelar una clase
 
 En la clase, **Cancelar clase** → escribe el motivo (sale en el aviso) y deja marcado **Avisar a las alumnas**. Se cancelan todas sus reservas **sin cargo**. Si fue un error, **Reabrir clase** (las reservas no vuelven solas). Para una suplencia de un solo día, **Cambiar instructora**.
 
-## Cuando llegue el enlace de CardNET o los datos del banco
+## Cuando lleguen los datos del banco
 
-**Ajustes → Pago**: pega el enlace (empieza por `https://`) o los datos de la transferencia y pulsa **Guardar**. Desde ese momento salen en la confirmación de cada reserva por pagar.
+**Ajustes → Pago**: escribe los datos de la transferencia y pulsa **Guardar**. Desde ese momento salen en la confirmación de cada reserva por pagar. (La tarjeta va por cobro: mira "Pagos con tarjeta" arriba.)

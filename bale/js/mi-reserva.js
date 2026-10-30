@@ -39,6 +39,10 @@ function pintar(){
     ["Lugar",r.lugar_texto],["Pago",r.pago_texto],["Estado",estadoTxt]].filter(x=>x[1]);
   $("#mrSum").innerHTML=filas.map(([k,v])=>`<div><dt>${esc(k)}</dt><dd>${esc(v)}</dd></div>`).join("");
   $("#mrSum").hidden=false; $("#mrBtns").hidden=false;
+  // Pagar con tarjeta (CardNET por cobro), si queda algo por pagar
+  const pay=$("#mrPay"), tarjeta=!!(r.pagar_con_tarjeta&&SIS.tarjeta);
+  pay.innerHTML=tarjeta?`<p class="paytit">Pago${typeof r.monto==="number"?` · ${esc(dinero(r.monto))}`:""}</p>${SIS.tarjeta.html(r)}`:"";
+  pay.hidden=!tarjeta;
   $("#mrCancel").hidden=!r.cancelable;
   $("#mrIcs").hidden=r.estado!=="activa"||r.clase_cancelada;
   $("#mrHorario").hidden=!(r.clase_cancelada||r.estado==="cancelada");
@@ -86,6 +90,10 @@ $("#mrSi").addEventListener("click",cancelar);
 $("#mrNo").addEventListener("click",()=>$("#mrDlg").close());
 $("#mrDlg").addEventListener("close",()=>{ if(!$("#mrCancel").hidden) $("#mrCancel").focus(); });
 $("#mrIcs").addEventListener("click",ics);
+$("#mrPay").addEventListener("click",e=>{
+  const b=e.target.closest("[data-tarjeta]");
+  if(b&&R) SIS.tarjeta.pedir(R,b).then(ok=>{ if(ok){ pintar(); const n=$("#mrPay [data-tarjeta]"); if(n) n.focus(); } });
+});
 // Un enlace con el token en la consulta (?t=) se corrige al # sin que llegue a ningún otro lado
 if(/[?&]t=/.test(location.search)) history.replaceState(null,"",location.pathname+location.hash);
 

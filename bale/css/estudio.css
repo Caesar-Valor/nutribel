@@ -102,3 +102,5 @@
   .btop .quien{display:none}
 }
 .btop .linkbtn.clave{font:600 11px/1 var(--b-sans);letter-spacing:.08em;min-height:44px;padding:0 6px}
+/* Contador de "Enlaces por enviar" en la pestaña Cobros */
+.est .tcnt{display:inline-block;min-width:20px;margin-left:6px;padding:2px 6px;border-radius:999px;background:var(--brown);color:var(--on-brown);font:600 11.5px/1.3 var(--b-sans);text-align:center;vertical-align:1px}

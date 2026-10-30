@@ -24,8 +24,8 @@
   },
   "aviso_correo": {
     "servicio": "FormSubmit",
-    "endpoint": "https://formsubmit.co/ajax/Mariapimentel1609@gmail.com",
-    "nota": "La primera reserva envía a la dueña un correo de activación de FormSubmit. Después de activarlo, cambia el correo de este endpoint por el alias que da FormSubmit (así el correo no queda visible en el código)."
+    "endpoint": "",
+    "nota": "Apagado (30/10/2026): solo servía en el modo sin sistema y dejaba el correo de la dueña a la vista. Sin endpoint, la confirmación sin sistema dice «Escríbenos por WhatsApp para confirmar». Para volver a usarlo: el endpoint con el alias de FormSubmit (nunca el correo)."
   },
   "sistema": {
     "activo": true,

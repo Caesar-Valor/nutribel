@@ -584,3 +584,6 @@ body.no-intro{--base:0s}
   .bbtn:hover:not(:disabled){transform:none}
   .bbtn:active:not(:disabled),.rbtn:active,.tores:active,.seat:active:not(:disabled){transform:none}
 }
+/* Pagar con tarjeta (CardNET por cobro) */
+.paycard{display:grid;gap:6px;justify-items:start}
+.paycard .paynote{margin:0;font-size:13px;line-height:1.45;color:var(--muted)}
