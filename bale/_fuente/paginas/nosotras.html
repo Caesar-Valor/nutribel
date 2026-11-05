@@ -6,50 +6,70 @@
   "main": "pagina"
 } @-->
 <header class="phead">
-  <h1>El estudio</h1>
+  <span class="kick">El estudio</span>
+  <h1>Balé Studio</h1>
   <span class="cinta" aria-hidden="true"></span>
 </header>
-<section class="sec estrecho" aria-label="Nuestra historia">
-  <div class="texto">{{historia}}</div>
+<section class="sec arriba" aria-label="Nuestra historia">
+  <div class="cont best">
+    <div class="historia grande">{{historia}}</div>
+    <figure class="estfoto">
+      <img src="img/estudio-logo.webp" srcset="img/estudio-logo-480.webp 480w, img/estudio-logo-800.webp 800w, img/estudio-logo.webp 1200w" sizes="(min-width:900px) 400px, 80vw" alt="Logo de balé en la pared del estudio: Barre, Ballet &amp; Pilates" width="1200" height="1500" decoding="async">
+    </figure>
+  </div>
 </section>
 
-<section class="sec" aria-labelledby="t-sala">
-  <div class="cont foto-texto">
-    <figure class="ftfoto">
-      <img src="img/barras-nuevas.webp" srcset="img/barras-nuevas-480.webp 480w, img/barras-nuevas-800.webp 800w, img/barras-nuevas.webp 1200w" sizes="(min-width:1024px) 460px, 92vw" alt="Sala de barre de balé: dos barras negras con los lugares numerados en círculos crema y piso de madera clara" width="1200" height="1500" loading="lazy" decoding="async">
-    </figure>
-    <div>
-      <h2 id="t-sala">La sala de barre</h2>
-      <p>Dos barras con 8 lugares cada una: 16 en total. Cada lugar tiene su número en un círculo, y al reservar eliges el tuyo en el dibujo de la sala.</p>
-    </div>
-  </div>
-  <div class="cont foto-texto alt">
-    <figure class="ftfoto">
-      <img src="img/reformer-sala.webp" srcset="img/reformer-sala-480.webp 480w, img/reformer-sala-800.webp 800w, img/reformer-sala.webp 1200w" sizes="(min-width:1024px) 460px, 92vw" alt="Sala de Pilates Reformer de balé con máquinas de madera clara" width="1200" height="1500" loading="lazy" decoding="async">
-    </figure>
-    <div>
-      <h2>La sala de Pilates Reformer</h2>
-      <p>Seis máquinas por clase: grupos pequeños y la instructora siempre cerca.</p>
+<section class="sec papel" aria-labelledby="t-salas">
+  <div class="cont">
+    <header class="shead" data-reveal>
+      <span class="kick">Las salas</span>
+      <h2 id="t-salas">Un lugar para cada clase</h2>
+      <span class="cinta" aria-hidden="true"></span>
+    </header>
+    <div class="salas">
+      <article class="sala-card" data-reveal>
+        <figure><img src="img/barras-nuevas.webp" srcset="img/barras-nuevas-480.webp 480w, img/barras-nuevas-800.webp 800w, img/barras-nuevas.webp 1200w" sizes="(min-width:1024px) 460px, 92vw" alt="Sala de barre de balé: dos barras negras con los lugares numerados en círculos crema y piso de madera clara" width="1200" height="1500" loading="lazy" decoding="async"></figure>
+        <div>
+          <span class="kick">Barre</span>
+          <h3>La sala de barre</h3>
+          <p>Dos barras con 8 lugares cada una: 16 en total. Cada lugar tiene su número en un círculo, y al reservar eliges el tuyo en el dibujo de la sala.</p>
+        </div>
+      </article>
+      <article class="sala-card" data-reveal>
+        <figure><img src="img/reformer-sala.webp" srcset="img/reformer-sala-480.webp 480w, img/reformer-sala-800.webp 800w, img/reformer-sala.webp 1200w" sizes="(min-width:1024px) 460px, 92vw" alt="Sala de Pilates Reformer de balé con máquinas de madera clara" width="1200" height="1500" loading="lazy" decoding="async"></figure>
+        <div>
+          <span class="kick">Pilates Reformer</span>
+          <h3>La sala de Pilates Reformer</h3>
+          <p>Seis máquinas por clase: grupos pequeños y la instructora siempre cerca.</p>
+        </div>
+      </article>
     </div>
   </div>
 </section>
 
 <section class="sec" id="equipo" aria-labelledby="t-equipo">
   <div class="cont">
-    <h2 id="t-equipo">El equipo</h2>
-    <p class="lead estrecho">Instructoras especializadas en ballet clásico, Pilates Reformer y barre, con una misma misión: una experiencia de movimiento de calidad, cercana y profesional.</p>
+    <header class="shead" data-reveal>
+      <span class="kick">El equipo</span>
+      <h2 id="t-equipo">Nuestro equipo</h2>
+      <span class="cinta" aria-hidden="true"></span>
+      <p>{{equipo-texto}}</p>
+    </header>
     {{equipo}}
   </div>
 </section>
 
 <section class="sec suave" id="ubicacion" aria-labelledby="t-ubic">
-  <div class="cont dos">
+  <div class="cont dos centrado">
     <div>
-      <h2 id="t-ubic">Cómo llegar</h2>
-      <p class="lead">{{direccion}}</p>
-      <p>{{ubicacion}}, La Vega, República Dominicana.</p>
+      <span class="kick">Ubicación</span>
+      <h2 id="t-ubic">Te esperamos en balé</h2>
+      <span class="cinta" aria-hidden="true"></span>
+      <p class="where">{{ubicacion}}</p>
+      <p class="city">La Vega, República Dominicana</p>
+      <p class="addr">{{direccion}}</p>
       <div class="acciones">
-        <a class="btn" href="{{maps}}" target="_blank" rel="noopener">Abrir en el mapa</a>
+        <a class="btn" href="{{maps}}" target="_blank" rel="noopener">Cómo llegar</a>
         <a class="btn line" href="{{whatsapp-url}}" target="_blank" rel="noopener">WhatsApp</a>
       </div>
     </div>

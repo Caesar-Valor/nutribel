@@ -20,64 +20,123 @@
     <video id="pvideo" muted playsinline loop preload="none" disablepictureinpicture tabindex="-1"></video>
   </div>
   <div class="ptexto">
-    <h1 id="t-portada" class="entra" style="--e:1">{{frase}}</h1>
-    <p class="entra" style="--e:2">Barre, Pilates Reformer y Ballet en La Vega, para todos los niveles.</p>
+    <h1 id="t-portada" class="entra" style="--e:1"><img src="img/bale-logo-transparente.webp" alt="balé, Barre, Ballet &amp; Pilates" width="1040" height="538" decoding="async"></h1>
+    <p class="frase entra" style="--e:2">{{frase}}</p>
     <div class="pacc entra" style="--e:3">
-      <a class="btn claro" href="reservar.html">Reservar mi lugar</a>
-      <a class="btn texto claro" href="clases.html">Conocer las clases</a>
+      <a class="btn claro brillo" href="reservar.html?primera=1">Reserva tu primera clase</a>
+      <a class="btn fantasma" href="reservar.html">Ver horario</a>
     </div>
   </div>
 </section>
 
-<section class="sec proxima" aria-labelledby="t-proxima">
-  <div class="cont dos">
+<section class="sec suave" aria-labelledby="t-estudio">
+  <div class="cont best">
     <div>
-      <h2 id="t-proxima">La próxima clase con lugar</h2>
-      <p>Elige tu lugar en la sala y recibe la confirmación al momento.</p>
+      <span class="kick">El estudio</span>
+      <h2 id="t-estudio">Balé Studio</h2>
+      <span class="cinta" aria-hidden="true"></span>
+      <div class="historia">{{historia}}</div>
+      <a class="btn line" href="nosotras.html">Conoce el estudio</a>
     </div>
+    <figure class="estfoto">
+      <img src="img/estudio-logo.webp" srcset="img/estudio-logo-480.webp 480w, img/estudio-logo-800.webp 800w, img/estudio-logo.webp 1200w" sizes="(min-width:900px) 400px, 80vw" alt="Logo de balé en la pared del estudio: Barre, Ballet &amp; Pilates" width="1200" height="1500" loading="lazy" decoding="async">
+    </figure>
+  </div>
+</section>
+
+<section class="sec papel" aria-labelledby="t-clases">
+  <div class="cont">
+    <header class="shead" data-reveal>
+      <span class="kick">Barre, Pilates y Ballet</span>
+      <h2 id="t-clases">Nuestras clases</h2>
+      <span class="cinta" aria-hidden="true"></span>
+      <p>{{que-es-barre}}</p>
+    </header>
+    {{clases-tarjetas}}
+  </div>
+</section>
+
+<section class="sec" aria-labelledby="t-reformer">
+  <div class="cont">{{reformer}}</div>
+</section>
+
+<section class="sec papel" aria-labelledby="t-proxima">
+  <div class="cont dos centrado">
+    <header class="shead" data-reveal>
+      <span class="kick">Horario y reservas</span>
+      <h2 id="t-proxima">La próxima clase con lugar</h2>
+      <span class="cinta" aria-hidden="true"></span>
+      <p>En las clases de barra escoges tu lugar en la sala. Tu reserva se confirma al momento.</p>
+      <a class="btn line" href="reservar.html">Ver el horario de la semana</a>
+    </header>
     <div class="proxima-tarjeta" id="proxima" aria-live="polite">
       <p class="pcarga">Buscando la próxima clase…</p>
     </div>
   </div>
 </section>
 
-<section class="sec" aria-labelledby="t-clases">
-  <div class="cont dos">
-    <div>
-      <h2 id="t-clases">Las clases</h2>
-      <p>Barre inspirado en el ballet, Pilates Reformer en máquina y ballet clásico para niñas. Cada clase dura entre 45 y 60 minutos.</p>
-      <a class="btn line" href="clases.html">Ver todas las clases</a>
-    </div>
-    {{clases-breve}}
+<section class="sec" aria-labelledby="t-planes">
+  <div class="cont">
+    <header class="shead" data-reveal>
+      <span class="kick">Precios</span>
+      <h2 id="t-planes">Elige tu ritmo</h2>
+      <span class="cinta" aria-hidden="true"></span>
+      <p>Paga cada clase o asegura tu lugar todo el mes con una membresía. Las medias antideslizantes son obligatorias.</p>
+    </header>
+    {{precios-breve}}
+    <div class="acciones fin"><a class="btn" href="precios.html">Ver todos los precios</a></div>
   </div>
 </section>
 
 <section class="sec suave" aria-labelledby="t-comunidad">
-  <div class="cont dos invertido">
-    {{comunidad-breve}}
-    <div>
+  <div class="cont">
+    <header class="shead" data-reveal>
+      <span class="kick">Comunidad</span>
       <h2 id="t-comunidad">Más que clases</h2>
-      <p>Clases temáticas, mañanas al aire libre y celebraciones: en balé nos conocemos por el nombre.</p>
-      <a class="btn line" href="comunidad.html">Ver la comunidad</a>
-    </div>
+      <span class="cinta" aria-hidden="true"></span>
+    </header>
+    {{comunidad-tarjetas}}
+    <div class="acciones fin"><a class="btn line" href="comunidad.html">Ver la comunidad</a></div>
   </div>
 </section>
 
-<section class="sec" aria-labelledby="t-planes">
-  <div class="cont dos">
+<section class="sec papel" aria-labelledby="t-equipo">
+  <div class="cont">
+    <header class="shead" data-reveal>
+      <span class="kick">El equipo</span>
+      <h2 id="t-equipo">Nuestro equipo</h2>
+      <span class="cinta" aria-hidden="true"></span>
+      <p>{{equipo-texto}}</p>
+    </header>
+    {{equipo-breve}}
+    <div class="acciones fin"><a class="btn line" href="nosotras.html#equipo">Conoce al equipo</a></div>
+  </div>
+</section>
+
+<section class="sec" aria-labelledby="t-faq">
+  <div class="cont">
+    <header class="shead" data-reveal>
+      <span class="kick">Preguntas frecuentes</span>
+      <h2 id="t-faq">Antes de tu primera clase</h2>
+      <span class="cinta" aria-hidden="true"></span>
+    </header>
+    {{preguntas}}
+  </div>
+</section>
+
+<section class="sec suave" aria-labelledby="t-ubic">
+  <div class="cont ubic">
     <div>
-      <h2 id="t-planes">Planes</h2>
-      <p>Paga cada clase o asegura tu lugar todo el mes con una membresía. Las medias antideslizantes son obligatorias.</p>
-      <a class="btn line" href="precios.html">Ver los precios</a>
+      <span class="kick">Ubicación</span>
+      <h2 id="t-ubic">Te esperamos en balé</h2>
+      <p class="where">{{ubicacion}}</p>
+      <p class="city">La Vega, República Dominicana</p>
+      <p class="addr">{{direccion}}</p>
     </div>
-    {{planes-breve}}
-  </div>
-</section>
-
-<section class="sec cierre" aria-labelledby="t-cierre">
-  <div class="cont centro">
-    <h2 id="t-cierre">Tu lugar en la barra te espera</h2>
-    <p>Los sábados hay sesión de primera clase.</p>
-    <a class="btn" href="reservar.html?primera=1">Reservar mi primera clase</a>
+    <div class="acciones">
+      <a class="btn" href="{{maps}}" target="_blank" rel="noopener">Cómo llegar</a>
+      <a class="btn line" href="{{whatsapp-url}}" target="_blank" rel="noopener">WhatsApp {{whatsapp-texto}}</a>
+      <a class="btn line" href="{{instagram-url}}" target="_blank" rel="noopener">Instagram {{instagram-usuario}}</a>
+    </div>
   </div>
 </section>

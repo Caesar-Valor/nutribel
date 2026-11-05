@@ -8,7 +8,8 @@
   "main": "pagina reservar"
 } @-->
 <header class="phead">
-  <h1>Reservar</h1>
+  <span class="kick">Reservar</span>
+  <h1>Horario y reservas</h1>
   <span class="cinta" aria-hidden="true"></span>
   {{texto-horario}}
 </header>
@@ -20,6 +21,7 @@
 </aside>
 
 <section class="horario" aria-label="Horario de la semana">
+  <div class="cal">
   <div class="semana">
     <button class="flecha" type="button" id="prevW" aria-label="Semana anterior"><svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg></button>
     <p class="semana-txt" id="wLabel" aria-live="polite"></p>
@@ -32,6 +34,7 @@
   </div>
   <h2 class="dia-titulo" id="dTitle"></h2>
   <ol class="filas" id="rows"></ol>
+  </div>
 </section>
 
 <!-- Reserva: clase y día → lugar → tus datos → confirmación -->

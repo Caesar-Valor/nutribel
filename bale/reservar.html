@@ -56,7 +56,8 @@
 </header>
 <main id="contenido" class="pagina reservar">
 <header class="phead">
-  <h1>Reservar</h1>
+  <span class="kick">Reservar</span>
+  <h1>Horario y reservas</h1>
   <span class="cinta" aria-hidden="true"></span>
   <p class="lead" id="schedTxt" data-sin="Elige el día y la clase. En las clases de barra escoges tu lugar en la sala. Tu reserva se confirma por WhatsApp." data-con="Elige el día y la clase. En las clases de barra escoges tu lugar en la sala. Tu reserva se confirma al momento y te llega por correo.">Elige el día y la clase. En las clases de barra escoges tu lugar en la sala. Tu reserva se confirma al momento y te llega por correo.</p>
 </header>
@@ -68,6 +69,7 @@
 </aside>
 
 <section class="horario" aria-label="Horario de la semana">
+  <div class="cal">
   <div class="semana">
     <button class="flecha" type="button" id="prevW" aria-label="Semana anterior"><svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg></button>
     <p class="semana-txt" id="wLabel" aria-live="polite"></p>
@@ -80,6 +82,7 @@
   </div>
   <h2 class="dia-titulo" id="dTitle"></h2>
   <ol class="filas" id="rows"></ol>
+  </div>
 </section>
 
 <!-- Reserva: clase y día → lugar → tus datos → confirmación -->
@@ -162,7 +165,7 @@
     </div>
     <div class="pie-col">
       <h2>Horario</h2>
-      <p>Clases de lunes a sábado.</p>
+      <p class="pie-dato">Clases de lunes a sábado.</p>
       <a href="reservar.html">Ver el horario de la semana</a>
       <a href="preguntas.html">Preguntas frecuentes</a>
     </div>
@@ -170,8 +173,11 @@
       <h2>balé</h2>
       <a href="privacidad.html">Aviso de privacidad</a>
       <a href="cuenta.html">Mi cuenta</a>
-      <a class="discreto" href="estudio.html">Área del estudio</a>
+      <a href="comunidad.html">Comunidad</a>
     </div>
+  </div>
+  <div class="pie-fin">
+    <p>balé · Barre, Ballet &amp; Pilates · La Vega, República Dominicana</p>
   </div>
 </footer>
 

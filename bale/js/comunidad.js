@@ -51,11 +51,11 @@ function tarjeta(p){
     const [, m, d]=p.fecha.split("-").map(Number);
     const meta=[`${d} de ${MESES[m-1]}`, hora12(p.hora), p.lugar, p.precio!=null?NB.money(+p.precio):"Gratis"].filter(Boolean).join(" · ");
     return `<li class="actividad" id="p${p.id}"><p class="afecha" aria-hidden="true"><b>${d}</b><span>${MESES[m-1].slice(0,3)}</span></p>
-      <div>${solo}<h3>${esc(p.titulo)}</h3><p class="ameta">${esc(meta)}</p><div class="cuerpo-pub">${cuerpo(p.cuerpo)}</div>${fotos(p,"(min-width:768px) 200px, 40vw")}${accion(p)}${wa?`<div class="acciones">${wa}</div>`:""}${social(p)}</div></li>`;
+      <div><span class="kick">Próxima actividad</span>${solo}<h3>${esc(p.titulo)}</h3><p class="ameta">${esc(meta)}</p><div class="cuerpo-pub">${cuerpo(p.cuerpo)}</div>${fotos(p,"(min-width:768px) 200px, 40vw")}${accion(p)}${wa?`<div class="acciones">${wa}</div>`:""}${social(p)}</div></li>`;
   }
   const f=(p.fotos||[])[0];
   return `<li class="momento" id="p${p.id}">${f?`<figure><img src="${esc(fotoSrc(f))}" alt="${esc(f.alt||"")}" width="800" height="1000" loading="lazy" decoding="async"></figure>`:""}
-    ${solo}<h3>${esc(p.titulo)}</h3><div class="cuerpo-pub">${cuerpo(p.cuerpo)}</div>${(p.fotos||[]).length>1?fotos({fotos:p.fotos.slice(1)},"(min-width:768px) 160px, 30vw"):""}${wa?`<div class="acciones">${wa}</div>`:""}${social(p)}</li>`;
+    <div class="mtexto">${solo}<h3>${esc(p.titulo)}</h3><div class="cuerpo-pub">${cuerpo(p.cuerpo)}</div>${(p.fotos||[]).length>1?fotos({fotos:p.fotos.slice(1)},"(min-width:768px) 160px, 30vw"):""}${wa?`<div class="acciones">${wa}</div>`:""}${social(p)}</div></li>`;
 }
 function pintar(j){
   PUBS=j.publicaciones||[];

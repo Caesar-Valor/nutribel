@@ -135,7 +135,7 @@ if(/[?&](t|m)=/.test(location.search)) history.replaceState(null,"",location.pat
 Promise.all([NB.ready,SIS.listo]).then(async ([cfg,activo])=>{
   CFG=cfg;
   if(!(esMem?TOKEN_M_RE:TOKEN_RE).test(token)){ invalido(); return; }
-  if(esMem){ $("#mrTitle").textContent="Tu membresía"; const k=$(".mres .bk-kick"); if(k) k.textContent="balé · mi membresía"; }
+  if(esMem){ $("#mrTitle").textContent="Tu membresía"; const k=$(".mres .phead .kick"); if(k) k.textContent="balé · mi membresía"; }
   if(!activo){
     estado(`<p class="mrmsg">Ahora mismo no podemos mostrarlo en línea. Escríbenos por WhatsApp y el estudio te ayuda.</p>`);
     $("#mrBtns").hidden=false; $("#mrCancel").hidden=true; $("#mrIcs").hidden=true; waLink(); return;

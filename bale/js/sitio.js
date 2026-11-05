@@ -50,6 +50,20 @@ function revelar(){
 }
 revelar();   // sitio.js va con defer: corre con el HTML ya leído
 
+/* ---------- Equipo: la biografía en 4 líneas y «Leer más» solo si no cabe ---------- */
+document.querySelectorAll(".member .mbio").forEach(b=>{
+  const bt=b.nextElementSibling; if(!bt||!bt.classList.contains("biomore")) return;
+  b.classList.add("clamp");
+  if(b.scrollHeight<=b.clientHeight+2){ b.classList.remove("clamp"); return; }
+  bt.hidden=false;
+  bt.addEventListener("click",()=>{
+    const open=bt.getAttribute("aria-expanded")==="true";
+    b.classList.toggle("clamp",open);
+    bt.setAttribute("aria-expanded",String(!open));
+    bt.textContent=open?"Leer más":"Leer menos";
+  });
+});
+
 /* ---------- WhatsApp ---------- */
 document.addEventListener("click",e=>{
   const b=e.target.closest("[data-wa]"); if(!b) return;

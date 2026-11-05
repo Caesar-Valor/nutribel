@@ -47,25 +47,67 @@ function horarioDe(cl) {
   return { lista, mins, insts, dias: Object.entries(porDia).map(([d, hs]) => `${DIAS[d]}: ${hs.join(', ')}`) };
 }
 const instr = (n) => B.instructoras.find((i) => i.nombre === n) || { nombre: n, completo: n };
+// Etiquetas destacadas de una clase (p. ej. «Ideal para tu primera clase»), de horario.json
+const etiquetasDe = (cl) => [...new Set(H.clases.filter((c) => cl.tipos.includes(c.clase)).map((c) => c.etiqueta).filter(Boolean))]
+  .map((k) => (H.etiquetas || {})[k]).filter((t) => t && t.destacado);
+
+// Equipo: tarjetas con la foto en arco (con o sin biografía)
+const equipo = (conBio) => `<ul class="team" role="list">${B.instructoras.map((p, i) => {
+  const full = p.completo || p.nombre;
+  return `<li class="member" data-reveal style="--r:${i % 4}">
+  <div class="mph">${p.foto ? `<img src="${esc(p.foto)}" alt="${esc(full)}, ${esc((p.rol || '').toLowerCase())} de balé" width="800" height="1000" loading="lazy" decoding="async">` : ''}</div>
+  <div class="mtx">
+    <h3>${esc(full)}</h3>${p.completo && !p.completo.startsWith(p.nombre) ? `<p class="nick">«${esc(p.nombre)}»</p>` : ''}
+    <p class="role">${esc(p.rol)}</p>
+    ${p.clases ? `<p class="types">${esc(p.clases)}</p>` : ''}
+    ${conBio && p.bio ? `<p class="mbio" id="bio-${i}">${esc(p.bio)}</p><button class="biomore" type="button" aria-expanded="false" aria-controls="bio-${i}" hidden>Leer más</button>` : ''}
+  </div>
+</li>`;
+}).join('')}</ul>`;
+
+// Momentos de la comunidad: tarjeta horizontal (foto a la izquierda en pantallas anchas)
+const momentos = (pagina) => {
+  const lista = `<ul class="momentos" role="list">${(C.momentos || []).map((k, i) => `<li class="momento"${pagina && i ? ' data-reveal' : ''}>
+  ${k.foto ? `<figure>${img({ src: k.foto, alt: k.alt }, '(min-width:700px) 240px, 82vw', pagina && !i ? { lazy: false, prioridad: true } : {})}</figure>` : ''}
+  <div class="mtexto">${k.kick ? `<span class="kick">${esc(k.kick)}${k.fecha_texto ? ` · ${esc(k.fecha_texto)}` : ''}</span>` : ''}<h3>${esc(k.titulo)}</h3><p>${esc(k.texto)}</p>${k.mensaje ? `<div class="acciones"><button class="btn line sm" type="button" ${wa(k.mensaje)}>${esc(k.boton)}</button></div>` : ''}</div>
+</li>`).join('')}</ul>`;
+  return pagina ? lista : `<div class="carrusel" role="region" aria-label="Momentos de la comunidad" tabindex="0">${lista}</div>`;
+};
+
 
 // ---------- Bloques que salen de los JSON ----------
 const bloques = {
-  // Inicio: las clases en breve
-  'clases-breve': () => `<ul class="clist" role="list">${B.clases.map((cl) => {
-    const h = horarioDe(cl);
-    return `<li><a class="crow-link" href="clases.html#${esc(cl.slug)}"><span class="cname">${esc(cl.tipo)}</span><span class="cmeta">${esc(h.mins.join('–'))} min · ${esc(cl.reserva === 'inscripcion' ? 'Inscripción por WhatsApp' : h.insts.join(', '))}</span></a></li>`;
-  }).join('')}</ul>`,
+  // ===== Piezas de la versión de una sola página (octubre de 2026), recuperadas en el sitio de varias páginas =====
 
-  // Clases: una sección por clase, foto a un lado (alterna en escritorio)
+  // Inicio y Clases: una tarjeta por clase, con sus dos fotos arriba
+  'clases-tarjetas': () => `<div class="ctypes" role="region" aria-label="Tipos de clase" tabindex="0">${B.clases.map((cl) => {
+    const tags = etiquetasDe(cl), fotos = cl.fotos.slice(0, 2);
+    return `<article class="ctype">
+  <div class="phs n${fotos.length}">${fotos.map((f) => img(f, '(min-width:1040px) 150px, (min-width:700px) 45vw, 40vw')).join('')}</div>
+  <div class="ct">
+    <span class="kick">${esc(cl.grupo)}</span>
+    <h3>${esc(cl.tipo)}</h3>
+    ${tags.map((t) => `<span class="badge">${esc(t.destacado)}</span>`).join('')}
+    <p class="ctx">${esc(cl.texto)}</p>
+    ${cl.edades ? `<ul class="ages" aria-label="Grupos por edad">${cl.edades.map((a) => `<li>${esc(a)}</li>`).join('')}</ul>` : ''}
+    <p class="meta">${esc(cl.dias)}</p>
+    <a class="more" href="clases.html#${esc(cl.slug)}">Ver la clase<span class="sr-only"> ${esc(cl.tipo)}</span> <span aria-hidden="true">→</span></a>
+  </div>
+</article>`;
+  }).join('')}</div>`,
+
+  // Clases: una sección por clase, foto en arco a un lado (alterna en escritorio)
   'clases-detalle': () => B.clases.map((cl, i) => {
-    const h = horarioDe(cl), f = cl.fotos[0];
+    const h = horarioDe(cl), f = cl.fotos[0], tags = etiquetasDe(cl);
     const accion = cl.reserva === 'inscripcion'
-      ? `<p class="mode wa-mode">Inscripción por WhatsApp</p><button class="btn" type="button" ${wa(`Hola, balé. Quiero inscribir a mi hija en ${cl.tipo}. ¿Me envían el formulario de inscripción?`)}>Pedir la inscripción</button>`
-      : `<p class="mode">Se reserva en línea</p><a class="btn" href="reservar.html?tipo=${encodeURIComponent(cl.tipos.join('|'))}">Reservar ${esc(cl.tipo)}</a>`;
+      ? `<div class="cacc"><button class="btn" type="button" ${wa(`Hola, balé. Quiero inscribir a mi hija en ${cl.tipo}. ¿Me envían el formulario de inscripción?`)}>Pedir la inscripción</button><p class="mode wa-mode">Inscripción por WhatsApp</p></div>`
+      : `<div class="cacc"><a class="btn" href="reservar.html?tipo=${encodeURIComponent(cl.tipos.join('|'))}">Reservar ${esc(cl.tipo)}</a><p class="mode">Se reserva en línea</p></div>`;
     return `<section class="clase ${i % 2 ? 'alt' : ''}" id="${esc(cl.slug)}" aria-labelledby="t-${esc(cl.slug)}" data-reveal>
   <figure class="cfoto">${f ? img(f, '(min-width:1024px) 460px, 92vw', { lazy: i > 0, prioridad: i === 0 }) : ''}</figure>
   <div class="ctexto">
+    <span class="kick">${esc(cl.grupo)}</span>
     <h2 id="t-${esc(cl.slug)}">${esc(cl.tipo)}</h2>
+    ${tags.length || cl.edades ? `<div class="chips">${tags.map((t) => `<span class="badge">${esc(t.destacado)}</span>`).join('')}${(cl.edades || []).map((a) => `<span class="chip">${esc(a)}</span>`).join('')}</div>` : ''}
     <p class="lead">${esc(cl.texto)}</p>
     <dl class="datos">
       <div><dt>Para quién</dt><dd>${esc(cl.para)}</dd></div>
@@ -79,85 +121,110 @@ const bloques = {
 </section>`;
   }).join('\n'),
 
-  // Inicio: los planes en breve (los tres precios que más se preguntan)
-  'planes-breve': () => {
+  // Inicio: el nuevo espacio de Reformer (foto grande en arco y dos debajo)
+  'reformer': () => {
+    const R = B.reformer, ses = H.clases.filter((c) => c.clase === 'Pilates Reformer').sort((a, b) => ORDEN.indexOf(a.dia) - ORDEN.indexOf(b.dia) || toH(a.inicio) - toH(b.inicio));
+    const porDia = {};
+    for (const c of ses) (porDia[c.dia] = porDia[c.dia] || []).push(hora(c.inicio).replace(':00', ''));
+    const cupo = (B.cupos || {})['Pilates Reformer'];
+    return `<div class="refo">
+  <div class="refo-ph">${R.fotos.map((f, i) => img(f, i ? '(min-width:900px) 290px, 45vw' : '(min-width:900px) 580px, 92vw', { cls: i ? '' : 'big' })).join('')}</div>
+  <div class="refo-tx">
+    <span class="kick">Pilates Reformer</span>
+    <h2 id="t-reformer">${esc(R.titulo)}</h2>
+    <span class="cinta" aria-hidden="true"></span>
+    <p>${esc(R.texto)}</p>
+    <p class="refo-meta">${Object.entries(porDia).map(([d, hs]) => `<span>${esc(DIAS[d])} · ${esc(hs.join(', '))}</span>`).join('')}${cupo ? `<span>Cupo: ${cupo} máquinas</span>` : ''}</p>
+    <a class="btn" href="reservar.html?tipo=${encodeURIComponent('Pilates Reformer')}">${esc(R.boton)}</a>
+  </div>
+</div>`;
+  },
+
+  // Inicio: los precios en breve, en tres tarjetas como las de Precios
+  'precios-breve': () => {
     const ind = P.individual.items, mem = P.membresia.items;
     const desde = Math.min(...ind.filter((x) => !/ballet/i.test(x.tipo)).map((x) => x.precio));
     const memMin = Math.min(...mem.filter((x) => !x.destacado).map((x) => x.precio));
     const ilim = mem.find((x) => x.destacado) || mem[mem.length - 1];
     return `<ul class="pbreve" role="list">
-  <li><span class="pq">Clase suelta</span><span class="pv">desde ${esc(dinero(desde))}</span></li>
-  <li><span class="pq">Membresía del mes</span><span class="pv">desde ${esc(dinero(memMin))}</span></li>
-  <li class="dest"><span class="pq">${esc(ilim.nombre)}</span><span class="pv">${esc(dinero(ilim.precio))}</span></li>
+  <li class="pblock"><span class="kick">${esc(P.individual.nota)}</span><h3>${esc(P.individual.titulo)}</h3><p class="pdesde"><small>desde</small> ${esc(dinero(desde))}</p><p class="pdet">Barre, Pilates Reformer o ballet clásico, cuando quieras.</p></li>
+  <li class="pblock"><span class="kick">${esc(P.membresia.nota)}</span><h3>${esc(P.membresia.titulo)}</h3><p class="pdesde"><small>desde</small> ${esc(dinero(memMin))}<small> al mes</small></p><p class="pdet">4 u 8 clases al mes, o el combo de Pilates y Barre.</p></li>
+  <li class="pblock dest"><span class="kick">Todo el mes</span><h3>${esc(ilim.nombre)}</h3><p class="pdesde">${esc(dinero(ilim.precio))}<small> al mes</small></p><p class="pdet">${esc(ilim.detalle)}</p></li>
 </ul>`;
   },
 
   'precios': () => {
     const I = P.individual, M = P.membresia, K = P.infantil, S = P.medias, G = P.regalo;
+    const inscribir = `Hola, balé. Quiero inscribir a mi hija en ${K.nombre}. ¿Me envían el formulario de inscripción?`;
     const reservaDe = (it) => /ballet/i.test(it.tipo)
-      ? `<button class="btn line sm" type="button" ${wa(`Hola, balé. Quiero inscribir a mi hija en ${K.nombre}. ¿Me envían el formulario de inscripción?`)}>Inscripción</button>`
-      : `<a class="btn line sm" href="reservar.html?tipo=${encodeURIComponent(it.tipo)}">Reservar</a>`;
-    return `<section class="psec" aria-labelledby="t-ind" data-reveal>
-  <div class="psec-head"><h2 id="t-ind">${esc(I.titulo)}</h2><p>${esc(I.nota)}.</p></div>
-  <ul class="plist" role="list">${I.items.map((it) => `<li><span class="pn">${esc(it.nombre)}</span><span class="pp">${esc(dinero(it.precio))}</span>${reservaDe(it)}</li>`).join('')}</ul>
-</section>
-<section class="psec" aria-labelledby="t-mem" data-reveal>
-  <div class="psec-head"><h2 id="t-mem">Membresías</h2><p>${esc(M.nota)}.</p></div>
-  <ul class="pgrid" role="list">${M.items.map((it) => `<li class="plan ${it.destacado ? 'dest' : ''}">
-    <h3>${esc(it.nombre)}</h3><p class="pdet">${esc(it.detalle)}</p><p class="pcifra">${esc(dinero(it.precio))}<small> al mes</small></p>
-    <button class="btn ${it.destacado ? 'claro' : 'line'}" type="button" ${wa(`Hola, balé. Quiero ${it.nombre}${it.detalle && it.detalle.length < 45 ? `, ${it.detalle}` : ''} (${dinero(it.precio)}). ¿Cómo hago el pago?`)}>La quiero</button></li>`).join('')}</ul>
-  ${M.aviso ? `<p class="pnota">${esc(M.aviso)}</p>` : ''}
-</section>
-<section class="psec dos" aria-labelledby="t-kid" data-reveal>
-  <div>
+      ? `<button class="btn line sm" type="button" ${wa(inscribir)}>Inscripción</button>`
+      : `<a class="btn line sm" href="reservar.html?tipo=${encodeURIComponent(it.tipo)}">Reservar<span class="sr-only"> ${esc(it.nombre)}</span></a>`;
+    const quiero = (it) => wa(`Hola, balé. Quiero ${it.nombre}${it.detalle && it.detalle.length < 45 ? `, ${it.detalle}` : ''} (${dinero(it.precio)}). ¿Cómo hago el pago?`);
+    return `<div class="prices">
+  <article class="pblock" aria-labelledby="t-ind" data-reveal>
+    <span class="kick">${esc(I.nota)}</span>
+    <h2 id="t-ind">${esc(I.titulo)}</h2>
+    <ul class="plist" role="list">${I.items.map((it) => `<li><span class="pn">${esc(it.nombre)}</span><b>${esc(dinero(it.precio))}</b>${reservaDe(it)}</li>`).join('')}</ul>
+  </article>
+  <article class="pblock" aria-labelledby="t-mem" data-reveal>
+    <span class="kick">${esc(M.nota)}</span>
+    <h2 id="t-mem">${esc(M.titulo)}</h2>
+    <ul class="plist" role="list">${M.items.map((it) => `<li${it.destacado ? ' class="star"' : ''}><span class="pn">${esc(it.nombre)}<small>${esc(it.detalle)}</small></span><b>${esc(dinero(it.precio))}</b><button class="btn sm" type="button" ${quiero(it)}>La quiero<span class="sr-only">: ${esc(it.nombre)}, ${esc(it.detalle)}</span></button></li>`).join('')}</ul>
+    ${M.aviso ? `<p class="pnote">${esc(M.aviso)}</p>` : ''}
+  </article>
+  <article class="pblock" aria-labelledby="t-kid" data-reveal>
+    <span class="kick">${esc(K.edades)}</span>
     <h2 id="t-kid">${esc(K.titulo)}</h2>
-    <p>${esc(K.nombre)}, ${esc(K.edades)}. Se inscribe por WhatsApp: te enviamos el formulario.</p>
-    <ul class="plist" role="list"><li><span class="pn">Inscripción</span><span class="pp">${esc(dinero(K.inscripcion))}</span></li><li><span class="pn">Mensualidad</span><span class="pp">${esc(dinero(K.mensualidad))}</span></li></ul>
-    <button class="btn" type="button" ${wa(`Hola, balé. Quiero inscribir a mi hija en ${K.nombre}. ¿Me envían el formulario de inscripción?`)}>Pedir la inscripción</button>
-  </div>
+    <p class="kname">${esc(K.nombre)}</p>
+    <ul class="plist" role="list"><li><span class="pn">Inscripción</span><b>${esc(dinero(K.inscripcion))}</b></li><li><span class="pn">Mensualidad</span><b>${esc(dinero(K.mensualidad))}</b></li></ul>
+    <button class="btn" type="button" ${wa(inscribir)}>Pedir la inscripción</button>
+    <h3 class="sub">${esc(K.accesorios_titulo)}</h3>
+    <ul class="plist acc" role="list">${K.accesorios.map((a) => `<li><span class="pn">${esc(a.nombre)}</span><b>${esc(dinero(a.precio))}</b></li>`).join('')}</ul>
+    ${K.nota_accesorios ? `<p class="pnote">${esc(K.nota_accesorios)}</p>` : ''}
+  </article>
+</div>
+${S ? `<article class="socks" id="medias" aria-labelledby="t-medias" data-reveal>
+  <div class="mpair">${S.items.map((it) => `<figure>${it.foto ? `<img src="${esc(it.foto)}" srcset="${esc(it.foto.replace(/\.webp$/, '-400.webp'))} 400w, ${esc(it.foto)} 720w" sizes="(min-width:900px) 240px, 42vw" width="720" height="720" loading="lazy" decoding="async" alt="${esc(it.alt || `Medias antideslizantes ${it.nombre.toLowerCase()}`)}">` : ''}<figcaption><span>${esc(it.nombre)}</span><b>${esc(dinero(it.precio))}</b></figcaption></figure>`).join('')}</div>
   <div>
-    <h3>${esc(K.accesorios_titulo)}</h3>
-    <ul class="plist" role="list">${K.accesorios.map((a) => `<li><span class="pn">${esc(a.nombre)}</span><span class="pp">${esc(dinero(a.precio))}</span></li>`).join('')}</ul>
-    ${K.nota_accesorios ? `<p class="pnota">${esc(K.nota_accesorios)}</p>` : ''}
-  </div>
-</section>
-${S ? `<section class="psec medias" id="medias" aria-labelledby="t-medias" data-reveal>
-  <div class="mfotos">${S.items.map((it) => `<figure>${it.foto ? `<img src="${esc(it.foto)}" srcset="${esc(it.foto.replace(/\.webp$/, '-400.webp'))} 400w, ${esc(it.foto)} 720w" sizes="(min-width:900px) 240px, 42vw" width="720" height="720" loading="lazy" decoding="async" alt="${esc(it.alt || `Medias antideslizantes ${it.nombre.toLowerCase()}`)}">` : ''}<figcaption>${esc(it.nombre)} · ${esc(dinero(it.precio))}</figcaption></figure>`).join('')}</div>
-  <div>
+    <span class="kick">Obligatorias</span>
     <h2 id="t-medias">${esc(S.titulo)}</h2>
     <p>${esc(S.texto)}</p>
-    <button class="btn line" type="button" ${wa(`Hola, balé. Quiero pedir medias antideslizantes (${S.items.map((it) => `${it.nombre.toLowerCase()} ${dinero(it.precio)}`).join(' / ')}). ¿Cómo hago el pago?`)}>${esc(S.boton || 'Pedir mis medias')}</button>
+    <button class="btn" type="button" ${wa(`Hola, balé. Quiero pedir medias antideslizantes (${S.items.map((it) => `${it.nombre.toLowerCase()} ${dinero(it.precio)}`).join(' / ')}). ¿Cómo hago el pago?`)}>${esc(S.boton || 'Pedir mis medias')}</button>
   </div>
-</section>` : ''}
-<section class="psec dos" aria-labelledby="t-pago" data-reveal>
-  <div>
+</article>` : ''}
+<div class="pinfo">
+  <article class="pcaja" aria-labelledby="t-pago" data-reveal>
+    <span class="kick">Pago</span>
     <h2 id="t-pago">Cómo pagar</h2>
     <ul class="lista">
       <li><b>Transferencia.</b> Los datos salen en la confirmación de tu reserva. Cuando transfieras, pulsa «Ya transferí» y el estudio la confirma.</li>
       <li><b>Pagar con tarjeta.</b> Pulsa «Pagar con tarjeta» en la confirmación o en «Ver mi reserva». El cobro te llega por WhatsApp de CardNET a nombre de NUTRIBEL NUTRICION PERSONALIZADA Y BIENESTAR.</li>
     </ul>
-  </div>
-  <div>
+  </article>
+  <article class="pcaja" aria-labelledby="t-cancel" data-reveal>
+    <span class="kick">Cancelación</span>
     <h2 id="t-cancel">Si cancelas</h2>
     <p>${esc(CFG.cancelacion.texto)} Antes de ese día, cancelas sin costo desde el enlace de tu reserva.</p>
+  </article>
+</div>
+<article class="gift" aria-labelledby="t-regalo" data-reveal>
+  <div class="gcard" aria-hidden="true"><img src="img/bale-logo-transparente.webp" alt="" width="1040" height="538" loading="lazy" decoding="async"><span>Certificado de regalo</span><i></i></div>
+  <div>
+    <span class="kick">Certificado de regalo</span>
+    <h2 id="t-regalo">${esc(G.titulo)}</h2>
+    <p>${esc(G.texto)}</p>
+    <button class="btn" type="button" ${wa(G.mensaje)}>${esc(G.boton)}</button>
   </div>
-</section>
-<section class="psec regalo" aria-labelledby="t-regalo" data-reveal>
-  <div class="gcard" aria-hidden="true"><img src="img/bale-logo-transparente.webp" alt="" width="1040" height="538" loading="lazy" decoding="async"><span>Certificado de regalo</span></div>
-  <div><h2 id="t-regalo">${esc(G.titulo)}</h2><p>${esc(G.texto)}</p><button class="btn" type="button" ${wa(G.mensaje)}>${esc(G.boton)}</button></div>
-</section>`;
+</article>`;
   },
 
-  'historia': () => B.historia.map((p, i) => `<p${i === 0 ? ' class="lead"' : ''}>${esc(p)}</p>`).join(''),
+  'historia': () => B.historia.map((p) => `<p>${esc(p)}</p>`).join(''),
+  'que-es-barre': () => esc(B.que_es_barre),
+  'equipo-texto': () => esc(B.equipo_texto),
 
-  'equipo': () => `<ul class="equipo" role="list">${B.instructoras.map((p) => {
-    const full = p.completo || p.nombre;
-    return `<li class="persona" data-reveal>
-    <figure>${p.foto ? `<img src="${esc(p.foto)}" alt="${esc(full)}, ${esc((p.rol || '').toLowerCase())} de balé" width="800" height="1000" loading="lazy" decoding="async">` : ''}</figure>
-    <h3>${esc(full)}</h3><p class="rol">${esc(p.rol)}${p.clases ? ` · ${esc(p.clases)}` : ''}</p>
-    ${p.bio ? `<p class="bio">${esc(p.bio)}</p>` : ''}
-  </li>`;
-  }).join('')}</ul>`,
+  // Equipo: la foto en arco es lo principal. Inicio: sin la biografía; El estudio: con «Leer más» (sitio.js)
+  'equipo': () => equipo(true),
+  'equipo-breve': () => equipo(false),
 
   'preguntas': () => `<div class="faq">${B.faq.map((q) => `<details><summary>${esc(q.p)}</summary><div><p>${esc(q.r)}</p></div></details>`).join('')}</div>`,
 
@@ -167,19 +234,13 @@ ${S ? `<section class="psec medias" id="medias" aria-labelledby="t-medias" data-
     const prox = (C.proximos || []).filter((e) => e.fecha >= hoy).sort((a, b) => a.fecha.localeCompare(b.fecha));
     return `${prox.length ? `<section class="csec" aria-labelledby="t-prox"><h2 id="t-prox">Próximas actividades</h2><ul class="actividades" role="list">${prox.map((e) => {
       const [, m, d] = e.fecha.split('-').map(Number);
-      return `<li class="actividad"><p class="afecha" aria-hidden="true"><b>${d}</b><span>${MESES[m - 1].slice(0, 3)}</span></p><div><h3>${esc(e.titulo)}</h3><p class="ameta">${d} de ${MESES[m - 1]}${e.hora ? ` · ${esc(hora(e.hora))}` : ''}${e.precio != null ? ` · ${esc(dinero(e.precio))}` : ''}</p><p>${esc(e.texto)}</p>${e.mensaje ? `<button class="btn line sm" type="button" ${wa(e.mensaje)}>${esc(e.boton || 'Reservar por WhatsApp')}</button>` : ''}</div></li>`;
+      return `<li class="actividad"><p class="afecha" aria-hidden="true"><b>${d}</b><span>${MESES[m - 1].slice(0, 3)}</span></p><div><span class="kick">Próximo evento</span><h3>${esc(e.titulo)}</h3><p class="ameta">${d} de ${MESES[m - 1]}${e.hora ? ` · ${esc(hora(e.hora))}` : ''}${e.precio != null ? ` · ${esc(dinero(e.precio))}` : ''}</p><p>${esc(e.texto)}</p>${e.mensaje ? `<button class="btn sm" type="button" ${wa(e.mensaje)}>${esc(e.boton || 'Reservar por WhatsApp')}</button>` : ''}</div></li>`;
     }).join('')}</ul></section>` : ''}
-<section class="csec" aria-labelledby="t-mom"><h2 id="t-mom">Momentos</h2><ul class="momentos" role="list">${(C.momentos || []).map((k, i) => `<li class="momento"${i ? ' data-reveal' : ''}>
-  ${k.foto ? `<figure>${img({ src: k.foto, alt: k.alt }, '(min-width:1024px) 340px, 92vw', i ? {} : { lazy: false, prioridad: true })}</figure>` : ''}
-  <h3>${esc(k.titulo)}</h3><p>${esc(k.texto)}</p>${k.mensaje ? `<button class="btn line sm" type="button" ${wa(k.mensaje)}>${esc(k.boton)}</button>` : ''}
-</li>`).join('')}</ul></section>`;
+<section class="csec" aria-labelledby="t-mom"><h2 id="t-mom">Momentos</h2>${momentos(true)}</section>`;
   },
 
-  // Inicio: un momento de la comunidad como prueba social
-  'comunidad-breve': () => {
-    const k = (C.momentos || []).find((m) => m.foto) || null;
-    return k ? `<figure class="cbreve">${img({ src: k.foto, alt: k.alt }, '(min-width:1024px) 520px, 92vw')}<figcaption><b>${esc(k.titulo)}.</b> ${esc(k.texto)}</figcaption></figure>` : '';
-  },
+  // Inicio: los momentos de la comunidad en tarjetas
+  'comunidad-tarjetas': () => momentos(false),
 
   'direccion': () => esc(CFG.direccion),
   'ubicacion': () => esc(CFG.ubicacion),
