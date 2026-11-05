@@ -1,10 +1,48 @@
 # Cómo actualizar la página de balé
 
-**Lo más fácil: el panel del negocio.** Ya no tiene enlace en la página pública: entra escribiendo su dirección, https://caesar-valor.github.io/nutribel/bale/panel.html (en local, http://localhost:3000/bale/panel.html). La vista del estudio (demo) está en https://caesar-valor.github.io/nutribel/bale/?vista=estudio. Ahí se cambian los datos de contacto, el aviso para las clientas, las clases canceladas, los cupos, los lugares fijos de las miembros, los precios y los próximos eventos. Lo que guardas en el panel se ve **solo en ese navegador**. Para que lo vea todo el mundo: pulsa **Descargar archivos para publicar**, copia los 4 archivos que se descargan (`config.json`, `precios.json`, `comunidad.json` y `bale.json`) a la carpeta `bale/data/` reemplazando los que hay, y publica (último apartado de esta guía). Después pulsa «Restaurar los datos publicados» en el panel.
+## El sitio se compila (desde noviembre de 2026)
 
-También se puede editar a mano. Todo el contenido está en la carpeta `bale/data/`. Son archivos de texto (JSON): ábrelos con VS Code, cambia solo lo que está entre comillas y guarda. Ojo con las comas: cada línea de una lista termina en coma menos la última.
+Desde el rediseño, balé tiene varias páginas: `index.html` (inicio), `clases.html`, `reservar.html`, `precios.html`, `nosotras.html` (El estudio), `comunidad.html`, `cuenta.html` (Mi cuenta), `preguntas.html`, `mi-reserva.html`, `privacidad.html` y `404.html`. **No se editan a mano**: salen de
 
-Antes de publicar, mira el cambio en tu computadora: en la carpeta del proyecto ejecuta `npx serve .` y abre http://localhost:3000/bale/index.html. Si la página sale en blanco, casi siempre falta o sobra una coma.
+- `bale/_fuente/paginas/*.html` (el texto de cada página, con una cabecera `<!--@ {…} @-->` con su título y descripción),
+- `bale/_fuente/parciales/` (lo que se repite: `<head>`, encabezado con el menú, pie y la barra «Reservar» del teléfono),
+- y los JSON de `bale/data/` (clases, precios, equipo, preguntas, comunidad).
+
+Después de cambiar cualquiera de ellos, en la carpeta del proyecto (`nutribel`):
+
+```
+node bale/_fuente/construir.mjs
+```
+
+Escribe las páginas de `bale/` y actualiza `sitemap.xml`. No necesita instalar nada (solo Node). Para comprobar que nada quedó sin compilar: `node bale/_fuente/construir.mjs --comprobar` (lo corren también las pruebas de la web). Las páginas compiladas sí van en git; la carpeta `_fuente/` no se publica (GitHub Pages ignora las carpetas que empiezan por «_»).
+
+Las direcciones viejas de la página larga siguen funcionando: `bale/#horario` lleva a `reservar.html`, `#precios` a `precios.html`, `#reformer` a `clases.html#pilates-reformer`, `#equipo` y `#ubicacion` a `nosotras.html`, `#faq` a `preguntas.html` y `?vista=estudio` a `estudio.html` (`js/anclas.js`).
+
+## El panel del negocio
+
+Entra escribiendo su dirección, https://caesar-valor.github.io/nutribel/bale/panel.html (en local, http://localhost:3000/bale/panel.html). Ahí se cambian los datos de contacto, el aviso para las clientas, las clases canceladas, los cupos, los lugares fijos de las miembros, los precios y los próximos eventos. Lo que guardas en el panel se ve **solo en ese navegador** y solo en la página Reservar (cupos, sala, lugares fijos y canceladas): los precios, los textos y la comunidad van compilados. Para que lo vea todo el mundo: pulsa **Descargar archivos para publicar**, copia los 4 archivos que se descargan (`config.json`, `precios.json`, `comunidad.json` y `bale.json`) a `bale/data/` reemplazando los que hay, **compila** (`node bale/_fuente/construir.mjs`) y publica (último apartado). Después pulsa «Restaurar los datos publicados» en el panel.
+
+También se puede editar a mano. Los JSON son archivos de texto: ábrelos con VS Code, cambia solo lo que está entre comillas y guarda. Ojo con las comas: cada línea de una lista termina en coma menos la última. Si falta o sobra una coma, el compilado avisa en qué archivo.
+
+Antes de publicar, mira el cambio en tu computadora: en la carpeta del proyecto ejecuta `npx serve .` y abre http://localhost:3000/bale/.
+
+## Agregar o cambiar una clase (página Clases)
+
+Archivo: `bale/data/bale.json` → `clases`. Cada clase tiene:
+
+- `slug`: su ancla (`clases.html#hot-barre`). No lo cambies si ya está publicada.
+- `tipo` (el nombre que se ve) y `tipos` (los nombres del horario que le corresponden, por ejemplo `["Hot Barre"]`).
+- `reserva`: `"en_linea"` (botón «Reservar» que abre `reservar.html?tipo=…`) o `"inscripcion"` (botón de WhatsApp; así va el ballet de niñas).
+- `texto`, `para` (para quién), `nivel`, `fotos` (`[{src, alt}]`, fotos 4:5 en `bale/img/`) y, en ballet, `edades`.
+
+La duración, las instructoras y los días salen solos de `horario.json`. Después, compila.
+
+## Agregar una foto
+
+1. Fotos verticales 4:5 (1200 × 1500) en WebP en `bale/img/`, con sus versiones `-480.webp` y `-800.webp` (las usa el `srcset`).
+2. Cada foto con su `alt`: qué se ve en ella, en una frase (nada de «foto de…»).
+3. Reglas: solo el mat beige, ningún hombre, nunca caras de niñas, y en la ventana de reserva no va la foto de las barras (la sala es un dibujo).
+4. Compila.
 
 ## Con el sistema de reservas: qué se cambia dónde
 
@@ -46,7 +84,9 @@ Si algún día se quiere volver a usar: activar FormSubmit con el correo del est
 
 ## Agregar un evento o un momento
 
-Archivo: `bale/data/comunidad.json`.
+**Con la comunidad en la base de datos** (`config.json → sistema.comunidad: true`, después de aplicar la migración de noviembre), las publicaciones se hacen en el **área del estudio → Comunidad** (guía: `GUIA-AREA-DEL-ESTUDIO.md`): actividades con «Me apunto» y cupo, anuncios y fotos. Lo de abajo (`comunidad.json`) queda como respaldo: es lo que la página muestra mientras la comunidad no esté en la base de datos o si la base no responde.
+
+Archivo: `bale/data/comunidad.json`. Después de cambiarlo, compila.
 
 **Noviembre de 2026:** `proximos` está vacío (Halloween ya pasó y se quitó). Mientras no haya eventos, Comunidad muestra solo los momentos. En el archivo hay un bloque `_ejemplo_proximo` que **no se publica**: sirve de modelo.
 
@@ -94,10 +134,11 @@ Archivo: `bale/data/horario.json`, lista `clases`. Cada clase es así:
 - `edad` (opcional): para ballet, por ejemplo `"3 a 5 años"`. El ballet de niñas no se reserva en la página: su botón «Inscripción» abre WhatsApp para pedir el formulario.
 - `etiqueta` (opcional): `"avanzado"`, `"miembros"` o `"primera"`.
 - Una instructora nueva también va en `bale/data/bale.json` → `instructoras`.
+- Después, compila: la página Clases muestra la duración, las instructoras y los días que salen de aquí.
 
 ## Cambiar un precio
 
-Archivo: `bale/data/precios.json` (o el panel, apartado Precios). Cambia el número de `precio` (sin "RD$" ni comas: `6500`). La página le pone el formato.
+Archivo: `bale/data/precios.json` (o el panel, apartado Precios). Cambia el número de `precio` (sin "RD$" ni comas: `6500`). La página le pone el formato. Después, compila.
 
 Precios del flyer de octubre de 2026: clase infantil de 3 a 11 años; uniformes y accesorios: leotardo (solo leotardo) RD$1,200, uniforme de ballet completo (leotardo + falda) RD$3,200, medias pantis RD$850, zapatillas RD$1,600, medias antideslizantes cortas RD$450 y largas RD$850. Debajo salen dos notas que se cambian en el mismo archivo: `membresia.aviso` y `infantil.nota_accesorios`.
 
@@ -136,7 +177,7 @@ Archivo: `bale/data/config.json`. Cuando la dueña mande los datos bancarios, re
 
 ## Publicar los cambios
 
-1. Guarda los archivos y revisa en local (ver arriba).
+1. Guarda los archivos, compila (`node bale/_fuente/construir.mjs`) y revisa en local (ver arriba).
 2. En VS Code, panel de Git: escribe un mensaje corto (por ejemplo "balé: horario de noviembre") y pulsa **Commit**, luego **Sync / Push**.
 3. GitHub Pages publica solo en uno o dos minutos: https://caesar-valor.github.io/nutribel/bale/
 4. Si no ves el cambio, recarga con Ctrl + Shift + R.

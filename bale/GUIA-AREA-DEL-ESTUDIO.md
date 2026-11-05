@@ -152,3 +152,30 @@ Cuando las dos la tengan, Marifer puede encender **Ajustes → Seguridad → Exi
 ## Uso del plan gratis
 
 En **Avisos**, Marifer ve cuánto se usa del plan gratis: la base de datos (500 MB), las fotos de comprobantes (1 GB) y los correos del día (unos 500). Si algo pasa del 80 %, sale en rojo: avísale a César.
+
+## Comunidad (Marifer y Brittany)
+
+> Aparece cuando César encienda la comunidad (después de aplicar la actualización de noviembre). Las instructoras no la ven.
+
+Pestaña **Comunidad**: lo que publiques sale en la página Comunidad del sitio.
+
+**Publicar algo nuevo**
+
+1. **Nueva publicación**.
+2. **Tipo**: *Actividad* (tiene fecha y la gente se apunta), *Anuncio* o *Foto*.
+3. **Título** y **Texto**. Para resaltar, selecciona las palabras y pulsa **Negrita**; para una lista, una línea por cosa y pulsa **Lista** (cada línea empieza con «- »).
+4. En una actividad: **fecha**, hora, lugar, **cupo** (vacío: sin límite) y precio (vacío: gratis).
+5. **Quién la ve**: *Todo el mundo* o *Solo la comunidad* (solo las clientas que entraron a su cuenta).
+6. **Fotos** (hasta 6): elígelas del teléfono o la computadora. Se preparan solas (más livianas y sin la ubicación de la foto). Escribe debajo de cada una **qué se ve** (por ejemplo «Alumnas en la barra frente al espejo»). Recuerda: solo el fondo beige y sin hombres; nunca caras de niñas.
+7. Abajo ves **cómo quedará**. Pulsa **Guardar**: queda como **borrador** (todavía no se ve).
+8. En la lista, **Publicar**. Ya está en la página.
+
+**Después**
+
+- **Editar**: cambia lo que quieras y guarda; si ya está publicada, el cambio se ve enseguida.
+- **Archivar**: la quita de la página sin borrarla. **Volver a borrador** la recupera.
+- **Quién se apuntó**: la lista con nombre, WhatsApp y estado (apuntada, en espera o canceló). **Descargar CSV** la abre en Excel. Si una se borra y había lista de espera, la primera pasa sola.
+- **Comentarios**: están apagados. Si en una publicación marcas **Permitir comentarios**, cada comentario llega a **Comentarios por revisar** y solo se ve cuando pulsas **Aprobar**.
+- **Avisar a la comunidad**: manda un correo con la actividad a las clientas que marcaron en su cuenta que quieren saber de las actividades. Primero ves el texto y a cuántas les llega; para probar, escribe tu correo en «enviar solo a este correo». Está **apagado** hasta que Marifer lo encienda en **Ajustes → Instructoras y dirección pública**. Cada actividad se avisa una sola vez.
+
+Las clientas se apuntan desde la página con su cuenta (entran con un código que les llega al correo, sin contraseña). Tú no tienes que hacer nada para eso.

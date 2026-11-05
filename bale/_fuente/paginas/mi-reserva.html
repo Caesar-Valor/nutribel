@@ -1,0 +1,36 @@
+<!--@ {
+  "titulo": "Mi reserva",
+  "descripcion": "Ver o cancelar tu reserva de balé.",
+  "actual": "",
+  "noindex": true,
+  "sin_barra": true,
+  "scripts": ["js/sistema.js", "js/calendario.js", "js/mi-reserva.js"],
+  "main": "pagina estrecha mres"
+} @-->
+<header class="phead">
+  <p class="bk-kick">balé · mi reserva</p>
+  <h1 id="mrTitle">Tu reserva</h1>
+  <span class="cinta" aria-hidden="true"></span>
+</header>
+<div id="mrEstado" role="status" aria-live="polite"><p class="mrcarga">Buscando tu reserva…</p></div>
+<dl class="sum" id="mrSum" hidden></dl>
+<div class="paybox" id="mrPay" hidden></div>
+<p class="medias-aviso">Recuerda tus medias antideslizantes: son obligatorias.</p>
+<div class="bkbtns" id="mrBtns" hidden>
+  <button class="btn" type="button" id="mrCancel" hidden>Cancelar mi reserva</button>
+  <button class="btn line" type="button" id="mrIcs" hidden>Agregar a mi calendario</button>
+  <a class="btn line" id="mrHorario" href="reservar.html">Ver el horario</a>
+  <button class="btn line" type="button" id="mrWa">Escribir por WhatsApp</button>
+</div>
+
+<dialog class="reserva peq" id="mrDlg" aria-labelledby="mrDlgT">
+  <div class="bk">
+    <h2 id="mrDlgT">¿Cancelar tu reserva?</h2>
+    <p id="mrDlgTxt"></p>
+    <p class="bkwarn" id="mrTarde" hidden></p>
+    <div class="bkbtns">
+      <button class="btn" type="button" id="mrSi">Sí, cancelar</button>
+      <button class="btn line" type="button" id="mrNo">No, mantenerla</button>
+    </div>
+  </div>
+</dialog>

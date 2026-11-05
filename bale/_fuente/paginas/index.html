@@ -1,0 +1,83 @@
+<!--@ {
+  "titulo": "balé",
+  "descripcion": "Estudio de Barre, Pilates Reformer y Ballet para niñas en La Vega. Reserva tu lugar en línea, elige tu membresía y conoce la comunidad balé.",
+  "actual": "inicio",
+  "jsonld": ["estudio"],
+  "previos": ["<script src=\"js/anclas.js\"></script>",
+    "<link rel=\"preload\" as=\"image\" type=\"image/webp\" href=\"video/bale-hero-vertical-poster.webp\" media=\"(max-aspect-ratio:4/5)\" fetchpriority=\"high\">",
+    "<link rel=\"preload\" as=\"image\" type=\"image/webp\" href=\"video/bale-hero-horizontal-poster.webp\" media=\"(min-aspect-ratio:4/5)\" fetchpriority=\"high\">"],
+  "sin_precarga_letra": true,
+  "scripts": ["js/sistema.js", "js/inicio.js"],
+  "main": "inicio"
+} @-->
+<section class="portada" aria-labelledby="t-portada">
+  <div class="pfoto" aria-hidden="true">
+    <picture>
+      <source media="(min-aspect-ratio:4/5)" srcset="video/bale-hero-horizontal-poster.webp" type="image/webp">
+      <source srcset="video/bale-hero-vertical-poster.webp" type="image/webp">
+      <img src="video/bale-hero-vertical-poster.jpg" alt="" width="720" height="1280" fetchpriority="high" decoding="async">
+    </picture>
+    <video id="pvideo" muted playsinline loop preload="none" disablepictureinpicture tabindex="-1"></video>
+  </div>
+  <div class="ptexto">
+    <h1 id="t-portada" class="entra" style="--e:1">{{frase}}</h1>
+    <p class="entra" style="--e:2">Barre, Pilates Reformer y Ballet en La Vega, para todos los niveles.</p>
+    <div class="pacc entra" style="--e:3">
+      <a class="btn claro" href="reservar.html">Reservar mi lugar</a>
+      <a class="btn texto claro" href="clases.html">Conocer las clases</a>
+    </div>
+  </div>
+</section>
+
+<section class="sec proxima" aria-labelledby="t-proxima">
+  <div class="cont dos">
+    <div>
+      <h2 id="t-proxima">La próxima clase con lugar</h2>
+      <p>Elige tu lugar en la sala y recibe la confirmación al momento.</p>
+    </div>
+    <div class="proxima-tarjeta" id="proxima" aria-live="polite">
+      <p class="pcarga">Buscando la próxima clase…</p>
+    </div>
+  </div>
+</section>
+
+<section class="sec" aria-labelledby="t-clases">
+  <div class="cont dos">
+    <div>
+      <h2 id="t-clases">Las clases</h2>
+      <p>Barre inspirado en el ballet, Pilates Reformer en máquina y ballet clásico para niñas. Cada clase dura entre 45 y 60 minutos.</p>
+      <a class="btn line" href="clases.html">Ver todas las clases</a>
+    </div>
+    {{clases-breve}}
+  </div>
+</section>
+
+<section class="sec suave" aria-labelledby="t-comunidad">
+  <div class="cont dos invertido">
+    {{comunidad-breve}}
+    <div>
+      <h2 id="t-comunidad">Más que clases</h2>
+      <p>Clases temáticas, mañanas al aire libre y celebraciones: en balé nos conocemos por el nombre.</p>
+      <a class="btn line" href="comunidad.html">Ver la comunidad</a>
+    </div>
+  </div>
+</section>
+
+<section class="sec" aria-labelledby="t-planes">
+  <div class="cont dos">
+    <div>
+      <h2 id="t-planes">Planes</h2>
+      <p>Paga cada clase o asegura tu lugar todo el mes con una membresía. Las medias antideslizantes son obligatorias.</p>
+      <a class="btn line" href="precios.html">Ver los precios</a>
+    </div>
+    {{planes-breve}}
+  </div>
+</section>
+
+<section class="sec cierre" aria-labelledby="t-cierre">
+  <div class="cont centro">
+    <h2 id="t-cierre">Tu lugar en la barra te espera</h2>
+    <p>Los sábados hay sesión de primera clase.</p>
+    <a class="btn" href="reservar.html?primera=1">Reservar mi primera clase</a>
+  </div>
+</section>

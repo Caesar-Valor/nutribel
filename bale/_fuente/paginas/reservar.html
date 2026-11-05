@@ -1,0 +1,101 @@
+<!--@ {
+  "titulo": "Reservar",
+  "descripcion": "Reserva tu clase en balé, La Vega: elige el día, la clase y tu lugar en la sala. La confirmación te llega al momento por correo.",
+  "actual": "reservar",
+  "sin_barra": true,
+  "previos": ["<link rel=\"preload\" href=\"data/horario.json\" as=\"fetch\" crossorigin=\"anonymous\">", "<link rel=\"preload\" href=\"data/bale.json\" as=\"fetch\" crossorigin=\"anonymous\">"],
+  "scripts": ["js/sistema.js", "js/sala.js", "js/reservar.js"],
+  "main": "pagina reservar"
+} @-->
+<header class="phead">
+  <h1>Reservar</h1>
+  <span class="cinta" aria-hidden="true"></span>
+  {{texto-horario}}
+</header>
+
+<p class="aviso-linea" id="sisAviso" role="status" hidden></p>
+<aside class="mias" id="mias" aria-labelledby="miasT" hidden>
+  <h2 id="miasT">Tus próximas reservas</h2>
+  <ul id="miasList"></ul>
+</aside>
+
+<section class="horario" aria-label="Horario de la semana">
+  <div class="semana">
+    <button class="flecha" type="button" id="prevW" aria-label="Semana anterior"><svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg></button>
+    <p class="semana-txt" id="wLabel" aria-live="polite"></p>
+    <button class="flecha" type="button" id="nextW" aria-label="Semana siguiente"><svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5l7 7-7 7"/></svg></button>
+  </div>
+  <div class="dias" id="strip" role="group" aria-label="Días de la semana"></div>
+  <div class="filtros-h">
+    <label>Clase<select id="fType"></select></label>
+    <label>Instructora<select id="fInst"></select></label>
+  </div>
+  <h2 class="dia-titulo" id="dTitle"></h2>
+  <ol class="filas" id="rows"></ol>
+</section>
+
+<!-- Reserva: clase y día → lugar → tus datos → confirmación -->
+<dialog class="reserva" id="book" aria-labelledby="bkTitle">
+  <div class="bk">
+    <header class="bk-cab">
+      <div>
+        <p class="bk-kick" id="bkKick">Reservar</p>
+        <h2 id="bkTitle"></h2>
+        <p class="bk-meta" id="bkMeta"></p>
+      </div>
+      <button class="icono x" type="button" id="bkClose" aria-label="Cerrar"><svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
+    </header>
+    <ol class="pasos" id="pasos" aria-label="Pasos de la reserva">
+      <li data-paso="1" class="hecho"><span class="pn">1</span><span class="pt">Clase y día</span></li>
+      <li data-paso="2"><span class="pn">2</span><span class="pt">Lugar</span></li>
+      <li data-paso="3"><span class="pn">3</span><span class="pt">Tus datos</span></li>
+      <li data-paso="4"><span class="pn">4</span><span class="pt">Listo</span></li>
+    </ol>
+    <p class="bkwarn" id="bkWarn" hidden></p>
+    <p class="aviso-linea" id="bkSis" role="status" hidden></p>
+    <div class="bkerr" id="bkErr" role="alert" hidden><p id="bkErrTxt"></p><div class="bkbtns" id="bkErrBtns"></div></div>
+
+    <div class="step" id="stLugar">
+      <p class="steph">Elige tu lugar en la sala</p>
+      <div class="sala" id="sala"></div>
+      <p class="pick" id="pick" aria-live="polite">Toca un lugar libre.</p>
+      <div class="bkbtns"><button class="btn" type="button" id="toDatos" disabled>Continuar</button></div>
+    </div>
+
+    <form class="step form" id="stDatos" novalidate hidden>
+      <p class="steph" id="datosH">Tus datos</p>
+      <div class="cupoinfo" id="cupoInfo" hidden></div>
+      <p class="prellenado" id="prellenado" hidden></p>
+      <div class="campo"><label for="fName">Nombre y apellido</label><input id="fName" autocomplete="name" aria-describedby="e-fName"><p class="error" id="e-fName" hidden></p></div>
+      <div class="campo"><label for="fWa">WhatsApp</label><input id="fWa" type="tel" inputmode="tel" autocomplete="tel" placeholder="809-000-0000" aria-describedby="a-fWa e-fWa"><p class="ayuda" id="a-fWa">10 dígitos. Si es de otro país, empieza con + y el código.</p><p class="error" id="e-fWa" hidden></p></div>
+      <div class="campo en-linea" hidden><label for="fMail">Correo</label><input id="fMail" type="email" inputmode="email" autocomplete="email" placeholder="tucorreo@ejemplo.com" aria-describedby="a-fMail e-fMail"><p class="ayuda" id="a-fMail">Te enviamos la confirmación y el enlace para ver o cancelar.</p><p class="error" id="e-fMail" hidden></p></div>
+      <p class="payline" id="payLine"></p>
+      <label class="check" id="memWrap" hidden><input type="checkbox" id="fMem"> <span id="memTxt"></span></label>
+      <label class="check en-linea" hidden><input type="checkbox" id="fWaOk"> <span>Quiero recibir la confirmación y los recordatorios por WhatsApp</span></label>
+      <label class="check en-linea" hidden><input type="checkbox" id="fPriv"> <span>Acepto el <a href="privacidad.html" target="_blank" rel="noopener">aviso de privacidad</a>: balé guarda mi nombre, WhatsApp y correo para gestionar mis reservas</span></label>
+      <label class="check"><input type="checkbox" id="fPol"> <span>Acepto la política de cancelación. <small id="polTxt"></small></span></label>
+      <p class="medias-aviso">Trae tus medias antideslizantes: son obligatorias. No escribas datos de salud aquí.</p>
+      <div class="bkbtns">
+        <button class="btn line" type="button" id="backLugar">Cambiar lugar</button>
+        <button class="btn" type="submit" id="confirmBtn">Confirmar reserva</button>
+      </div>
+    </form>
+
+    <div class="step done" id="stListo" hidden tabindex="-1">
+      <div class="celebra" aria-hidden="true"><svg class="ok" viewBox="0 0 52 52"><circle cx="26" cy="26" r="24"/><path d="M15 27l7 7 15-16"/></svg></div>
+      <h3 id="okTitle">¡Reserva enviada!</h3>
+      <span class="cinta" aria-hidden="true"></span>
+      <p class="okmsg" id="okMsg"></p>
+      <dl class="sum" id="sum"></dl>
+      <div class="paybox" id="payBox" hidden></div>
+      <p class="medias-aviso">Recuerda tus medias antideslizantes: son obligatorias.</p>
+      <p class="mailst" id="mailSt" aria-live="polite"></p>
+      <div class="bkbtns">
+        <button class="btn" type="button" id="sendWa">Enviar la reserva por WhatsApp</button>
+        <button class="btn line" type="button" id="icsMine">Agregar a mi calendario</button>
+        <a class="btn line" id="verMia" href="mi-reserva.html" hidden>Ver mi reserva</a>
+        <button class="btn line" type="button" id="bkDone">Listo</button>
+      </div>
+    </div>
+  </div>
+</dialog>

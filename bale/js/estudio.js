@@ -288,7 +288,7 @@ async function seguridad(){
 let TAB="";
 function montarTabs(){
   const t=YO.rol==="instructora" ? [["clases","Mis clases"]]
-    : [["clases","Clases"],["clientas","Clientas"],["cobros","Cobros"],["avisos","Avisos"]].concat(esDuena()?[["ingresos","Ingresos"],["ajustes","Ajustes"],["exportar","Exportar"]]:[]);
+    : [["clases","Clases"],["clientas","Clientas"],["cobros","Cobros"],["avisos","Avisos"]].concat(conComunidad()?[["comunidad","Comunidad"]]:[]).concat(esDuena()?[["ingresos","Ingresos"],["ajustes","Ajustes"],["exportar","Exportar"]]:[]);
   $("#tabs").innerHTML=t.map(([id,n],i)=>`<button role="tab" type="button" id="t-${id}" aria-controls="p-${id}" aria-selected="${i===0}" tabindex="${i?-1:0}">${n}${id==="cobros"?' <span class="tcnt" id="cntEnlaces" hidden></span>':""}</button>`).join("");
   $("#tabs").hidden=t.length<2;
   PANELES.forEach(id=>{ $("#p-"+id).hidden=true; });
@@ -298,7 +298,7 @@ function montarTabs(){
   abrirTab(t[0][0]);
 }
 // Contador de Cobros: enlaces de tarjeta por enviar + transferencias por confirmar
-const PANELES = ["clases","clientas","cobros","avisos","ingresos","ajustes","exportar"];
+const PANELES = ["clases","clientas","cobros","avisos","comunidad","ingresos","ajustes","exportar"];
 let CNT={enlaces:0,transf:0};
 function pintarContador(){
   const b=$("#cntEnlaces"); if(!b) return;
@@ -319,7 +319,7 @@ function abrirTab(id){
   TAB=id;
   document.querySelectorAll('#tabs [role="tab"]').forEach(b=>{ const on=b.id==="t-"+id; b.setAttribute("aria-selected",on); b.tabIndex=on?0:-1; });
   PANELES.forEach(x=>{ $("#p-"+x).hidden=x!==id; });
-  ({clases:cargarSemana, clientas:abrirClientas, cobros:cargarCobros, avisos:cargarAvisos, ingresos:cargarIngresos, ajustes:cargarAjustes, exportar:()=>{}})[id]();
+  ({clases:cargarSemana, clientas:abrirClientas, cobros:cargarCobros, avisos:cargarAvisos, comunidad:cargarComunidad, ingresos:cargarIngresos, ajustes:cargarAjustes, exportar:()=>{}})[id]();
   if(id!=="cobros"&&YO&&YO.rol!=="instructora"){ contarEnlaces(); contarTransf(); }
 }
 
@@ -951,7 +951,8 @@ async function cargarAjustes(){
     sec("seguridad","Seguridad",`<label class="check"><input type="checkbox" name="exigir" ${aj("exigir_2fa",false)?"checked":""}> Exigir la verificación en dos pasos a la dueña y a la asistente</label>`,
       `Primero actívala tú (botón «Seguridad», arriba) y entra con el código. Cuando la enciendas aquí, la asistente tendrá que activarla la próxima vez que entre. ${n2fa.currentLevel==="aal2"?"Ahora mismo entraste con el código.":"Ahora mismo entraste sin el código: todavía no puedes exigirla."}`)+
     sec("otros","Instructoras y dirección pública",`<label class="check"><input type="checkbox" name="tel" ${aj("instructoras_ven_telefono",false)?"checked":""}> Las instructoras ven el WhatsApp de sus alumnas</label>
-      <label class="fld">Dirección pública de la página (base de los enlaces de los avisos)<input name="url" type="url" value="${esc(aj("url_publica",""))}"></label>`)+
+      <label class="fld">Dirección pública de la página (base de los enlaces de los avisos)<input name="url" type="url" value="${esc(aj("url_publica",""))}"></label>
+      ${conComunidad()?`<label class="check"><input type="checkbox" name="comAv" ${aj("comunidad_avisos",false)?"checked":""}> Se puede avisar por correo a la comunidad de una actividad (solo a quienes lo aceptaron en su cuenta)</label>`:""}`)+
     `<form class="ebox form" data-aj="plantilla" novalidate><h2>Textos de los avisos</h2>
       <label class="fld">Aviso<select name="id">${PLANT.map(t=>{ const [k,c]=t.id.split("."); return opt(t.id,`${PLANT_NOMBRE[k]||k} · ${c==="correo"?"correo":"WhatsApp"}`); }).join("")}</select></label>
       <label class="fld" data-asunto>Asunto<input name="asunto" maxlength="200"></label>
@@ -1016,6 +1017,7 @@ async function guardarAjustes(f){
   }else if(id==="otros"){
     const url=v(f,"url"); if(url&&!/^https:\/\/\S+$/i.test(url)){ aviso("La dirección pública debe empezar por https://","mal"); return; }
     ok=!!await ajuste("instructoras_ven_telefono",v(f,"tel"))&&(!url||!!await ajuste("url_publica",url));
+    if(ok&&conComunidad()) ok=!!await ajuste("comunidad_avisos",v(f,"comAv"));
   }else if(id==="plantilla"){
     const r=await hacer("estudio_guardar_plantilla",{p_id:v(f,"id"),p_asunto:v(f,"asunto"),p_cuerpo:f.querySelector('[name="cuerpo"]').value});
     if(r){ const t=PLANT.find(x=>x.id===v(f,"id")); if(t){ t.asunto=v(f,"asunto"); t.cuerpo=f.querySelector('[name="cuerpo"]').value; } listo("Texto guardado"); }
@@ -1084,7 +1086,8 @@ const COLS = {clientas:{nombre:"Nombre",whatsapp:"WhatsApp",correo:"Correo",acep
   // las mismas columnas del Excel de Brittany
   control:{nombre:"Nombre",clases_fijas:"Clase fija y lugar",correo:"Correo",telefono:"Teléfono",plan:"Plan",desde:"Fecha de inicio",pagado_en:"Último pago",
     proximo_pago:"Próximo pago / renovación",monto:"Monto",pago_metodo:"Método de pago",banco:"Banco",estado:"Estado"},
-  ingresos:{mes:"Mes",concepto:"Concepto",metodo:"Forma de pago",cantidad:"Cantidad",total:"Total RD$"}};
+  ingresos:{mes:"Mes",concepto:"Concepto",metodo:"Forma de pago",cantidad:"Cantidad",total:"Total RD$"},
+  apuntadas:{nombre:"Nombre",telefono:"WhatsApp",correo:"Correo",estado:"Estado",creada:"Se apuntó"}};
 const TEXTO_CELDA = {estado:EST_MEM, pago_metodo:METODO};
 const METODO_ING = {transferencia:"Transferencia", tarjeta:"Tarjeta", efectivo:"Efectivo", sin_registrar:"Sin registrar"};
 function csv(que,filas){
@@ -1206,6 +1209,166 @@ function eventos(){
   $("#iDesde").value=primeroDeMes(sumarMeses(hoy(),-5)); $("#iHasta").value=hoy();
   $("#xDesde").value=sumar(hoy(),-30); $("#xHasta").value=sumar(hoy(),30);
   $("#fExp").addEventListener("submit",exportar);
+  eventosComunidad();
+}
+
+/* =========================================================
+   COMUNIDAD (dueña y asistente): publicaciones, apuntadas, comentarios y aviso por correo.
+   Se ve con data/config.json → sistema.comunidad = true (después de aplicar la migración).
+   Fotos: se re-codifican aquí a WebP (máx. 1600 px, sin metadatos: el canvas no copia el EXIF
+   ni la ubicación) y se suben al bucket público «comunidad».
+   ========================================================= */
+const conComunidad = ()=>!!(CFG&&CFG.sistema&&CFG.sistema.comunidad===true);
+let PUBS=[];
+const TIPO_PUB={actividad:"Actividad",anuncio:"Anuncio",foto:"Foto"}, EST_PUB={borrador:"Borrador",publicada:"Publicada",archivada:"Archivada"};
+const fotoUrl = f=>f.ruta?`${CFG.sistema.url.replace(/\/+$/,"")}/storage/v1/object/public/comunidad/${f.ruta}`:f.src;
+function cuerpoHtml(t){
+  return String(t||"").replace(/\r/g,"").split(/\n{2,}/).map(b=>{
+    const ls=b.split("\n"), neg=s=>esc(s).replace(/\*\*(.+?)\*\*/g,"<b>$1</b>");
+    return ls.every(l=>/^\s*-\s+/.test(l))?`<ul>${ls.map(l=>`<li>${neg(l.replace(/^\s*-\s+/,""))}</li>`).join("")}</ul>`:`<p>${ls.map(neg).join("<br>")}</p>`;
+  }).join("");
+}
+async function cargarComunidad(){
+  const r=await hacer("estudio_publicaciones",{}); if(!r) return;
+  PUBS=r.publicaciones||[];
+  $("#comAvisosEst").textContent=r.avisos_activos?"Los avisos por correo a la comunidad están encendidos.":"Los avisos por correo a la comunidad están apagados (la dueña los enciende en Ajustes).";
+  $("#comLista").innerHTML=PUBS.length?PUBS.map(p=>`<li>
+      <div><b>${esc(p.titulo)}</b> <span class="note">${esc(TIPO_PUB[p.tipo])} · ${esc(EST_PUB[p.estado])}${p.visibilidad==="comunidad"?" · solo comunidad":""}</span>
+        <small>${p.fecha?esc(p.fecha_larga)+(p.hora?` · ${esc(p.hora)}`:""):""}${p.tipo==="actividad"?` · ${p.apuntadas}${p.cupo?` de ${p.cupo}`:""} apuntadas${p.en_espera?` · ${p.en_espera} en espera`:""}`:""}${p.comentarios_pendientes?` · ${p.comentarios_pendientes} comentarios por revisar`:""}${p.avisada_en?" · ya avisada por correo":""}</small></div>
+      <div class="eacc">
+        <button class="bbtn line sm" type="button" data-pub-editar="${p.id}">Editar</button>
+        ${p.estado!=="publicada"?`<button class="bbtn solid sm" type="button" data-pub-estado="publicada" data-id="${p.id}">Publicar</button>`:`<button class="bbtn line sm" type="button" data-pub-estado="archivada" data-id="${p.id}">Archivar</button>`}
+        ${p.estado==="archivada"?`<button class="bbtn line sm" type="button" data-pub-estado="borrador" data-id="${p.id}">Volver a borrador</button>`:""}
+        ${p.tipo==="actividad"?`<button class="bbtn line sm" type="button" data-pub-apuntadas="${p.id}">Quién se apuntó</button>`:""}
+        ${p.tipo==="actividad"&&p.estado==="publicada"?`<button class="bbtn line sm" type="button" data-pub-avisar="${p.id}">Avisar a la comunidad</button>`:""}
+      </div></li>`).join(""):`<li class="empty-state">Todavía no hay publicaciones. Crea la primera con «Nueva publicación».</li>`;
+  const c=await hacer("estudio_comentarios",{p_estado:"pendiente"});
+  const cs=(c&&c.comentarios)||[];
+  $("#comComent").innerHTML=cs.length?cs.map(m=>`<li><div><b>${esc(m.nombre)}</b> en «${esc(m.publicacion)}»<small>${esc(m.texto)}</small></div>
+      <div class="eacc"><button class="bbtn solid sm" type="button" data-com="aprobado" data-id="${m.id}">Aprobar</button><button class="bbtn line sm" type="button" data-com="rechazado" data-id="${m.id}">Rechazar</button></div></li>`).join("")
+    :`<li class="empty-state">No hay comentarios por revisar.</li>`;
+}
+// Re-codificar una foto a WebP (sin metadatos) y subirla
+async function subirFoto(file){
+  if(!/^image\/(jpeg|png|webp|heic|heif)$/.test(file.type)&&!/\.(jpe?g|png|webp|heic)$/i.test(file.name)) throw new Error("Elige una foto (JPG, PNG o WebP).");
+  if(file.size>25*1024*1024) throw new Error("La foto pesa demasiado (máximo 25 MB).");
+  const bmp=await createImageBitmap(file).catch(()=>{ throw new Error("No se pudo leer la foto. Prueba con un JPG."); });
+  const k=Math.min(1,1600/Math.max(bmp.width,bmp.height)), w=Math.round(bmp.width*k), h=Math.round(bmp.height*k);
+  const cv=document.createElement("canvas"); cv.width=w; cv.height=h; cv.getContext("2d").drawImage(bmp,0,0,w,h);
+  let blob=await new Promise(ok=>cv.toBlob(ok,"image/webp",.82));
+  if(!blob||blob.type!=="image/webp") throw new Error("Este navegador no puede preparar la foto. Prueba en Chrome.");
+  if(blob.size>1.5*1024*1024) blob=await new Promise(ok=>cv.toBlob(ok,"image/webp",.65));
+  const hex=[...crypto.getRandomValues(new Uint8Array(16))].map(b=>b.toString(16).padStart(2,"0")).join("");
+  const ruta=`${hoy().slice(0,7)}/${hex}.webp`;
+  const {error}=await sb.storage.from("comunidad").upload(ruta,blob,{contentType:"image/webp",upsert:false});
+  if(error) throw new Error("No se pudo subir la foto. Revisa el internet e inténtalo de nuevo.");
+  return ruta;
+}
+function vistaPrevia(f,fotos){
+  const v=k=>f.querySelector(`[name="${k}"]`).value;
+  const act=v("tipo")==="actividad";
+  return `<div class="pv-pub"><p class="note">Así se verá en la página Comunidad:</p>
+    <h3>${esc(v("titulo")||"Sin título")}</h3>${act?`<p class="privacy">${esc([v("fecha"),v("hora"),v("lugar"),v("precio")?NB.money(+v("precio")):"Gratis",v("cupo")?`${v("cupo")} lugares`:""].filter(Boolean).join(" · "))}</p>`:""}
+    ${cuerpoHtml(v("cuerpo"))}${fotos.map(x=>`<img src="${esc(fotoUrl(x))}" alt="${esc(x.alt)}" style="max-width:120px;border-radius:12px;margin:4px">`).join("")}</div>`;
+}
+async function editarPublicacion(p){
+  p=p||{tipo:"actividad",titulo:"",cuerpo:"",fotos:[],visibilidad:"publica",permite_comentarios:false};
+  let fotos=(p.fotos||[]).map(x=>({...x}));
+  const ctl=new AbortController(), sig={signal:ctl.signal};   // el formulario del diálogo se reutiliza: los oyentes se van al cerrar
+  const pintarFotos=f=>{ f.querySelector("[data-fotos]").innerHTML=fotos.map((x,i)=>`<div class="two"><img src="${esc(fotoUrl(x))}" alt="" style="width:72px;height:90px;object-fit:cover;border-radius:10px">
+      <label class="fld">Descripción de la foto (para quien no la ve)<input data-alt="${i}" value="${esc(x.alt||"")}" maxlength="200"></label>
+      <button class="bbtn line sm" type="button" data-quitar="${i}">Quitar</button></div>`).join(""); };
+  const ok=await pedir({titulo:p.id?"Editar publicación":"Nueva publicación", ok:"Guardar",
+    html:`<label class="fld">Tipo<select name="tipo">${Object.entries(TIPO_PUB).map(([k,n])=>`<option value="${k}" ${p.tipo===k?"selected":""}>${n}</option>`).join("")}</select></label>
+      <label class="fld">Título<input name="titulo" maxlength="120" value="${esc(p.titulo)}" required></label>
+      <div class="fld">Texto <span class="privacy">(**negrita** y listas empezando la línea con «- »)</span>
+        <div class="eacc"><button class="bbtn line sm" type="button" data-fmt="b"><b>Negrita</b></button><button class="bbtn line sm" type="button" data-fmt="l">Lista</button></div>
+        <textarea name="cuerpo" rows="6" maxlength="4000">${esc(p.cuerpo||"")}</textarea></div>
+      <div data-act>
+        <div class="two"><label class="fld">Fecha<input type="date" name="fecha" value="${esc(p.fecha||"")}"></label><label class="fld">Hora<input type="time" name="hora" value="${esc(p.hora||"")}"></label></div>
+        <label class="fld">Lugar<input name="lugar" maxlength="120" value="${esc(p.lugar||"")}"></label>
+        <div class="two"><label class="fld">Cupo (vacío: sin límite)<input type="number" min="1" max="500" name="cupo" value="${p.cupo||""}"></label><label class="fld">Precio RD$ (vacío: gratis)<input type="number" min="0" step="50" name="precio" value="${p.precio??""}"></label></div>
+      </div>
+      <label class="fld">Quién la ve<select name="visibilidad"><option value="publica" ${p.visibilidad!=="comunidad"?"selected":""}>Todo el mundo</option><option value="comunidad" ${p.visibilidad==="comunidad"?"selected":""}>Solo la comunidad (clientas con cuenta)</option></select></label>
+      <label class="chk"><input type="checkbox" name="comentarios" ${p.permite_comentarios?"checked":""}> Permitir comentarios (cada uno se aprueba aquí antes de verse)</label>
+      <div class="two"><label class="fld">Botón de WhatsApp (opcional)<input name="boton" maxlength="60" value="${esc(p.boton||"")}" placeholder="Pregunta por tu fiesta"></label><label class="fld">Mensaje que se escribe<input name="mensaje" maxlength="400" value="${esc(p.mensaje||"")}"></label></div>
+      <label class="fld">Fotos (hasta 6; se preparan en WebP sin datos de ubicación)<input type="file" name="foto" accept="image/*" multiple></label>
+      <div data-fotos></div><p class="note" data-subiendo hidden aria-live="polite"></p>
+      <div data-prev aria-live="polite"></div>
+      <p class="privacy">Recuerda: fotos solo con el fondo beige y sin hombres.</p>`,
+    alAbrir:f=>{
+      const act=()=>{ f.querySelector("[data-act]").hidden=f.querySelector('[name="tipo"]').value!=="actividad"; };
+      const prev=()=>{ f.querySelector("[data-prev]").innerHTML=vistaPrevia(f,fotos); };
+      act(); pintarFotos(f); prev();
+      f.addEventListener("input",e=>{ if(e.target.dataset.alt!=null) fotos[+e.target.dataset.alt].alt=e.target.value; act(); prev(); },sig);
+      f.addEventListener("change",async e=>{
+        if(e.target.name!=="foto") return;
+        const st=f.querySelector("[data-subiendo]"), fs=[...e.target.files].slice(0,6-fotos.length);
+        for(const [i,file] of fs.entries()){
+          st.hidden=false; st.textContent=`Preparando foto ${i+1} de ${fs.length}…`;
+          try{ fotos.push({ruta:await subirFoto(file),alt:""}); }catch(x){ st.textContent=x.message; e.target.value=""; return; }
+        }
+        st.textContent=fs.length?"Listo. Escribe la descripción de cada foto.":""; e.target.value=""; pintarFotos(f); prev();
+      },sig);
+      f.addEventListener("click",e=>{
+        const q=e.target.closest("[data-quitar]"); if(q){ fotos.splice(+q.dataset.quitar,1); pintarFotos(f); prev(); return; }
+        const fm=e.target.closest("[data-fmt]"); if(!fm) return;
+        const ta=f.querySelector('[name="cuerpo"]'), a=ta.selectionStart, b=ta.selectionEnd, sel=ta.value.slice(a,b);
+        const nuevo=fm.dataset.fmt==="b"?`**${sel||"texto"}**`:(sel||"elemento").split("\n").map(l=>"- "+l.replace(/^\s*-\s+/,"")).join("\n");
+        ta.setRangeText(nuevo,a,b,"end"); ta.focus(); prev();
+      },sig);
+    },
+    accion:async f=>{
+      const v=k=>f.querySelector(`[name="${k}"]`).value.trim();
+      if(v("titulo").length<3) return "El título debe tener al menos 3 letras.";
+      if(v("tipo")==="actividad"&&!v("fecha")) return "Una actividad necesita su fecha.";
+      if(fotos.some(x=>(x.alt||"").trim().length<3)) return "Escribe la descripción de cada foto (lo que se ve en ella).";
+      if(!!v("boton")!==!!v("mensaje")) return "Si pones un botón de WhatsApp, escribe su texto y el mensaje.";
+      const act=v("tipo")==="actividad";
+      const r=await hacer("estudio_guardar_publicacion",{p_id:p.id||null,p_tipo:v("tipo"),p_titulo:v("titulo"),p_cuerpo:f.querySelector('[name="cuerpo"]').value,
+        p_fotos:fotos.map(x=>x.ruta?{ruta:x.ruta,alt:x.alt.trim()}:{src:x.src,alt:x.alt.trim()}),
+        p_fecha:act?v("fecha")||null:null,p_hora:act?v("hora")||null:null,p_lugar:act?v("lugar")||null:null,
+        p_cupo:act&&v("cupo")?+v("cupo"):null,p_precio:act&&v("precio")!==""?+v("precio"):null,
+        p_visibilidad:v("visibilidad"),p_comentarios:f.querySelector('[name="comentarios"]').checked,p_boton:v("boton")||null,p_mensaje:v("mensaje")||null},{dlg:true});
+      if(!r) return "No hay conexión con la base de datos.";
+      if(r.ok===false) return r.mensaje||"Revisa los datos.";
+      return true;
+    }});
+  ctl.abort();
+  if(ok){ listo(p.id?"Publicación guardada":"Publicación guardada como borrador: publícala cuando esté lista."); cargarComunidad(); }
+}
+async function verApuntadas(id){
+  const p=PUBS.find(x=>x.id===id); const r=await hacer("estudio_apuntadas",{p_id:id}); if(!r) return;
+  const a=r.apuntadas||[], E={apuntada:"Apuntada",espera:"En espera",cancelada:"Canceló"};
+  await pedir({titulo:`Quién se apuntó · ${p?p.titulo:""}`, ok:"Descargar CSV", no:"Cerrar",
+    html:a.length?`<ul class="pays">${a.map(x=>`<li><div><b>${esc(x.nombre)}</b> <span class="note">${esc(E[x.estado]||x.estado)}</span><small>${esc(x.telefono||"")} · ${esc(x.correo||"")}</small></div></li>`).join("")}</ul>`:`<p class="privacy">Todavía nadie se apuntó.</p>`,
+    accion:async()=>{ descargarCsv("apuntadas",a.map(x=>({...x,estado:E[x.estado]||x.estado})),`bale-apuntadas-${id}-${hoy()}.csv`); return true; }});
+}
+async function avisarComunidad(id){
+  const r=await hacer("estudio_avisar_comunidad",{p_id:id,p_aplicar:false}); if(!r) return;
+  const ok=await pedir({titulo:"Avisar a la comunidad por correo", ok:r.activos?"Enviar":"Cerrar", peligro:false,
+    html:`<p>${r.activos?`Se enviará a <b>${r.destinatarias}</b> ${r.destinatarias===1?"clienta":"clientas"} que aceptaron recibir las actividades.`:"Los avisos a la comunidad están <b>apagados</b>: la dueña los enciende en Ajustes. Mientras tanto puedes ver cómo quedaría."}${r.ya_avisada?" Esta actividad ya se avisó.":""}</p>
+      <div class="pv-pub"><p class="note">Asunto: ${esc(r.asunto)}</p><pre style="white-space:pre-wrap;font:inherit">${esc(r.cuerpo)}</pre></div>
+      ${r.activos?`<label class="fld">Para probar, enviar solo a este correo (vacío: a todas)<input type="email" name="solo"></label>`:""}`,
+    accion:async f=>{
+      if(!r.activos) return true;
+      const solo=(f.querySelector('[name="solo"]').value||"").trim();
+      const x=await hacer("estudio_avisar_comunidad",{p_id:id,p_aplicar:true,p_solo_a:solo||null},{dlg:true});
+      if(!x) return "No hay conexión con la base de datos."; if(x.ok===false) return x.mensaje;
+      listo(`Avisos en cola: ${x.correos}`); return true;
+    }});
+  if(ok) cargarComunidad();
+}
+function eventosComunidad(){
+  $("#comNueva").addEventListener("click",()=>editarPublicacion(null));
+  $("#p-comunidad").addEventListener("click",async e=>{
+    const b=e.target.closest("button"); if(!b) return;
+    if(b.dataset.pubEditar){ editarPublicacion(PUBS.find(x=>x.id===+b.dataset.pubEditar)); return; }
+    if(b.dataset.pubEstado){ const r=await hacer("estudio_publicacion_estado",{p_id:+b.dataset.id,p_estado:b.dataset.pubEstado}); if(r){ listo({publicada:"Publicada",archivada:"Archivada",borrador:"Pasó a borrador"}[b.dataset.pubEstado]); cargarComunidad(); } return; }
+    if(b.dataset.pubApuntadas){ verApuntadas(+b.dataset.pubApuntadas); return; }
+    if(b.dataset.pubAvisar){ avisarComunidad(+b.dataset.pubAvisar); return; }
+    if(b.dataset.com){ const r=await hacer("estudio_moderar_comentario",{p_id:+b.dataset.id,p_estado:b.dataset.com}); if(r){ listo(b.dataset.com==="aprobado"?"Comentario aprobado":"Comentario rechazado"); cargarComunidad(); } }
+  });
 }
 
 NB.ready.then(async cfg=>{

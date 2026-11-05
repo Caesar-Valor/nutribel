@@ -32,6 +32,9 @@
     "url": "https://exhcazzmcumiqdimolhu.supabase.co",
     "clave_publicable": "sb_publishable_piyaE6FJG7xhFlV1VsjByg_FVtQb2Ie",
     "abrir_whatsapp_al_reservar": true,
-    "_nota": "activo=true cuando Supabase esté listo. Solo la clave PUBLICABLE (sb_publishable_…). abrir_whatsapp_al_reservar=false cuando el WhatsApp automático funcione."
+    "_nota": "activo=true cuando Supabase esté listo. Solo la clave PUBLICABLE (sb_publishable_…). abrir_whatsapp_al_reservar=false cuando el WhatsApp automático funcione.",
+    "cuenta_clientas": true,
+    "comunidad": true,
+    "_nota_cuenta": "Encendidos el 5/11/2026: migración 20261106000100 aplicada y Supabase Auth con código de 6 números por correo (ver bale-sistema/INFORME-REDISENO.md). Para apagar la cuenta o la comunidad: false (la web vuelve a «muy pronto» y a comunidad.json)."
   }
 }

@@ -4,7 +4,7 @@
    los JSON publicados:
    {cfg:{whatsapp,instagram,direccion,maps,correo}, aviso:"", canceladas:["id@fecha"],
     cupos:{clase:n}, sala:{filas,por_fila}, fijos:{idClase:[lugares] | n}, precios:{id:n}, eventos:[...]}
-   La página (js/bale.js y js/core.js) aplica esos cambios. "Descargar archivos
+   La página de reservar (js/reservar.js y js/core.js) aplica los cupos, la sala, los fijos y las canceladas; el resto (precios, textos, comunidad) va compilado en las páginas: después de copiar los JSON, node bale/_fuente/construir.mjs. "Descargar archivos
    para publicar" genera config.json, precios.json, comunidad.json y bale.json
    ya actualizados para subirlos a data/. Aquí no hay datos de clientas: los
    lugares fijos de las miembros son solo números, nunca nombres.

@@ -9,14 +9,19 @@
   ],
   "que_es_barre": "Una disciplina inspirada en el ballet clásico que fusiona movimientos de danza, pilates y fortalecimiento muscular. Desarrolla fuerza, resistencia, estabilidad, equilibrio y conciencia corporal, y trabaja todo el cuerpo sin necesidad de experiencia previa en ballet.",
   "equipo_texto": "Un equipo de instructoras especializadas en ballet clásico, Pilates Reformer y barre, con una misma misión: una experiencia de movimiento de calidad, cercana, profesional y llena de energía.",
+  "_clases": "Cada clase de la página Clases. texto, para y nivel: textos POR CONFIRMAR con Marifer (4/11/2026). reserva: en_linea | inscripcion. slug: el ancla en clases.html (#hot-barre).",
   "clases": [
     {
+      "slug": "hot-barre",
       "tipo": "Hot Barre",
       "tipos": [
         "Hot Barre"
       ],
       "grupo": "Barre",
-      "texto": "",
+      "reserva": "en_linea",
+      "texto": "La clase de barre más movida de balé: trabajo de fuerza, resistencia y equilibrio en la barra, al ritmo de la música.",
+      "para": "Para todas, desde tu primera clase: los sábados hay sesión de primera clase.",
+      "nivel": "Todos los niveles",
       "dias": "Lun · Mié · Jue · Sáb con Marifer",
       "fotos": [
         {
@@ -30,19 +35,37 @@
       ]
     },
     {
-      "tipo": "Barre Flex y Barre Flow",
+      "slug": "barre-flex",
+      "tipo": "Barre Flex",
       "tipos": [
-        "Barre Flex",
-        "Barre Flow"
+        "Barre Flex"
       ],
       "grupo": "Barre",
-      "texto": "",
-      "dias": "Mar con Lynette · Jue con Marifer",
+      "reserva": "en_linea",
+      "texto": "Barre con más trabajo de flexibilidad y estiramiento, para alargar y fortalecer a la vez.",
+      "para": "Para quien quiere ganar flexibilidad y movilidad sin perder la fuerza.",
+      "nivel": "Todos los niveles",
+      "dias": "Mar con Lynette",
       "fotos": [
         {
           "src": "img/barras-nuevas.webp",
           "alt": "Barras de ballet nuevas, individuales, sobre mats beige con el logo de balé"
-        },
+        }
+      ]
+    },
+    {
+      "slug": "barre-flow",
+      "tipo": "Barre Flow",
+      "tipos": [
+        "Barre Flow"
+      ],
+      "grupo": "Barre",
+      "reserva": "en_linea",
+      "texto": "Barre de movimientos encadenados y fluidos, con la técnica del ballet y el control del pilates.",
+      "para": "Para quien disfruta moverse con ritmo y continuidad.",
+      "nivel": "Todos los niveles",
+      "dias": "Jue con Marifer",
+      "fotos": [
         {
           "src": "img/barre-arabesque.webp",
           "alt": "Alumna en arabesque apoyada en la barra junto a la pared con la frase You are exactly where you need to be"
@@ -50,12 +73,16 @@
       ]
     },
     {
+      "slug": "pilates-reformer",
       "tipo": "Pilates Reformer",
       "tipos": [
         "Pilates Reformer"
       ],
       "grupo": "Pilates",
-      "texto": "En máquina Reformer, en grupos pequeños de hasta 6 personas.",
+      "reserva": "en_linea",
+      "texto": "Tenemos una sala de Pilates Reformer. El Pilates Reformer es una modalidad de Pilates que se realiza sobre una máquina especializada llamada Reformer, equipada con resortes, poleas y una plataforma deslizante que permite trabajar todo el cuerpo mediante movimientos controlados. Ven a vivir la experiencia guiada con nuestra instructora Viviana.",
+      "para": "Para todas: la máquina se ajusta a tu nivel. Son 6 máquinas por clase.",
+      "nivel": "Todos los niveles",
       "dias": "Vie con Viviana",
       "fotos": [
         {
@@ -69,17 +96,21 @@
       ]
     },
     {
+      "slug": "ballet-ninas",
       "tipo": "Ballet niñas",
       "tipos": [
         "Ballet niñas"
       ],
       "grupo": "Ballet",
-      "texto": "Ballet clásico para niñas en dos grupos por edad.",
-      "dias": "Lun · Mié con Rusmairy",
+      "reserva": "inscripcion",
+      "texto": "Ballet clásico para niñas, con técnica, música y disciplina, en grupos por edad.",
+      "para": "Para niñas de 3 a 5 y de 6 a 11 años. La inscripción se hace por WhatsApp: te enviamos el formulario.",
+      "nivel": "Por grupo de edad",
       "edades": [
         "3 a 5 años",
         "6 a 11 años"
       ],
+      "dias": "Lun · Mié con Rusmairy",
       "fotos": [
         {
           "src": "img/ballet-ninas-zapatillas-1.webp",

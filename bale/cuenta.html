@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<!-- Generado por bale/_fuente/construir.mjs desde _fuente/paginas/cuenta.html: no lo edites aquí (ver bale/COMO-ACTUALIZAR.md) -->
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; font-src 'self'; img-src 'self' data: blob: https://*.supabase.co; connect-src 'self' https://*.supabase.co wss://*.supabase.co; frame-src https://www.google.com; base-uri 'self'; form-action 'self'; object-src 'none'">
+<title>Mi cuenta · balé</title>
+<meta name="description" content="Tu cuenta de balé: tus reservas, tu membresía y tus avisos.">
+<link rel="canonical" href="https://caesar-valor.github.io/nutribel/bale/cuenta.html">
+<meta name="robots" content="noindex, nofollow">
+<meta name="theme-color" content="#F3E4D8">
+<meta name="referrer" content="strict-origin-when-cross-origin">
+<script src="js/modo-temprano.js"></script>
+<link rel="icon" href="img/bale-favicon.png">
+<link rel="preload" href="fonts/montserrat-latin.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="css/base.css">
+<link rel="stylesheet" href="css/sitio.css">
+<script src="js/core.js" defer></script>
+<script src="js/sitio.js" defer></script>
+<script src="js/sistema.js" defer></script>
+<script src="js/vendor/supabase.js" defer></script>
+<script src="js/cuenta-sesion.js" defer></script>
+<script src="js/cuenta.js" defer></script>
+</head>
+<body class="sitio" data-page="cuenta">
+<a class="saltar" href="#contenido">Ir al contenido</a>
+<header class="cab">
+  <div class="cab-in">
+    <a class="logo" href="./" aria-label="balé, inicio"><img src="img/bale-logo-transparente.webp" alt="" width="1040" height="538"></a>
+    <nav class="menu" id="menu" aria-label="Principal">
+      <div class="menu-enlaces"><a href="clases.html">Clases</a><a href="reservar.html">Reservar</a><a href="precios.html">Precios</a><a href="comunidad.html">Comunidad</a><a href="nosotras.html">El estudio</a></div>
+      <div class="menu-pie">
+        <a href="cuenta.html">Mi cuenta</a>
+        <a href="preguntas.html">Preguntas frecuentes</a>
+        <a href="https://wa.me/18496386337" target="_blank" rel="noopener">WhatsApp +1 849-638-6337</a>
+      </div>
+    </nav>
+    <div class="cab-acc">
+      <a class="btn sm cab-reservar" href="reservar.html">Reservar</a>
+      <a class="icono" id="cuentaBtn" href="cuenta.html" aria-label="Mi cuenta" title="Mi cuenta"><svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8.5" r="3.8"/><path d="M4.5 20c1.4-3.6 4.2-5.4 7.5-5.4s6.1 1.8 7.5 5.4"/></svg></a>
+      <button class="icono modebtn" id="modeBtn" type="button" aria-label="Cambiar a modo oscuro" title="Modo oscuro / claro"><svg class="moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg><svg class="sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="4.5"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg></button>
+      <button class="icono menubtn" id="menuBtn" type="button" aria-expanded="false" aria-controls="menu" aria-label="Abrir el menú"><svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path class="l1" d="M4 8h16"/><path class="l2" d="M4 16h16"/></svg></button>
+    </div>
+  </div>
+</header>
+<main id="contenido" class="pagina estrecha">
+<header class="phead">
+  <h1 id="cuTitulo">Mi cuenta</h1>
+  <span class="cinta" aria-hidden="true"></span>
+</header>
+<p class="aviso-linea" id="cuAviso" role="status" hidden></p>
+
+<!-- 1. Entrar: correo → código de 6 números (sin contraseña) -->
+<section class="cu-paso" id="cuEntrar" hidden aria-labelledby="t-entrar">
+  <h2 id="t-entrar" class="sr-only">Entrar</h2>
+  <p>Escribe tu correo y te enviamos un código de 6 números para entrar. No necesitas contraseña.</p>
+  <form class="form" id="fCorreo" novalidate>
+    <div class="campo"><label for="cuCorreo">Correo</label><input id="cuCorreo" type="email" inputmode="email" autocomplete="email" aria-describedby="e-cuCorreo"><p class="error" id="e-cuCorreo" hidden></p></div>
+    <button class="btn" type="submit" id="cuEnviar">Enviarme el código</button>
+  </form>
+  <form class="form" id="fCodigo" novalidate hidden>
+    <p id="cuEnviado"></p>
+    <div class="campo"><label for="cuCodigo">Código</label><input id="cuCodigo" inputmode="numeric" autocomplete="one-time-code" maxlength="6" pattern="[0-9]{6}" aria-describedby="a-cuCodigo e-cuCodigo"><p class="ayuda" id="a-cuCodigo">Mira también en Spam. El código dura unos minutos.</p><p class="error" id="e-cuCodigo" hidden></p></div>
+    <div class="bkbtns"><button class="btn" type="submit" id="cuEntrarBtn">Entrar</button><button class="btn line" type="button" id="cuOtro">Usar otro correo</button></div>
+  </form>
+</section>
+
+<!-- 2. Primera vez: ficha mínima con su consentimiento -->
+<section class="cu-paso" id="cuFicha" hidden aria-labelledby="t-ficha">
+  <h2 id="t-ficha">Completa tu ficha</h2>
+  <p>Todavía no tenemos una ficha con este correo. Con estos datos te reconocemos en el estudio.</p>
+  <form class="form" id="fFicha" novalidate>
+    <div class="campo"><label for="cuNombre">Nombre y apellido</label><input id="cuNombre" autocomplete="name" aria-describedby="e-cuNombre"><p class="error" id="e-cuNombre" hidden></p></div>
+    <div class="campo"><label for="cuTel">WhatsApp</label><input id="cuTel" type="tel" inputmode="tel" autocomplete="tel" placeholder="809-000-0000" aria-describedby="e-cuTel"><p class="error" id="e-cuTel" hidden></p></div>
+    <label class="check"><input type="checkbox" id="cuPriv"> <span>Acepto el <a href="privacidad.html" target="_blank" rel="noopener">aviso de privacidad</a>: balé guarda mi nombre, WhatsApp y correo para gestionar mis reservas y mi cuenta</span></label>
+    <p class="error" id="e-cuPriv" hidden></p>
+    <button class="btn" type="submit">Guardar</button>
+  </form>
+</section>
+
+<!-- 3. Su espacio -->
+<div id="cuMio" hidden>
+  <p class="lead" id="cuHola"></p>
+  <section class="cu-bloque" aria-labelledby="t-prox">
+    <h2 id="t-prox">Próximas reservas</h2>
+    <ul class="cu-lista" id="cuProximas"></ul>
+    <a class="btn line sm" href="reservar.html">Reservar otra clase</a>
+  </section>
+  <section class="cu-bloque" aria-labelledby="t-mem">
+    <h2 id="t-mem">Membresía</h2>
+    <div id="cuMembresia"></div>
+  </section>
+  <section class="cu-bloque" aria-labelledby="t-hist">
+    <h2 id="t-hist">Historial</h2>
+    <ul class="cu-lista" id="cuHistorial"></ul>
+  </section>
+  <section class="cu-bloque" aria-labelledby="t-avisos">
+    <h2 id="t-avisos">Avisos</h2>
+    <form class="form" id="fAvisos">
+      <p>Los correos de tus reservas te llegan siempre.</p>
+      <label class="check"><input type="checkbox" id="cuWa"> <span>Quiero recibir la confirmación y los recordatorios por WhatsApp</span></label>
+      <label class="check"><input type="checkbox" id="cuCom"> <span>Quiero recibir por correo las actividades de la comunidad</span></label>
+      <button class="btn line sm" type="submit">Guardar avisos</button>
+    </form>
+  </section>
+  <section class="cu-bloque" aria-labelledby="t-datos">
+    <h2 id="t-datos">Tus datos</h2>
+    <p>Puedes pedir que borremos tus datos personales (Ley 172-13). Se cancelan tus reservas futuras y tu membresía, y queda solo un historial sin tu nombre. No se puede deshacer.</p>
+    <button class="btn line sm peligro" type="button" id="cuBorrar">Borrar mis datos</button>
+  </section>
+  <p><button class="btn texto" type="button" id="cuSalir">Salir de mi cuenta</button></p>
+</div>
+
+<dialog class="reserva peq" id="cuDlg" aria-labelledby="cuDlgT">
+  <form class="bk form" method="dialog" id="cuDlgForm">
+    <h2 id="cuDlgT"></h2>
+    <div id="cuDlgTxt"></div>
+    <p class="error" id="cuDlgErr" hidden></p>
+    <div class="bkbtns"><button class="btn" type="submit" id="cuDlgSi" value="si">Sí</button><button class="btn line" type="button" id="cuDlgNo">Volver</button></div>
+  </form>
+</dialog>
+</main>
+<footer class="pie">
+  <div class="pie-in">
+    <div class="pie-marca">
+      <img src="img/bale-logo-transparente.webp" alt="balé, Barre, Ballet &amp; Pilates" width="1040" height="538" loading="lazy" decoding="async">
+      <p>C. José Horacio Rodríguez #30, frente al Country Club, La Vega<br>En el edificio de NutriBEL, La Vega</p>
+    </div>
+    <div class="pie-col">
+      <h2>Contacto</h2>
+      <a href="https://wa.me/18496386337" target="_blank" rel="noopener">WhatsApp +1 849-638-6337</a>
+      <a href="https://www.instagram.com/balestudio.rd/" target="_blank" rel="noopener">Instagram @balestudio.rd</a>
+      <a href="https://www.google.com/maps/search/?api=1&amp;query=C.%20Jos%C3%A9%20Horacio%20Rodr%C3%ADguez%20%2330%2C%20frente%20al%20Country%20Club%2C%20La%20Vega%2C%20Rep%C3%BAblica%20Dominicana" target="_blank" rel="noopener">Cómo llegar</a>
+    </div>
+    <div class="pie-col">
+      <h2>Horario</h2>
+      <p>Clases de lunes a sábado.</p>
+      <a href="reservar.html">Ver el horario de la semana</a>
+      <a href="preguntas.html">Preguntas frecuentes</a>
+    </div>
+    <div class="pie-col">
+      <h2>balé</h2>
+      <a href="privacidad.html">Aviso de privacidad</a>
+      <a href="cuenta.html">Mi cuenta</a>
+      <a class="discreto" href="estudio.html">Área del estudio</a>
+    </div>
+  </div>
+</footer>
+
+</body>
+</html>

@@ -1,0 +1,24 @@
+<!--@ {
+  "titulo": "Comunidad",
+  "descripcion": "La comunidad de balé en La Vega: actividades, clases temáticas, celebraciones y momentos del estudio.",
+  "actual": "comunidad",
+  "jsonld": ["eventos"],
+  "scripts": ["js/cuenta-sesion.js", "js/comunidad.js"],
+  "main": "pagina"
+} @-->
+<header class="phead">
+  <h1>Comunidad</h1>
+  <span class="cinta" aria-hidden="true"></span>
+  <p class="lead">Clases temáticas, mañanas al aire libre y celebraciones. Lo que pasa en balé, además de las clases.</p>
+</header>
+<p class="aviso-linea" id="comAviso" role="status" hidden></p>
+<div id="comunidad" data-fuente="json">
+{{comunidad-respaldo}}
+</div>
+<section class="sec suave" id="comSolo" aria-labelledby="t-solo" hidden>
+  <div class="cont centro">
+    <h2 id="t-solo">Hay más para la comunidad</h2>
+    <p>Algunas actividades son solo para clientas de balé. Entra con tu correo para verlas y apuntarte.</p>
+    <a class="btn" href="cuenta.html?volver=comunidad.html">Entrar a mi cuenta</a>
+  </div>
+</section>

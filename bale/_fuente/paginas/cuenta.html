@@ -1,0 +1,84 @@
+<!--@ {
+  "titulo": "Mi cuenta",
+  "descripcion": "Tu cuenta de balé: tus reservas, tu membresía y tus avisos.",
+  "actual": "cuenta",
+  "noindex": true,
+  "sin_barra": true,
+  "scripts": ["js/sistema.js", "js/vendor/supabase.js", "js/cuenta-sesion.js", "js/cuenta.js"],
+  "main": "pagina estrecha"
+} @-->
+<header class="phead">
+  <h1 id="cuTitulo">Mi cuenta</h1>
+  <span class="cinta" aria-hidden="true"></span>
+</header>
+<p class="aviso-linea" id="cuAviso" role="status" hidden></p>
+
+<!-- 1. Entrar: correo → código de 6 números (sin contraseña) -->
+<section class="cu-paso" id="cuEntrar" hidden aria-labelledby="t-entrar">
+  <h2 id="t-entrar" class="sr-only">Entrar</h2>
+  <p>Escribe tu correo y te enviamos un código de 6 números para entrar. No necesitas contraseña.</p>
+  <form class="form" id="fCorreo" novalidate>
+    <div class="campo"><label for="cuCorreo">Correo</label><input id="cuCorreo" type="email" inputmode="email" autocomplete="email" aria-describedby="e-cuCorreo"><p class="error" id="e-cuCorreo" hidden></p></div>
+    <button class="btn" type="submit" id="cuEnviar">Enviarme el código</button>
+  </form>
+  <form class="form" id="fCodigo" novalidate hidden>
+    <p id="cuEnviado"></p>
+    <div class="campo"><label for="cuCodigo">Código</label><input id="cuCodigo" inputmode="numeric" autocomplete="one-time-code" maxlength="6" pattern="[0-9]{6}" aria-describedby="a-cuCodigo e-cuCodigo"><p class="ayuda" id="a-cuCodigo">Mira también en Spam. El código dura unos minutos.</p><p class="error" id="e-cuCodigo" hidden></p></div>
+    <div class="bkbtns"><button class="btn" type="submit" id="cuEntrarBtn">Entrar</button><button class="btn line" type="button" id="cuOtro">Usar otro correo</button></div>
+  </form>
+</section>
+
+<!-- 2. Primera vez: ficha mínima con su consentimiento -->
+<section class="cu-paso" id="cuFicha" hidden aria-labelledby="t-ficha">
+  <h2 id="t-ficha">Completa tu ficha</h2>
+  <p>Todavía no tenemos una ficha con este correo. Con estos datos te reconocemos en el estudio.</p>
+  <form class="form" id="fFicha" novalidate>
+    <div class="campo"><label for="cuNombre">Nombre y apellido</label><input id="cuNombre" autocomplete="name" aria-describedby="e-cuNombre"><p class="error" id="e-cuNombre" hidden></p></div>
+    <div class="campo"><label for="cuTel">WhatsApp</label><input id="cuTel" type="tel" inputmode="tel" autocomplete="tel" placeholder="809-000-0000" aria-describedby="e-cuTel"><p class="error" id="e-cuTel" hidden></p></div>
+    <label class="check"><input type="checkbox" id="cuPriv"> <span>Acepto el <a href="privacidad.html" target="_blank" rel="noopener">aviso de privacidad</a>: balé guarda mi nombre, WhatsApp y correo para gestionar mis reservas y mi cuenta</span></label>
+    <p class="error" id="e-cuPriv" hidden></p>
+    <button class="btn" type="submit">Guardar</button>
+  </form>
+</section>
+
+<!-- 3. Su espacio -->
+<div id="cuMio" hidden>
+  <p class="lead" id="cuHola"></p>
+  <section class="cu-bloque" aria-labelledby="t-prox">
+    <h2 id="t-prox">Próximas reservas</h2>
+    <ul class="cu-lista" id="cuProximas"></ul>
+    <a class="btn line sm" href="reservar.html">Reservar otra clase</a>
+  </section>
+  <section class="cu-bloque" aria-labelledby="t-mem">
+    <h2 id="t-mem">Membresía</h2>
+    <div id="cuMembresia"></div>
+  </section>
+  <section class="cu-bloque" aria-labelledby="t-hist">
+    <h2 id="t-hist">Historial</h2>
+    <ul class="cu-lista" id="cuHistorial"></ul>
+  </section>
+  <section class="cu-bloque" aria-labelledby="t-avisos">
+    <h2 id="t-avisos">Avisos</h2>
+    <form class="form" id="fAvisos">
+      <p>Los correos de tus reservas te llegan siempre.</p>
+      <label class="check"><input type="checkbox" id="cuWa"> <span>Quiero recibir la confirmación y los recordatorios por WhatsApp</span></label>
+      <label class="check"><input type="checkbox" id="cuCom"> <span>Quiero recibir por correo las actividades de la comunidad</span></label>
+      <button class="btn line sm" type="submit">Guardar avisos</button>
+    </form>
+  </section>
+  <section class="cu-bloque" aria-labelledby="t-datos">
+    <h2 id="t-datos">Tus datos</h2>
+    <p>Puedes pedir que borremos tus datos personales (Ley 172-13). Se cancelan tus reservas futuras y tu membresía, y queda solo un historial sin tu nombre. No se puede deshacer.</p>
+    <button class="btn line sm peligro" type="button" id="cuBorrar">Borrar mis datos</button>
+  </section>
+  <p><button class="btn texto" type="button" id="cuSalir">Salir de mi cuenta</button></p>
+</div>
+
+<dialog class="reserva peq" id="cuDlg" aria-labelledby="cuDlgT">
+  <form class="bk form" method="dialog" id="cuDlgForm">
+    <h2 id="cuDlgT"></h2>
+    <div id="cuDlgTxt"></div>
+    <p class="error" id="cuDlgErr" hidden></p>
+    <div class="bkbtns"><button class="btn" type="submit" id="cuDlgSi" value="si">Sí</button><button class="btn line" type="button" id="cuDlgNo">Volver</button></div>
+  </form>
+</dialog>
