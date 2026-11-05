@@ -577,15 +577,19 @@ function pickSeat(n){
 function invalid(el,msg){ el.setAttribute("aria-invalid","true"); NB.toast(msg); el.focus(); return false; }
 // Las mismas reglas que la base de datos (bale.normalizar_*)
 const nombreOk = s=>{ const n=s.trim().replace(/\s+/g," "); return n.length>=2&&n.length<=80; };
-const telOk = s=>{ let d=digits(s); if(d.length===10) d="1"+d; return /^1[2-9]\d{9}$/.test(d); };
+// RD/EE. UU.: 10 dígitos (o 11 con el 1). Otro país: con «+» y su código (8 a 15 dígitos)
+const conMas = s=>/^\s*(\+|00)/.test(String(s||""));
+const telApi = s=>conMas(s)?"+"+digits(s).replace(/^00/,""):digits(s);
+const telOk = s=>{ let d=digits(s);
+  if(conMas(s)){ if(/^\s*00/.test(s)) d=d.slice(2); return d[0]==="1"?/^1[2-9]\d{9}$/.test(d):/^[2-9]\d{7,14}$/.test(d); }
+  if(d.length===10) d="1"+d; return /^1[2-9]\d{9}$/.test(d); };
 const correoOk = s=>{ const c=s.trim().toLowerCase(); return c.length>=6&&c.length<=254&&/^[^@\s]+@[^@\s]+\.[^@\s]{2,}$/.test(c); };
 function validate(){
   dlg.querySelectorAll("[aria-invalid]").forEach(e=>e.removeAttribute("aria-invalid"));
   const sis=!$("#fMail").closest(".en-linea").hidden;
   if(!$("#fName").value.trim()) return invalid($("#fName"),"Escribe tu nombre.");
   if(sis&&!nombreOk($("#fName").value)) return invalid($("#fName"),"Escribe tu nombre completo.");
-  const wa=digits($("#fWa").value);
-  if(wa.length<10||wa.length>11||(sis&&!telOk(wa))) return invalid($("#fWa"),"Escribe un WhatsApp de 10 dígitos, por ejemplo 809-000-0000.");
+  if(!telOk($("#fWa").value)) return invalid($("#fWa"),"Escribe un WhatsApp de 10 dígitos, por ejemplo 809-000-0000. Si es de otro país, empieza con + y el código (+34…).");
   if(sis&&!correoOk($("#fMail").value)) return invalid($("#fMail"),"Escribe un correo válido, por ejemplo tucorreo@gmail.com.");
   if(!$("#memWrap").hidden&&!$("#fMem").checked) return invalid($("#fMem"),"Esta clase es exclusiva para miembros: confirma que tienes una membresía activa.");
   if(sis&&!$("#fPriv").checked) return invalid($("#fPriv"),"Acepta el aviso de privacidad para continuar.");
@@ -613,7 +617,7 @@ function setBusy(on){
 }
 async function submitSistema(){
   const c=bk.c, abrir=!bk.wait&&SIS.cfg().abrir_whatsapp_al_reservar!==false;
-  const datos={p_sesion_id:c.sid, p_nombre:$("#fName").value.trim(), p_telefono:digits($("#fWa").value),
+  const datos={p_sesion_id:c.sid, p_nombre:$("#fName").value.trim(), p_telefono:telApi($("#fWa").value),
     p_correo:$("#fMail").value.trim(), p_acepta_whatsapp:$("#fWaOk").checked, p_acepta_privacidad:$("#fPriv").checked};
   let win=null;
   if(abrir){ try{ win=window.open("","_blank"); if(win) win.opener=null; }catch(e){ win=null; } }
@@ -793,7 +797,8 @@ function pintarPago(R){
   box.innerHTML=`<p class="paytit">Pago${typeof R.monto==="number"?` · ${esc(NB.money(R.monto))}`:""}</p>
     ${R.pagar_con_tarjeta&&SIS.tarjeta?SIS.tarjeta.html(R):""}
     ${T?`<dl class="bankd">${fila("Banco",T.banco)}${fila("Tipo de cuenta",T.tipo_cuenta)}${fila("Número",T.cuenta,` <button class="linkbtn" type="button" data-copy="${esc(T.cuenta)}">Copiar número</button>`)}${fila("Titular",T.titular)}</dl>`:""}
-    <button class="bbtn line" type="button" id="comprobante">Enviar comprobante por WhatsApp</button>`;
+    ${R.por_pagar&&SIS.transferencia?SIS.transferencia.html(R):""}
+    <button class="linkbtn" type="button" id="comprobante">O envía el comprobante por WhatsApp</button>`;
   box.hidden=false;
 }
 function waMessage(){
@@ -955,6 +960,7 @@ function initPublic(){
     if(e.target.closest("#comprobante")&&bk.last&&bk.last.R){ const R=bk.last.R;
       NB.whatsapp(`Hola, balé. Te envío el comprobante de pago de mi reserva: ${R.clase}, ${R.fecha_larga}, ${R.hora}. Nombre: ${bk.last.nombre}.`); }
   });
+  if(SIS&&SIS.transferencia) SIS.transferencia.conectar($("#payBox"),()=>bk.last&&bk.last.R,()=>{ if(bk.last&&bk.last.R) pintarPago(bk.last.R); });
   $("#bkClose").addEventListener("click",()=>dlg.close());
   $("#bkDone").addEventListener("click",()=>dlg.close());
   dlg.addEventListener("click",e=>{ if(e.target===dlg) dlg.close(); });   // clic en el fondo

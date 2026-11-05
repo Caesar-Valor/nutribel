@@ -72,8 +72,8 @@ async function hacer(fn,args,{dlg=false}={}){
 }
 function sesionTerminada(cod){
   if(cerrarDlg) cerrarDlg(null);
-  aviso(cod==="requiere_2fa"?"Esta cuenta necesita la verificación en dos pasos. Pídele a César que la configure."
-    :"Tu sesión terminó o tu cuenta no tiene permiso para esto. Vuelve a entrar.","mal");
+  if(cod==="requiere_2fa"){ pedirSegundoPaso(); return; }
+  aviso("Tu sesión terminó o tu cuenta no tiene permiso para esto. Vuelve a entrar.","mal");
   sb.auth.signOut().catch(()=>{}); mostrarEntrar();
 }
 
@@ -141,19 +141,56 @@ function activarSeats(form){
    ENTRAR
    ========================================================= */
 function mostrarEntrar(){
-  YO=null; $("#app").hidden=true; $("#entrar").hidden=false; $("#salir").hidden=true; $("#cambiarClave").hidden=true; $("#quien").hidden=true;
-  $("#fEntrar").hidden=false; $("#fNueva").hidden=true;
+  YO=null; $("#app").hidden=true; $("#entrar").hidden=false; $("#salir").hidden=true; $("#cambiarClave").hidden=true; $("#seguridad").hidden=true; $("#quien").hidden=true;
+  $("#fEntrar").hidden=false; $("#fNueva").hidden=true; $("#fCodigo").hidden=true;
+}
+/* ---------- Verificación en dos pasos (TOTP de Supabase Auth) ----------
+   Si la cuenta tiene un factor verificado, después de la contraseña se pide el código.
+   Si la dueña exige la verificación (exigir_2fa) y la cuenta todavía no la tiene, se le
+   ofrece activarla ahí mismo; sin ella no entra. */
+async function nivel2FA(){
+  try{ const {data}=await sb.auth.mfa.getAuthenticatorAssuranceLevel(); return data||{}; }catch(e){ return {}; }
+}
+async function factorTotp(){
+  try{ const {data}=await sb.auth.mfa.listFactors(); return ((data&&data.totp)||[]).find(f=>f.status==="verified")||null; }catch(e){ return null; }
+}
+async function pedirSegundoPaso(){
+  const f=await factorTotp();
+  if(!f){
+    $("#app").hidden=true; $("#entrar").hidden=false; $("#fEntrar").hidden=true; $("#fCodigo").hidden=true;
+    aviso("La dueña pidió la verificación en dos pasos para entrar. Actívala ahora: necesitas tu teléfono con una app de autenticación.","mal");
+    const ok=await activar2FA(true);
+    if(ok) entrarApp(); else { await sb.auth.signOut().catch(()=>{}); mostrarEntrar(); }
+    return;
+  }
+  $("#app").hidden=true; $("#entrar").hidden=false; $("#fEntrar").hidden=true; $("#fNueva").hidden=true; $("#fCodigo").hidden=false;
+  $("#eCodigo").value=""; $("#eCodigo").focus();
+}
+async function confirmarCodigo(e){
+  e.preventDefault();
+  const code=$("#eCodigo").value.replace(/\D/g,"");
+  if(code.length!==6){ aviso("Escribe los 6 números del código.","mal"); return; }
+  const f=await factorTotp(); if(!f){ mostrarEntrar(); return; }
+  const b=$("#eCodBtn"); b.disabled=true;
+  const {error}=await sb.auth.mfa.challengeAndVerify({factorId:f.id,code}).catch(()=>({error:{message:"red"}}));
+  b.disabled=false;
+  if(error){ aviso(error.message==="red"?"No hay conexión. Revisa el internet.":"Ese código no es válido o ya cambió. Escribe el que sale ahora en la app.","mal"); $("#eCodigo").select(); return; }
+  $("#eCodigo").value=""; aviso(""); entrarApp();
 }
 async function entrarApp(){
+  const n=await nivel2FA();
+  if(n.nextLevel==="aal2"&&n.currentLevel!=="aal2"){ pedirSegundoPaso(); return; }
   let yo;
   try{ yo=await rpc("estudio_yo"); }
   catch(e){
-    if(e instanceof Prohibido){ aviso(e.message==="requiere_2fa"?"Esta cuenta necesita la verificación en dos pasos.":"Tu cuenta no tiene acceso al área del estudio.","mal"); await sb.auth.signOut().catch(()=>{}); mostrarEntrar(); return; }
+    if(e instanceof Prohibido&&e.message==="requiere_2fa"){ pedirSegundoPaso(); return; }
+    if(e instanceof Prohibido){ aviso("Tu cuenta no tiene acceso al área del estudio.","mal"); await sb.auth.signOut().catch(()=>{}); mostrarEntrar(); return; }
     aviso("No hay conexión con la base de datos. Inténtalo de nuevo en unos minutos.","mal"); mostrarEntrar(); return;
   }
   YO=yo; aviso("");
   CAT=await hacer("estudio_catalogos")||{planes:[],horario:[],instructoras:[],tipos:[],sala:{filas:2,por_fila:8}};
   $("#entrar").hidden=true; $("#app").hidden=false; $("#salir").hidden=false; $("#cambiarClave").hidden=false;
+  $("#seguridad").hidden=YO.rol==="instructora";
   const q=$("#quien"); q.hidden=false; q.textContent=`${YO.nombre} · ${{duena:"Dueña",asistente:"Asistente",instructora:"Instructora"}[YO.rol]||""}`;
   montarTabs();
 }
@@ -196,6 +233,54 @@ async function cambiarClave(){
       return true; }});
   if(ok) listo("Contraseña cambiada");
 }
+// Activar la verificación en dos pasos: QR (o clave para escribir) → código de la app → verificado
+async function activar2FA(obligatoria){
+  // si quedó un intento a medias, se borra para empezar limpio
+  try{ const {data}=await sb.auth.mfa.listFactors(); for(const f of ((data&&data.all)||[]).filter(x=>x.status!=="verified")) await sb.auth.mfa.unenroll({factorId:f.id}); }catch(e){}
+  const {data:en,error}=await sb.auth.mfa.enroll({factorType:"totp",friendlyName:"balé"}).catch(()=>({error:{message:"red"}}));
+  if(error||!en||!en.totp){ aviso(error&&error.message==="red"?"No hay conexión. Inténtalo de nuevo.":"No se pudo empezar la verificación en dos pasos. Avísale a César.","mal"); return false; }
+  // Supabase da el QR como «data:image/svg+xml;utf-8,<svg…>» sin codificar: se vuelve a codificar para que el navegador lo pinte
+  let svg=String(en.totp.qr_code||"");
+  while(/^data:image\/svg\+xml[^,]*,/.test(svg)) svg=svg.replace(/^data:image\/svg\+xml[^,]*,/,"");
+  if(!/^\s*</.test(svg)){ try{ svg=decodeURIComponent(svg); }catch(e){ svg=""; } }
+  const qr=/^\s*<svg[\s>]/.test(svg)?"data:image/svg+xml;charset=utf-8,"+encodeURIComponent(svg):"";
+  const ok=await pedir({titulo:"Activar la verificación en dos pasos", ok:"Activar", no:obligatoria?"Salir":"Cancelar",
+    html:`<ol class="pasos"><li>En tu teléfono, instala <b>Google Authenticator</b> o <b>Microsoft Authenticator</b> (gratis).</li>
+      <li>En la app, pulsa <b>+</b> y escanea este código${qr?"":" (o escribe la clave)"}.${qr?` Si estás en el mismo teléfono, copia la clave y pégala en la app.`:""}</li>
+      <li>Escribe aquí el código de 6 números que te muestra la app.</li></ol>
+      ${qr?`<p class="qr2fa"><img src="${esc(qr)}" alt="Código QR para la app de autenticación" width="180" height="180"></p>`:""}
+      <p class="privacy">Clave: <code class="clave2fa">${esc(en.totp.secret)}</code> <button class="linkbtn" type="button" data-copiar-clave>Copiar clave</button></p>
+      <label class="fld">Código de la app<input name="code" inputmode="numeric" autocomplete="one-time-code" maxlength="6" pattern="[0-9]{6}"></label>
+      <p class="privacy">Desde ahora, al entrar te pediremos la contraseña y este código. Si cambias de teléfono, avísale a César antes.</p>`,
+    alAbrir:f=>{ const b=f.querySelector("[data-copiar-clave]"); if(b) b.addEventListener("click",()=>copiar(en.totp.secret,"Clave")); },
+    accion:async f=>{
+      const code=v(f,"code").replace(/\D/g,""); if(code.length!==6) return "Escribe los 6 números del código.";
+      const {error:e}=await sb.auth.mfa.challengeAndVerify({factorId:en.id,code}).catch(()=>({error:{message:"red"}}));
+      if(e) return e.message==="red"?"No hay conexión. Inténtalo de nuevo.":"Ese código no es válido. Escribe el que sale ahora en la app (cambia cada 30 segundos).";
+      return true; }});
+  if(!ok){ sb.auth.mfa.unenroll({factorId:en.id}).catch(()=>{}); return false; }
+  listo("Verificación en dos pasos activada");
+  return true;
+}
+async function seguridad(){
+  const f=await factorTotp(), n=await nivel2FA();
+  if(!f){
+    const ok=await pedir({titulo:"Seguridad de tu cuenta", ok:"Activar verificación en dos pasos",
+      html:`<p>La verificación en dos pasos pide, además de la contraseña, un código que cambia cada 30 segundos en tu teléfono. Si alguien descubre tu contraseña, no puede entrar sin tu teléfono.</p>
+        <p class="privacy">Es para la dueña y la asistente: son las cuentas que ven teléfonos y cobros.</p>`});
+    if(ok) await activar2FA(false);
+    return;
+  }
+  const quitar=await pedir({titulo:"Seguridad de tu cuenta", ok:"Quitar la verificación", no:"Cerrar", peligro:true,
+    html:`<p><b>Verificación en dos pasos: activada</b>${f.created_at?` desde el ${esc(new Date(f.created_at).toLocaleDateString("es-DO",{timeZone:TZ,dateStyle:"long"}))}`:""}.</p>
+      <p class="privacy">Quítala solo si cambias de teléfono (después la vuelves a activar con el nuevo).${n.currentLevel!=="aal2"?" Para quitarla tienes que haber entrado con el código.":""}</p>`,
+    accion:async()=>{
+      if(esDuena()&&aj("exigir_2fa",false)) return "Primero apaga «Exigir la verificación» en Ajustes → Seguridad.";
+      const {error}=await sb.auth.mfa.unenroll({factorId:f.id}).catch(()=>({error:{message:"red"}}));
+      if(error) return error.message==="red"?"No hay conexión.":"No se pudo quitar. Sal y vuelve a entrar con el código, y prueba otra vez.";
+      return true; }});
+  if(quitar){ await sb.auth.refreshSession().catch(()=>{}); listo("Verificación en dos pasos quitada"); }
+}
 
 /* =========================================================
    PESTAÑAS (según el rol)
@@ -203,32 +288,39 @@ async function cambiarClave(){
 let TAB="";
 function montarTabs(){
   const t=YO.rol==="instructora" ? [["clases","Mis clases"]]
-    : [["clases","Clases"],["clientas","Clientas"],["cobros","Cobros"],["avisos","Avisos"]].concat(esDuena()?[["ajustes","Ajustes"],["exportar","Exportar"]]:[]);
+    : [["clases","Clases"],["clientas","Clientas"],["cobros","Cobros"],["avisos","Avisos"]].concat(esDuena()?[["ingresos","Ingresos"],["ajustes","Ajustes"],["exportar","Exportar"]]:[]);
   $("#tabs").innerHTML=t.map(([id,n],i)=>`<button role="tab" type="button" id="t-${id}" aria-controls="p-${id}" aria-selected="${i===0}" tabindex="${i?-1:0}">${n}${id==="cobros"?' <span class="tcnt" id="cntEnlaces" hidden></span>':""}</button>`).join("");
   $("#tabs").hidden=t.length<2;
-  ["clases","clientas","cobros","avisos","ajustes","exportar"].forEach(id=>{ $("#p-"+id).hidden=true; });
+  PANELES.forEach(id=>{ $("#p-"+id).hidden=true; });
   $("#cInstW").hidden=YO.rol==="instructora";
   $("#icsWrap").hidden=YO.rol!=="instructora";
   $("#cInst").innerHTML=opt("","Todas")+CAT.instructoras.map(i=>opt(i.nombre,i.nombre)).join("");
   abrirTab(t[0][0]);
-  if(YO.rol!=="instructora") contarEnlaces();
 }
-// Contador de "Enlaces por enviar" (cobros con tarjeta que la clienta pidió y nadie ha enviado)
-function pintarContador(n){
+// Contador de Cobros: enlaces de tarjeta por enviar + transferencias por confirmar
+const PANELES = ["clases","clientas","cobros","avisos","ingresos","ajustes","exportar"];
+let CNT={enlaces:0,transf:0};
+function pintarContador(){
   const b=$("#cntEnlaces"); if(!b) return;
+  const n=CNT.enlaces+CNT.transf;
   b.hidden=!n; b.textContent=n||"";
-  $("#t-cobros").setAttribute("aria-label",n?`Cobros, ${n} ${n===1?"enlace":"enlaces"} por enviar`:"Cobros");
+  const partes=[CNT.enlaces?`${CNT.enlaces} ${CNT.enlaces===1?"enlace":"enlaces"} por enviar`:"",CNT.transf?`${CNT.transf} ${CNT.transf===1?"transferencia":"transferencias"} por confirmar`:""].filter(Boolean);
+  $("#t-cobros").setAttribute("aria-label",partes.length?`Cobros, ${partes.join(" y ")}`:"Cobros");
 }
 async function contarEnlaces(){   // en silencio: el contador es una ayuda, no un error
-  try{ const r=await rpc("estudio_enlaces_por_enviar",{}); if(r&&r.ok) pintarContador(+r.por_enviar||0); return r; }
+  try{ const r=await rpc("estudio_enlaces_por_enviar",{}); if(r&&r.ok){ CNT.enlaces=+r.por_enviar||0; pintarContador(); } return r; }
+  catch(e){ return null; }
+}
+async function contarTransf(){
+  try{ const r=await rpc("estudio_transferencias",{}); if(r&&r.ok){ CNT.transf=+r.total||0; pintarContador(); } return r; }
   catch(e){ return null; }
 }
 function abrirTab(id){
   TAB=id;
   document.querySelectorAll('#tabs [role="tab"]').forEach(b=>{ const on=b.id==="t-"+id; b.setAttribute("aria-selected",on); b.tabIndex=on?0:-1; });
-  ["clases","clientas","cobros","avisos","ajustes","exportar"].forEach(x=>{ $("#p-"+x).hidden=x!==id; });
-  ({clases:cargarSemana, clientas:abrirClientas, cobros:cargarCobros, avisos:cargarAvisos, ajustes:cargarAjustes, exportar:()=>{}})[id]();
-  if(id!=="cobros"&&YO&&YO.rol!=="instructora") contarEnlaces();
+  PANELES.forEach(x=>{ $("#p-"+x).hidden=x!==id; });
+  ({clases:cargarSemana, clientas:abrirClientas, cobros:cargarCobros, avisos:cargarAvisos, ingresos:cargarIngresos, ajustes:cargarAjustes, exportar:()=>{}})[id]();
+  if(id!=="cobros"&&YO&&YO.rol!=="instructora"){ contarEnlaces(); contarTransf(); }
 }
 
 /* =========================================================
@@ -403,13 +495,114 @@ async function icsSemana(){
    CLIENTAS
    ========================================================= */
 let qT=null, CLI=null;
-async function abrirClientas(){ cargarVencen(); buscarClientas(); }
+async function abrirClientas(){ cargarControl(); cargarVencen(); buscarClientas(); }
+
+/* ---------- Control de membresías (el Excel de Brittany) ---------- */
+const EST_MEM = {activa:"Activa", renueva_pronto:"Renueva pronto", vencida:"Vencida"};
+let CTRL=null; const ctrlF={estado:"",plan:"",clase:""};
+async function cargarControl(){
+  const r=await hacer("estudio_control_membresias",{}); if(!r) return;
+  CTRL=r; pintarControl();
+}
+const claseTxt = id=>{ const h=(CAT.horario||[]).find(x=>x.id===id); return h?`${DIAS[h.dia_semana-1].slice(0,3)} ${h12(h.inicio)} · ${h.clase}`:id; };
+function filtradas(){ return (CTRL.membresias||[]).filter(m=>(!ctrlF.estado||m.estado===ctrlF.estado)&&(!ctrlF.plan||m.plan_id===ctrlF.plan)&&(!ctrlF.clase||(m.horarios||[]).includes(ctrlF.clase))); }
+function pintarControl(){
+  const r=CTRL, c=r.contadores||{}, M=r.membresias||[];
+  const planesUsados=[...new Map(M.map(m=>[m.plan_id,m.plan])).entries()];
+  const clases=[...new Set(M.flatMap(m=>m.horarios||[]))].sort();
+  const sel=(id,etq,opts)=>`<label class="fld">${etq}<select data-ctrl="${id}">${opt("","Todas")}${opts.map(([k,n])=>opt(k,n,ctrlF[id]===k)).join("")}</select></label>`;
+  const L=filtradas();
+  $("#control").innerHTML=`<h2>Control de membresías</h2>
+    <ul class="kpis" aria-label="Resumen">
+      <li><b>${+c.clientas||0}</b><span>clientas registradas</span></li>
+      <li><b>${+c.activas||0}</b><span>membresías activas</span></li>
+      <li class="${c.renuevan?"ojo":""}"><b>${+c.renuevan||0}</b><span>renuevan en ${r.dias} días</span></li>
+      <li><b>${+c.vencidas||0}</b><span>vencidas</span></li></ul>
+    <div class="filtros">${sel("estado","Estado",Object.entries(EST_MEM))}${sel("plan","Plan",planesUsados)}${sel("clase","Clase fija",clases.map(h=>[h,claseTxt(h)]))}</div>
+    ${L.length?`<div class="tablewrap"><table class="vtable ctrl"><caption class="sr-only">Membresías (${L.length})</caption><thead><tr>
+      <th scope="col">Nombre</th><th scope="col">Clase fija y lugar</th><th scope="col">Correo</th><th scope="col">Teléfono</th><th scope="col">Plan</th>
+      <th scope="col">Inicio</th><th scope="col">Último pago</th><th scope="col">Próximo pago</th><th scope="col">Monto</th><th scope="col">Método</th><th scope="col">Banco</th><th scope="col">Estado</th></tr></thead><tbody>
+      ${L.map(m=>`<tr><th scope="row"><button class="linkbtn" type="button" data-ficha="${m.clienta_id}">${esc(m.nombre)}</button></th>
+        <td>${esc(m.clases_fijas||"—")}</td><td>${esc(m.correo||"—")}</td><td class="nw">${esc(m.telefono||"")}</td><td>${esc(m.plan)}</td>
+        <td class="nw">${esc(fmtCorta(m.desde))}</td><td class="nw">${m.pagado_en?esc(fmtCorta(m.pagado_en)):m.pago_estado==="cortesia"?"Cortesía":"<span class=\"pend\">Por pagar</span>"}</td>
+        <td class="nw">${esc(fmtCorta(m.proximo_pago))}</td><td class="nw">${esc(dinero(m.monto))}</td><td>${esc(METODO[m.pago_metodo]||"—")}</td><td>${esc(m.banco||"—")}</td>
+        <td><span class="est ${m.estado}">${esc(EST_MEM[m.estado])}</span></td></tr>`).join("")}
+    </tbody></table></div>`:`<p class="privacy">${M.length?"Ninguna membresía con esos filtros.":"Todavía no hay membresías registradas."}</p>`}
+    ${esDuena()?`<div class="eacc"><button class="bbtn line sm" type="button" data-exp-control>Exportar a Excel</button>
+      <button class="bbtn line sm" type="button" data-importar>Importar membresías</button></div>`:""}`;
+}
+async function exportarControl(){
+  const r=await hacer("estudio_exportar",{p_que:"control"}); if(!r) return;
+  descargarCsv("control",r.filas||[],`bale-membresias-${hoy()}.csv`);
+}
+
+/* ---------- Importar membresías (solo la dueña): .xlsx o .csv → revisar fila por fila → importar ---------- */
+function filasImport(r){
+  const E={ok:["bien","OK"],ya_estaba:["","Ya estaba"],error:["mal","Error"]};
+  return `<ul class="impfilas">${(r.filas||[]).map(f=>{ const [cl,et]=E[f.estado]||["",f.estado];
+    return `<li class="${cl}"><p><b>Fila ${f.fila} · ${esc(f.nombre||"(sin nombre)")}</b> <span class="est ${cl}">${esc(et)}</span>${f.plan?`<small>${esc(f.plan)} · ${esc(fmtCorta(f.desde))} – ${esc(fmtCorta(f.hasta))}</small>`:""}</p>
+      ${(f.fijos||[]).map(x=>`<small>Lugar fijo: ${esc(x.clase)}${x.lugar?`, lugar ${x.lugar}`:""}${x.estado==="ya_estaba"?" (ya estaba)":""}</small>`).join("")}
+      ${(f.errores||[]).map(x=>`<small class="err">✗ ${esc(x)}</small>`).join("")}${(f.avisos||[]).map(x=>`<small>! ${esc(x)}</small>`).join("")}</li>`; }).join("")}</ul>`;
+}
+function resumenImport(s){
+  const pl=(n,uno,varios)=>`${n} ${+n===1?uno:varios}`;
+  return `<p><b>${pl(s.filas,"fila","filas")}</b> · <b>${s.con_error}</b> con error · ${pl(s.clientas_nuevas,"clienta nueva","clientas nuevas")} · ${pl(s.membresias_nuevas,"membresía nueva","membresías nuevas")} · ${pl(s.fijos_nuevos,"lugar fijo","lugares fijos")} · ${pl(s.reservas_fijas,"reserva fija","reservas fijas")}</p>
+    ${(s.conflictos||[]).length?`<p class="privacy">Al reservar los lugares fijos, estas fechas chocaron (resérvalas a mano): ${s.conflictos.map(c=>esc(`${c.clienta||""} ${c.fecha||""}`)).join(", ")}</p>`:""}`;
+}
+async function importarMembresias(){
+  let filas=null, paso="revisar";
+  const ok=await pedir({titulo:"Importar membresías", ok:"Revisar el archivo",
+    html:`<p class="privacy">Usa la plantilla de membresías (Excel .xlsx o .csv). Primero se revisa cada fila <b>sin guardar nada</b>; solo se importa si no hay ningún error. Repetirlo no duplica nada y no se manda ningún aviso a las clientas.</p>
+      <label class="fld">Archivo<input type="file" name="archivo" accept=".xlsx,.csv,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,text/csv"></label>
+      <div data-imp aria-live="polite"></div>`,
+    alAbrir:f=>{ f.querySelector('[name="archivo"]').addEventListener("change",()=>{ filas=null; paso="revisar"; $("#dlgOk").textContent="Revisar el archivo"; f.querySelector("[data-imp]").innerHTML=""; }); },
+    accion:async f=>{
+      const box=f.querySelector("[data-imp]");
+      if(paso==="listo") return true;
+      if(paso==="revisar"){
+        try{ filas=await window.BALE_HOJAS.leer(f.querySelector('[name="archivo"]').files[0]); }catch(e){ return e.message||"No se pudo leer el archivo."; }
+        const r=await hacer("estudio_importar_membresias",{p_filas:filas,p_aplicar:false},{dlg:true});
+        if(!r) return null; if(r.ok===false&&!r.filas) return r.mensaje;
+        box.innerHTML=resumenImport(r.resumen||{})+filasImport(r);
+        if((r.resumen||{}).con_error>0){ box.insertAdjacentHTML("afterbegin",`<p class="note">Hay filas con error: corrígelas en el archivo y vuelve a elegirlo. No se importó nada.</p>`); return null; }
+        paso="importar"; $("#dlgOk").textContent=`Importar ${r.resumen.filas} ${r.resumen.filas===1?"fila":"filas"}`; return null;
+      }
+      const r=await hacer("estudio_importar_membresias",{p_filas:filas,p_aplicar:true},{dlg:true});
+      if(!r) return null;
+      if(!r.aplicado){ box.innerHTML=`<p class="note">No se importó: algo cambió desde la revisión. Vuelve a revisarlo.</p>`+filasImport(r); paso="revisar"; $("#dlgOk").textContent="Revisar el archivo"; return null; }
+      box.innerHTML=`<p class="note bien">Listo: importado.</p>`+resumenImport(r.resumen||{});
+      paso="listo"; $("#dlgOk").textContent="Cerrar"; $("#dlgNo").hidden=true; return null;
+    }});
+  if(ok||paso==="listo"){ listo("Membresías importadas"); abrirClientas(); }
+}
+
+/* ---------- Vencen esta semana: renovar una o todas ---------- */
+let VENCEN=[];
 async function cargarVencen(){
   const r=await hacer("estudio_vencen",{p_dias:7}); if(!r) return;
-  const m=r.membresias||[];
-  $("#vencen").innerHTML=`<h2>Vencen esta semana</h2>${m.length?`<ul class="pays">${m.map(x=>`<li><div><b>${esc(x.nombre)}</b><small>${esc(x.plan)}${x.detalle?` · ${esc(x.detalle)}`:""} · hasta ${esc(fmtCorta(x.hasta))}${x.fijos?` · ${x.fijos} ${x.fijos===1?"lugar fijo":"lugares fijos"}`:""}</small></div>
+  const m=VENCEN=r.membresias||[];
+  $("#vencen").innerHTML=`<h2>Vencen esta semana</h2>${m.length?`<ul class="pays">${m.map(x=>`<li><div><label class="check"><input type="checkbox" data-ren-sel="${x.membresia_id}" checked> <b>${esc(x.nombre)}</b></label><small>${esc(x.plan)}${x.detalle?` · ${esc(x.detalle)}`:""} · hasta ${esc(fmtCorta(x.hasta))}${x.fijos?` · ${x.fijos} ${x.fijos===1?"lugar fijo":"lugares fijos"}`:""}</small></div>
     <div class="eacc"><button class="bbtn solid sm" type="button" data-renovar="${x.membresia_id}" data-hasta="${esc(x.hasta)}" data-nombre="${esc(x.nombre)}">Renovar</button>
-    <button class="bbtn line sm" type="button" data-ficha="${x.clienta_id}">Ver ficha</button></div></li>`).join("")}</ul>`:`<p class="privacy">Ninguna membresía vence en los próximos 7 días.</p>`}`;
+    <button class="bbtn line sm" type="button" data-ficha="${x.clienta_id}">Ver ficha</button></div></li>`).join("")}</ul>
+    <div class="eacc"><button class="bbtn solid" type="button" data-renovar-todas>Renovar todas las de esta semana</button></div>`
+    :`<p class="privacy">Ninguna membresía vence en los próximos 7 días.</p>`}`;
+}
+async function renovarTodas(){
+  const ids=[...document.querySelectorAll("#vencen [data-ren-sel]:checked")].map(i=>+i.dataset.renSel);
+  if(!ids.length){ aviso("Marca al menos una membresía para renovar.","mal"); return; }
+  const rev=await hacer("estudio_renovar_varias",{p_ids:ids,p_aplicar:false}); if(!rev) return;
+  const F=rev.filas||[], buenas=F.filter(x=>x.ok);
+  const M={lugar_ocupado:"el lugar ya estaba reservado",clase_llena:"la clase ya estaba llena",ya_tiene_reserva:"ya tenía una reserva ese día",lugar_invalido:"ese lugar no existe en la sala"};
+  const ok=await pedir({titulo:`Renovar ${buenas.length} ${buenas.length===1?"membresía":"membresías"}`, ok:buenas.length?`Renovar ${buenas.length}`:"Cerrar", no:buenas.length?"Cancelar":"",
+    html:`<p>Mismo plan, mismo monto y mismos lugares fijos, por un mes. Cada una queda <b>por pagar</b> hasta que marques el pago.</p>
+      <ul class="impfilas">${F.map(x=>`<li class="${x.ok?((x.fijos_no_copiados||[]).length||(x.conflictos||[]).length?"ojo":"bien"):"mal"}"><p><b>${esc(x.nombre||"")}</b>${x.ok?`<small>${esc(x.plan)} · ${esc(fmtCorta(x.desde))} – ${esc(fmtCorta(x.hasta))} · ${esc(dinero(x.monto))} · ${x.fijos} ${x.fijos===1?"lugar fijo":"lugares fijos"}</small>`:`<small class="err">${esc(x.mensaje||"No se puede renovar")}</small>`}</p>
+        ${(x.fijos_no_copiados||[]).map(n=>`<small class="err">No se copia ${esc(claseTxt(n.horario_id))}, lugar ${n.lugar}: otra miembro ya lo tiene.</small>`).join("")}
+        ${(x.conflictos||[]).map(c=>`<small class="err">${esc(fmtDay(c.fecha))}${c.lugar?` · lugar ${c.lugar}`:""}: ${esc(M[c.motivo]||c.motivo)} (resérvala a mano).</small>`).join("")}</li>`).join("")}</ul>`,
+    accion:async()=>{
+      if(!buenas.length) return true;
+      const r=await hacer("estudio_renovar_varias",{p_ids:buenas.map(x=>+x.membresia_id),p_aplicar:true},{dlg:true});
+      if(!r) return null; if(r.ok===false) return r.mensaje; listo(`${r.renovadas} ${r.renovadas===1?"membresía renovada":"membresías renovadas"} (por pagar)`); return true; }});
+  if(ok&&buenas.length) abrirClientas();
 }
 async function buscarClientas(){
   const r=await hacer("estudio_clientas",{p_buscar:$("#qCli").value.trim()||null,p_limite:60}); if(!r) return;
@@ -437,7 +630,8 @@ function pintarFicha(){
     </form>`}
     <h3>Membresías</h3>
     ${M.map(m=>`<div class="mem ${m.estado!=="activa"?"off":""}">
-      <p class="mt"><b>${esc(m.plan)}</b>${m.detalle?` · ${esc(m.detalle)}`:""}<small>${esc(fmtCorta(m.desde))} – ${esc(fmtCorta(m.hasta))} · ${esc(dinero(m.precio))} · ${esc(PAGO[m.pago_estado]||m.pago_estado)}${m.pago_metodo?` (${esc(METODO[m.pago_metodo])})`:""}${m.estado!=="activa"?" · cancelada":""}</small></p>
+      <p class="mt"><b>${esc(m.plan)}</b>${m.detalle?` · ${esc(m.detalle)}`:""}<small>${esc(fmtCorta(m.desde))} – ${esc(fmtCorta(m.hasta))} · ${esc(dinero(m.precio))} · ${esc(PAGO[m.pago_estado]||m.pago_estado)}${m.pago_metodo?` (${esc(METODO[m.pago_metodo])}${m.banco?`, ${esc(m.banco)}`:""})`:""}${m.pagado_en?` el ${esc(fmtCorta(m.pagado_en))}`:""}${m.estado!=="activa"?" · cancelada":""}</small>
+        ${m.transferencia&&m.transferencia.estado==="por_confirmar"?`<small class="rev">Avisó una transferencia: confírmala en Cobros.</small>`:""}</p>
       <ul class="fijos">${(m.fijos||[]).map(f=>`<li><span>${esc(DIAS[f.dia_semana-1])} ${esc(h12(f.inicio))} · ${esc(f.clase)}${f.lugar?` · lugar ${f.lugar}`:""}<small>${esc(fmtCorta(f.desde))} – ${esc(fmtCorta(f.hasta))}</small></span>
         ${m.estado==="activa"?`<button class="linkbtn" type="button" data-quitar-fijo="${f.id}">Quitar</button>`:""}</li>`).join("")||`<li class="privacy">Sin lugares fijos.</li>`}</ul>
       ${m.estado==="activa"&&!c.anonimizada?`<div class="eacc"><button class="bbtn solid sm" type="button" data-fijo="${m.id}">Agregar lugar fijo</button>
@@ -473,8 +667,16 @@ async function nuevaClienta(){
   if(ok&&id){ listo("Clienta creada"); abrirFicha(id); }
 }
 const planes = ()=>(CAT.planes||[]).filter(p=>p.tipo==="membresia");
-const pagoSelect = (sel="pendiente")=>`<label class="fld">Pago<select name="pago">${opt("pendiente","Pendiente",sel==="pendiente")}${opt("pagado","Pagado",sel==="pagado")}${opt("cortesia","Cortesía",sel==="cortesia")}</select></label>
-  <label class="fld">Método<select name="metodo">${opt("","—")}${Object.entries(METODO).map(([k,n])=>opt(k,n)).join("")}</select></label>`;
+const pagoSelect = (sel="pendiente",met="")=>`<label class="fld">Pago<select name="pago">${opt("pendiente","Pendiente",sel==="pendiente")}${opt("pagado","Pagado",sel==="pagado")}${opt("cortesia","Cortesía",sel==="cortesia")}</select></label>
+  <label class="fld">Método<select name="metodo">${opt("","—")}${Object.entries(METODO).map(([k,n])=>opt(k,n,met===k)).join("")}</select></label>`;
+const BANCOS_RD = ["Banco Popular","Banreservas","BHD","Scotiabank","Banco Santa Cruz","APAP","Asociación Cibao","Banco Caribe","Banesco","Promerica","Banco López de Haro","Banco Vimenca","Qik"];
+const bancosList = ()=>`<datalist id="bancosRD">${BANCOS_RD.map(b=>`<option value="${esc(b)}">`).join("")}</datalist>`;
+// Fecha y banco solo si está pagada (el banco, solo por transferencia)
+function camposPago(f){
+  const upd=()=>{ const pag=v(f,"pago")==="pagado", tr=v(f,"metodo")==="transferencia";
+    const a=f.querySelector("[data-si-pagado]"), b=f.querySelector("[data-si-transf]"); if(a) a.hidden=!pag; if(b) b.hidden=!tr; };
+  f.querySelectorAll('[name="pago"],[name="metodo"]').forEach(s=>s.addEventListener("change",upd)); upd();
+}
 async function membresia(id){
   const m=id==="nueva"?null:CLI.membresias.find(x=>x.id===+id);
   const desde=m?m.desde:hoy(), P=planes();
@@ -483,13 +685,18 @@ async function membresia(id){
       <div class="two"><label class="fld">Desde<input type="date" name="desde" value="${esc(desde)}"></label>
       <label class="fld">Hasta<input type="date" name="hasta" value="${esc(m?m.hasta:finDeMes(desde))}"></label></div>
       <label class="fld">Precio RD$<input type="number" name="precio" min="0" step="50" inputmode="numeric" value="${esc(m?m.precio:(P[0]||{}).precio||"")}"></label>
-      <div class="two">${pagoSelect(m?m.pago_estado:"pendiente")}</div>
+      <div class="two">${pagoSelect(m?m.pago_estado:"pendiente",m&&m.pago_metodo)}</div>
+      <div class="two" data-si-pagado><label class="fld">Fecha del pago<input type="date" name="pagado_en" max="${esc(hoy())}" value="${esc(m&&m.pagado_en||"")}"></label>
+        <label class="fld" data-si-transf>Banco de origen<input name="banco" maxlength="60" list="bancosRD" value="${esc(m&&m.banco||"")}"></label></div>
+      ${bancosList()}
       <label class="fld">Notas<input name="notas" maxlength="200" value="${esc(m?m.notas||"":"")}"></label>`,
-    alAbrir:f=>{ if(!m) f.querySelector('[name="plan"]').addEventListener("change",e=>{ const p=P.find(x=>x.id===e.target.value); if(p) f.querySelector('[name="precio"]').value=p.precio; }); },
+    alAbrir:f=>{ if(!m) f.querySelector('[name="plan"]').addEventListener("change",e=>{ const p=P.find(x=>x.id===e.target.value); if(p) f.querySelector('[name="precio"]').value=p.precio; }); camposPago(f); },
     accion:async f=>{
       if(!v(f,"desde")||!v(f,"hasta")||v(f,"hasta")<v(f,"desde")) return "Revisa las fechas: «hasta» no puede ser antes de «desde».";
+      const pagado=v(f,"pago")==="pagado";
       const r=await hacer("estudio_guardar_membresia",{p_id:m?m.id:null,p_clienta_id:CLI.clienta.id,p_plan_id:v(f,"plan"),p_desde:v(f,"desde"),p_hasta:v(f,"hasta"),
-        p_precio:v(f,"precio")===""?null:+v(f,"precio"),p_pago_estado:v(f,"pago"),p_pago_metodo:v(f,"metodo")||null,p_notas:v(f,"notas")},{dlg:true});
+        p_precio:v(f,"precio")===""?null:+v(f,"precio"),p_pago_estado:v(f,"pago"),p_pago_metodo:v(f,"metodo")||null,p_notas:v(f,"notas"),
+        p_pagado_en:pagado&&v(f,"pagado_en")||null,p_banco:pagado&&v(f,"metodo")==="transferencia"&&v(f,"banco")||null},{dlg:true});
       if(!r) return null; if(r.ok===false) return r.mensaje; conflictos(r.fijos); return true; }});
   if(ok){ listo("Membresía guardada"); abrirFicha(CLI.clienta.id); }
 }
@@ -558,8 +765,19 @@ async function borrarDatos(id){
    ========================================================= */
 const soloDigitos = t=>String(t||"").replace(/\D/g,"").replace(/^1(?=\d{10}$)/,"");
 async function cargarCobros(){
-  const [r,e]=await Promise.all([hacer("estudio_pendientes"),contarEnlaces()]); if(!r) return;
-  const E=(e&&e.cobros)||[];
+  const [r,e,t]=await Promise.all([hacer("estudio_pendientes"),contarEnlaces(),contarTransf()]); if(!r) return;
+  const E=(e&&e.cobros)||[], T=(t&&t.transferencias)||[];
+  $("#cobTransf").innerHTML=T.map(x=>`<li><div><b>${esc(x.nombre)} · ${esc(dinero(+x.monto))}</b><small>${esc(x.concepto||"")}</small>
+      <small>Transfirió el ${esc(fmtCorta(x.fecha))} desde ${esc(x.banco)}${x.avisos>1?` · avisó ${x.avisos} veces`:""} · ${esc(x.telefono)}</small>
+      <small>${x.comprobante?`<button class="linkbtn" type="button" data-foto="${esc(x.comprobante)}" data-q="${esc(x.nombre)}">Ver comprobante</button>`:"Sin foto del comprobante"}</small></div>
+    <div class="eacc"><button class="bbtn solid sm" type="button" data-transf="confirmada" data-id="${x.id}" data-q="${esc(x.nombre)}" data-m="${esc(x.monto)}">Confirmar</button>
+      <button class="bbtn line sm" type="button" data-transf="rechazada" data-id="${x.id}" data-q="${esc(x.nombre)}" data-m="${esc(x.monto)}">Rechazar</button></div></li>`).join("")
+    ||`<li class="empty-state">No hay transferencias por confirmar.</li>`;
+  $("#cobMem").innerHTML=(r.membresias||[]).map(x=>`<li><div><b>${esc(x.nombre)} · ${esc(dinero(x.monto))}</b><small>${esc(x.plan)} · ${esc(fmtCorta(x.desde))} – ${esc(fmtCorta(x.hasta))}</small><small>${esc(x.telefono)}</small></div>
+    <div class="eacc"><button class="bbtn solid sm" type="button" data-pagar-mem="${x.membresia_id}" data-q="${esc(x.nombre)}">Marcar pagada</button><button class="bbtn line sm" type="button" data-cobro-mem2="${x.membresia_id}">Cobrar con tarjeta</button><button class="bbtn line sm" type="button" data-cortesia-mem="${x.membresia_id}" data-q="${esc(x.nombre)}">Cortesía</button></div></li>`).join("")
+    ||`<li class="empty-state">No hay membresías por pagar.</li>`;
+  $("#cobPagadas").innerHTML=(r.pagadas||[]).map(x=>`<li><div><b>${esc(x.nombre)} · ${esc(dinero(x.monto))}</b><small>${esc(x.concepto)} · ${esc(METODO[x.metodo]||"sin método")} · ${esc(x.fecha?fmtCorta(String(x.fecha).slice(0,10)):"")}</small></div></li>`).join("")
+    ||`<li class="empty-state">Nada pagado en los últimos 14 días.</li>`;
   $("#cobEnlaces").innerHTML=E.map(x=>`<li><div><b>${esc(x.nombre)} · ${esc(dinero(+x.monto))}</b><small>${esc(x.concepto)}</small>
       <small>WhatsApp ${esc(x.telefono)} <button class="linkbtn" type="button" data-copiar="${esc(soloDigitos(x.whatsapp))}" data-que="Teléfono">Copiar teléfono</button>
         · <button class="linkbtn" type="button" data-copiar="${esc(String(Math.round(+x.monto)))}" data-que="Monto">Copiar monto</button></small>
@@ -604,6 +822,37 @@ function copiar(valor,que){
   const ok=()=>NB.toast(`${que} copiado`), no=()=>NB.toast(`${que}: ${valor}`);
   if(navigator.clipboard&&navigator.clipboard.writeText) navigator.clipboard.writeText(valor).then(ok,no); else no();
 }
+// Transferencia avisada por la clienta: confirmar (queda pagada) o rechazar con motivo
+async function revisarTransf(id,estado,nombre,monto){
+  const conf=estado==="confirmada";
+  const ok=await pedir({titulo:conf?`¿Llegó la transferencia de ${nombre}?`:`Rechazar la transferencia de ${nombre}`, ok:conf?"Sí, confirmar":"Rechazar", peligro:!conf,
+    html:conf?`<p>Mira primero en el banco que entraron <b>${esc(dinero(+monto))}</b>. Queda pagada por transferencia.</p><label class="check"><input type="checkbox" name="avisar" checked> Avisar a la clienta</label>`
+      :`<label class="fld">Motivo (le llega a la clienta)<textarea name="motivo" rows="2" maxlength="200" placeholder="Ej.: no vemos el depósito en la cuenta"></textarea></label><label class="check"><input type="checkbox" name="avisar" checked> Avisar a la clienta</label>`,
+    accion:async f=>{
+      if(!conf&&v(f,"motivo").length<3) return "Escribe el motivo del rechazo.";
+      const r=await hacer("estudio_transferencia",{p_id:+id,p_estado:estado,p_motivo:conf?null:v(f,"motivo"),p_avisar:v(f,"avisar")},{dlg:true});
+      if(!r) return null; return r.ok===false?r.mensaje:true; }});
+  if(ok){ listo(conf?"Transferencia confirmada":"Transferencia rechazada"); cargarCobros(); }
+}
+async function verComprobante(ruta,nombre){
+  const {data,error}=await sb.storage.from("comprobantes").createSignedUrl(ruta,120).catch(()=>({error:{}}));
+  if(error||!data||!data.signedUrl){ aviso("No encontramos la foto: puede que la clienta no llegara a subirla.","mal"); return; }
+  await pedir({titulo:`Comprobante de ${nombre}`, ok:"Cerrar", no:"",
+    html:`<p class="comprob"><img src="${esc(data.signedUrl)}" alt="Foto del comprobante de transferencia de ${esc(nombre)}"></p><p class="privacy">El enlace de la foto caduca en 2 minutos.</p>`});
+}
+async function pagarMembresia(id,nombre,cortesia){
+  const ok=await pedir({titulo:cortesia?`Cortesía para ${nombre}`:`Pago de la membresía de ${nombre}`, ok:cortesia?"Marcar cortesía":"Marcar pagada",
+    html:cortesia?`<p>La membresía queda como cortesía del estudio (sin cobro).</p>`
+      :`<div class="two"><label class="fld">¿Cómo pagó?<select name="metodo">${Object.entries(METODO).map(([k,n])=>opt(k,n)).join("")}</select></label>
+        <label class="fld">Fecha del pago<input type="date" name="pagado_en" max="${esc(hoy())}" value="${esc(hoy())}"></label></div>
+        <label class="fld" data-si-transf>Banco de origen<input name="banco" maxlength="60" list="bancosRD"></label>${bancosList()}<input type="hidden" name="pago" value="pagado">`,
+    alAbrir:f=>{ if(!cortesia) camposPago(f); },
+    accion:async f=>{
+      const r=await hacer("estudio_pago_membresia",cortesia?{p_id:+id,p_pago_estado:"cortesia"}
+        :{p_id:+id,p_pago_estado:"pagado",p_metodo:v(f,"metodo"),p_pagado_en:v(f,"pagado_en")||null,p_banco:v(f,"metodo")==="transferencia"?v(f,"banco")||null:null},{dlg:true});
+      if(!r) return null; return r.ok===false?r.mensaje:true; }});
+  if(ok){ listo("Pago guardado"); cargarCobros(); }
+}
 async function cargo(id,estado,nombre){
   const ok=await pedir({titulo:estado==="cobrado"?`¿Cobraste el cargo a ${nombre}?`:`¿Perdonar el cargo a ${nombre}?`, ok:estado==="cobrado"?"Sí, cobrado":"Sí, perdonar",
     html:`<p>${estado==="cobrado"?"El cargo por cancelación tardía queda como cobrado.":"El cargo por cancelación tardía queda perdonado (no se cobra)."}</p>`,
@@ -617,12 +866,19 @@ async function cargo(id,estado,nombre){
 async function cargarAvisos(){
   const r=await hacer("estudio_estado"); if(!r) return;
   const vivos=(r.trabajadores||[]).filter(t=>t.activo), est=Object.assign({},...vivos.map(t=>t.estado||{}));
-  const correo=!vivos.length?["mal","el notificador no responde"]:est.correo==="error"?["mal","con errores"]:["bien","funcionando"];
-  const wa=!r.whatsapp_automatico||est.whatsapp==="desactivado"?["", "apagado"]:!vivos.length||est.whatsapp!=="conectado"?["mal","desconectado"]:["bien","funcionando"];
+  /* Cada canal se mira en quien lo manda: el correo sale de Supabase y el WhatsApp del servidor de Oracle */
+  const deCorreo=vivos.filter(t=>t.estado&&"correo" in t.estado);
+  const correo=!deCorreo.length?["mal","el notificador no responde"]:deCorreo.some(t=>t.estado.correo==="error")?["mal","con errores"]:["bien","funcionando"];
+  const wa=est.whatsapp==="desconectado"?["mal","desconectado"]:!r.whatsapp_automatico||est.whatsapp==="desactivado"?["", "apagado"]:est.whatsapp!=="conectado"?["mal","desconectado"]:["bien",est.modo_prueba?"funcionando (modo prueba)":"funcionando"];
+  const MOTIVO_WA={sin_vincular:"Falta vincular el teléfono.",cerrada:"WhatsApp cerró la sesión. Hay que volver a vincular el teléfono.",
+    bloqueada:"WhatsApp restringió el número. Revisa el teléfono y no lo vuelvas a vincular todavía.",
+    reemplazada:"Otro equipo abrió esta sesión. Hay que volver a vincular el teléfono."};
+  const notaWa=wa[1]!=="desconectado"?"":`${est.whatsapp==="desconectado"?(MOTIVO_WA[est.whatsapp_motivo]||"Se está reconectando solo."):"El servidor de WhatsApp no responde."}${correo[0]==="bien"?" Los correos siguen saliendo.":""}`;
   const n=r.avisos_7_dias||{}, cnt=(c,e)=>+n[`${c}.${e}`]||0;
   const ult=(r.trabajadores||[]).map(t=>t.latido).sort().pop();
   $("#avEstado").innerHTML=`<h2>Estado de los avisos</h2>
     <ul class="estado"><li class="${correo[0]}"><b>Correo:</b> ${correo[1]}</li><li class="${wa[0]}"><b>WhatsApp:</b> ${wa[1]}</li></ul>
+    ${notaWa?`<p class="privacy">${esc(notaWa)}</p>`:""}
     <p class="privacy">${ult?`Último latido del notificador: ${esc(new Date(ult).toLocaleString("es-DO",{timeZone:TZ,dateStyle:"medium",timeStyle:"short"}))}.`:"El notificador todavía no se ha conectado."}</p>
     ${esDuena()?`<div class="switches"><label class="check"><input type="checkbox" data-sw="correo_automatico" ${r.correo_automatico?"checked":""}> Enviar correos automáticos</label>
       <label class="check"><input type="checkbox" data-sw="whatsapp_automatico" ${r.whatsapp_automatico?"checked":""}> Enviar WhatsApp automáticos</label></div>`
@@ -631,8 +887,14 @@ async function cargarAvisos(){
     <div class="tablewrap"><table class="vtable"><caption class="sr-only">Avisos de los últimos 7 días</caption><thead><tr><th scope="col">Canal</th><th scope="col">Enviados</th><th scope="col">En cola</th><th scope="col">Con error</th><th scope="col">Sin enviar</th></tr></thead><tbody>
       ${["correo","whatsapp"].map(c=>`<tr><th scope="row">${c==="correo"?"Correo":"WhatsApp"}</th><td>${cnt(c,"enviada")}</td><td>${cnt(c,"pendiente")+cnt(c,"enviando")}</td><td>${cnt(c,"error")}</td><td>${cnt(c,"vencida")+cnt(c,"omitida")+cnt(c,"anulada")}</td></tr>`).join("")}
     </tbody></table></div>
+    ${esDuena()&&r.uso?usoPlan(r.uso):""}
     <h3>Errores recientes</h3>
     ${(r.errores||[]).length?`<ul class="lista">${r.errores.map(e=>`<li><b>${e.canal==="correo"?"Correo":"WhatsApp"}</b> · ${esc(e.plantilla)} · ${esc(new Date(e.creada).toLocaleString("es-DO",{timeZone:TZ,dateStyle:"short",timeStyle:"short"}))}<small>${esc(e.error||"")}</small></li>`).join("")}</ul>`:`<p class="privacy">Sin errores.</p>`}`;
+}
+// Plan gratis de Supabase: base de datos (500 MB), fotos de comprobantes (1 GB) y correos de Gmail (unos 500 al día)
+function usoPlan(u){
+  const f=(x,l,txt)=>{ const p=l?Math.round(100*(+x||0)/l):0; return `<li class="${p>=80?"mal":p>=60?"":"bien"}"><b>${txt}:</b> ${esc(String(x))} de ${esc(String(l))} (${p} %)${p>=80?" · avísale a César":""}</li>`; };
+  return `<h3>Uso del plan gratis</h3><ul class="estado">${f(u.base_mb,u.base_limite_mb,"Base de datos (MB)")}${f(u.fotos_mb,u.fotos_limite_mb,"Fotos de comprobantes (MB)")}${f(u.correos_hoy,u.correos_limite_dia,"Correos enviados hoy")}</ul>`;
 }
 async function interruptor(el){
   const on=el.checked, nom=el.dataset.sw==="correo_automatico"?"los correos":"los WhatsApp";
@@ -655,7 +917,11 @@ const EJEMPLO = {nombre:"Laura", clase:"Hot Barre", fecha_larga:"lunes 2 de novi
   cargo_texto:"", enlace_reserva:"https://…/mi-reserva.html#t=…", enlace_horario:"https://…/#horario", direccion:"C. José Horacio Rodríguez #30, La Vega", whatsapp_estudio:"+1 849-638-6337", motivo:"",
   nombre_completo:"Laura Pérez", telefono:"809-555-0101", correo:"laura@example.com", primera_vez:"Sí", revisar:""};
 const PLANT_NOMBRE = {reserva_confirmada:"Reserva confirmada", recordatorio_dia_antes:"Recordatorio del día antes", recordatorio_horas_antes:"Recordatorio horas antes",
-  reserva_cancelada:"Reserva cancelada", clase_cancelada:"Clase cancelada", lugar_liberado:"Se liberó un lugar", estudio_nueva_reserva:"Al estudio: nueva reserva", estudio_cancelacion:"Al estudio: cancelación"};
+  reserva_cancelada:"Reserva cancelada", clase_cancelada:"Clase cancelada", lugar_liberado:"Se liberó un lugar", estudio_nueva_reserva:"Al estudio: nueva reserva", estudio_cancelacion:"Al estudio: cancelación",
+  membresia_por_vencer:"Membresía por vencer", transferencia_confirmada:"Transferencia confirmada", transferencia_rechazada:"Transferencia rechazada"};
+const VAR_MEM = ["plan","desde_larga","hasta_larga","monto","pago_texto","enlace_pago","concepto","motivo"];
+Object.assign(EJEMPLO,{plan:"Barre · 8 clases al mes", desde_larga:"lunes 2 de noviembre", hasta_larga:"martes 1 de diciembre", monto:"RD$6,800",
+  enlace_pago:"https://…/mi-reserva.html#m=…", concepto:"tu membresía"});
 const render = (t,d)=>String(t||"").replace(/\{\{([a-z_]+)\}\}/g,(m,k)=>d[k]||"").replace(/[ \t]+\n/g,"\n").replace(/\n{3,}/g,"\n\n").trim();
 
 async function cargarAjustes(){
@@ -663,7 +929,8 @@ async function cargarAjustes(){
   if(!a||!p||!per) return;
   CAT=await hacer("estudio_catalogos")||CAT;
   AJ=a.ajustes||{}; PLANT=p.plantillas||[];
-  const pago=aj("pago",{}), tr=pago.transferencia||{}, rec=aj("recordatorios",{}), sil=aj("horas_silencio",{});
+  const pago=aj("pago",{}), tr=pago.transferencia||{}, rec=aj("recordatorios",{}), sil=aj("horas_silencio",{}), ren=aj("aviso_renovacion",{activo:false,dias:3});
+  const n2fa=await nivel2FA();
   const sinPC=x=>/por confirmar/i.test(x||"")?"":x||"";
   const sec=(id,titulo,cuerpo,nota="")=>`<form class="ebox form" data-aj="${id}" novalidate><h2>${titulo}</h2>${nota?`<p class="privacy">${nota}</p>`:""}${cuerpo}<div class="eacc"><button class="bbtn solid sm" type="submit">Guardar</button></div></form>`;
   $("#ajustes").innerHTML=
@@ -677,13 +944,19 @@ async function cargarAjustes(){
     sec("recordatorios","Recordatorios y horas de silencio",`<div class="two"><label class="fld">Recordatorio el día antes, a las<input name="dia" type="time" value="${esc(rec.dia_antes_hora||"18:00")}"></label>
       <label class="fld">Y horas antes (0 = no)<input name="horas" type="number" min="0" max="12" value="${esc(rec.horas_antes??2)}"></label></div>
       <div class="two"><label class="fld">Sin WhatsApp desde<input name="sd" type="time" value="${esc(sil.desde||"21:00")}"></label><label class="fld">hasta<input name="sh" type="time" value="${esc(sil.hasta||"07:00")}"></label></div>`)+
+    sec("membresias","Membresías y aviso de renovación",`<label class="fld">«Renueva pronto» en el control: cuando falten (días)<input name="pronto" type="number" min="1" max="60" value="${esc(aj("renueva_pronto_dias",7))}"></label>
+      <label class="check"><input type="checkbox" name="aviso" ${ren.activo?"checked":""}> Avisar a la clienta antes de que venza su membresía</label>
+      <label class="fld">¿Cuántos días antes?<input name="dias" type="number" min="1" max="14" value="${esc(ren.dias||3)}"></label>`,
+      "Sale un correo (y un WhatsApp si el automático está encendido y ella lo aceptó) con el monto y cómo pagar: transferencia (con «Ya transferí») o con tarjeta. Una sola vez por membresía, entre las 9 am y las 8 pm. El texto se cambia abajo, en «Membresía por vencer».")+
+    sec("seguridad","Seguridad",`<label class="check"><input type="checkbox" name="exigir" ${aj("exigir_2fa",false)?"checked":""}> Exigir la verificación en dos pasos a la dueña y a la asistente</label>`,
+      `Primero actívala tú (botón «Seguridad», arriba) y entra con el código. Cuando la enciendas aquí, la asistente tendrá que activarla la próxima vez que entre. ${n2fa.currentLevel==="aal2"?"Ahora mismo entraste con el código.":"Ahora mismo entraste sin el código: todavía no puedes exigirla."}`)+
     sec("otros","Instructoras y dirección pública",`<label class="check"><input type="checkbox" name="tel" ${aj("instructoras_ven_telefono",false)?"checked":""}> Las instructoras ven el WhatsApp de sus alumnas</label>
       <label class="fld">Dirección pública de la página (base de los enlaces de los avisos)<input name="url" type="url" value="${esc(aj("url_publica",""))}"></label>`)+
     `<form class="ebox form" data-aj="plantilla" novalidate><h2>Textos de los avisos</h2>
       <label class="fld">Aviso<select name="id">${PLANT.map(t=>{ const [k,c]=t.id.split("."); return opt(t.id,`${PLANT_NOMBRE[k]||k} · ${c==="correo"?"correo":"WhatsApp"}`); }).join("")}</select></label>
       <label class="fld" data-asunto>Asunto<input name="asunto" maxlength="200"></label>
       <label class="fld">Texto<textarea name="cuerpo" rows="10" maxlength="4000"></textarea></label>
-      <p class="privacy">Variables: ${VARIABLES.map(x=>`<code>{{${x}}}</code>`).join(" ")}. Solo en los avisos al estudio: ${VAR_ESTUDIO.map(x=>`<code>{{${x}}}</code>`).join(" ")}.</p>
+      <p class="privacy">Variables: ${VARIABLES.map(x=>`<code>{{${x}}}</code>`).join(" ")}. Solo en los avisos al estudio: ${VAR_ESTUDIO.map(x=>`<code>{{${x}}}</code>`).join(" ")}. En los de membresía y transferencia: ${VAR_MEM.map(x=>`<code>{{${x}}}</code>`).join(" ")}.</p>
       <p class="steph">Vista previa</p><pre class="previa" data-previa></pre>
       <div class="eacc"><button class="bbtn solid sm" type="submit">Guardar texto</button></div></form>`+
     `<div class="ebox"><h2>Horario semanal</h2><p class="privacy">Cambia o quita una clase desde una fecha. Las fechas que ya tienen reservas no se tocan: se muestran para que decidas.</p>
@@ -726,6 +999,20 @@ async function guardarAjustes(f){
   }else if(id==="recordatorios"){
     const h=num("horas",0,12); if(h==null||!v(f,"dia")||!v(f,"sd")||!v(f,"sh")){ aviso("Revisa las horas.","mal"); return; }
     ok=!!await ajuste("recordatorios",{dia_antes_hora:v(f,"dia"),horas_antes:h})&&!!await ajuste("horas_silencio",{desde:v(f,"sd"),hasta:v(f,"sh")});
+  }else if(id==="membresias"){
+    const p=num("pronto",1,60), d=num("dias",1,14);
+    if(p==null||d==null){ aviso("Revisa los días: «renueva pronto» de 1 a 60 y el aviso de 1 a 14.","mal"); return; }
+    const on=v(f,"aviso"), antes=aj("aviso_renovacion",{}).activo;
+    if(on&&!antes){ const c=await pedir({titulo:"Encender el aviso de renovación",ok:"Encender",
+      html:`<p>Desde hoy, cada miembro cuya membresía venza en ${d} días recibe un correo con el monto y cómo pagar${aj("whatsapp_automatico",false)?" (y un WhatsApp si lo aceptó)":""}. Revisa antes el texto en «Textos de los avisos» → «Membresía por vencer».</p>`}); if(!c) return; }
+    ok=!!await ajuste("renueva_pronto_dias",p)&&!!await ajuste("aviso_renovacion",{activo:on,dias:d});
+    if(ok){ AJ.aviso_renovacion={valor:{activo:on,dias:d}}; AJ.renueva_pronto_dias={valor:p}; }
+  }else if(id==="seguridad"){
+    const on=v(f,"exigir");
+    if(on&&!aj("exigir_2fa",false)){ const c=await pedir({titulo:"Exigir la verificación en dos pasos",ok:"Exigir",
+      html:`<p>La dueña y la asistente tendrán que escribir el código de su app cada vez que entren. Si la asistente aún no la tiene, se le pedirá activarla al entrar.</p>`}); if(!c){ f.querySelector('[name="exigir"]').checked=false; return; } }
+    const r=await hacer("estudio_guardar_ajuste",{p_clave:"exigir_2fa",p_valor:on});
+    ok=!!r; if(r) AJ.exigir_2fa={valor:on}; else f.querySelector('[name="exigir"]').checked=!on;
   }else if(id==="otros"){
     const url=v(f,"url"); if(url&&!/^https:\/\/\S+$/i.test(url)){ aviso("La dirección pública debe empezar por https://","mal"); return; }
     ok=!!await ajuste("instructoras_ven_telefono",v(f,"tel"))&&(!url||!!await ajuste("url_publica",url));
@@ -793,21 +1080,56 @@ async function editarPersonal(correo){
    ========================================================= */
 const COLS = {clientas:{nombre:"Nombre",whatsapp:"WhatsApp",correo:"Correo",acepta_whatsapp:"Acepta WhatsApp",alta:"Alta",reservas:"Reservas activas",asistencias:"Asistencias"},
   reservas:{fecha:"Fecha",hora:"Hora",clase:"Clase",instructora:"Instructora",clienta:"Clienta",whatsapp:"WhatsApp",lugar:"Lugar",estado:"Estado",origen:"Origen",asistencia:"Asistencia",pago:"Pago",metodo:"Método",monto:"Monto",cancelacion_tardia:"Cancelación tardía",cargo:"Cargo",cargo_estado:"Estado del cargo"},
-  membresias:{clienta:"Clienta",whatsapp:"WhatsApp",plan:"Plan",detalle:"Detalle",desde:"Desde",hasta:"Hasta",precio:"Precio",pago:"Pago",metodo:"Método",estado:"Estado"}};
+  membresias:{clienta:"Clienta",whatsapp:"WhatsApp",plan:"Plan",detalle:"Detalle",desde:"Desde",hasta:"Hasta",precio:"Precio",pago:"Pago",metodo:"Método",pagado_en:"Último pago",banco:"Banco",estado:"Estado"},
+  // las mismas columnas del Excel de Brittany
+  control:{nombre:"Nombre",clases_fijas:"Clase fija y lugar",correo:"Correo",telefono:"Teléfono",plan:"Plan",desde:"Fecha de inicio",pagado_en:"Último pago",
+    proximo_pago:"Próximo pago / renovación",monto:"Monto",pago_metodo:"Método de pago",banco:"Banco",estado:"Estado"},
+  ingresos:{mes:"Mes",concepto:"Concepto",metodo:"Forma de pago",cantidad:"Cantidad",total:"Total RD$"}};
+const TEXTO_CELDA = {estado:EST_MEM, pago_metodo:METODO};
+const METODO_ING = {transferencia:"Transferencia", tarjeta:"Tarjeta", efectivo:"Efectivo", sin_registrar:"Sin registrar"};
 function csv(que,filas){
   const C=COLS[que], keys=Object.keys(C);
-  const cel=x=>{ const s=x==null?"":typeof x==="boolean"?(x?"Sí":"No"):String(x); return /[",\n\r;]/.test(s)?`"${s.replace(/"/g,'""')}"`:s; };
-  return "﻿"+[keys.map(k=>cel(C[k])).join(","), ...filas.map(f=>keys.map(k=>cel(f[k])).join(","))].join("\r\n")+"\r\n";
+  const val=(k,x)=>que==="ingresos"&&k==="metodo"?METODO_ING[x]||x:TEXTO_CELDA[k]&&que==="control"?TEXTO_CELDA[k][x]||x||"":x;
+  // Un texto que empieza por = + - @ (p. ej. un nombre escrito en la web) Excel lo tomaría como fórmula: se le antepone '
+  const cel=x=>{ let s=x==null?"":typeof x==="boolean"?(x?"Sí":"No"):String(x); if(typeof x==="string"&&/^[=+\-@\t\r]/.test(s)) s="'"+s;
+    return /[",\n\r;]/.test(s)?`"${s.replace(/"/g,'""')}"`:s; };
+  return "﻿"+[keys.map(k=>cel(C[k])).join(","), ...filas.map(f=>keys.map(k=>cel(val(k,f[k]))).join(","))].join("\r\n")+"\r\n";
+}
+function descargarCsv(que,filas,nombre){
+  const blob=new Blob([csv(que,filas)],{type:"text/csv;charset=utf-8"}), a=document.createElement("a");
+  a.href=URL.createObjectURL(blob); a.download=nombre||`bale-${que}-${hoy()}.csv`; document.body.append(a); a.click(); a.remove();
+  setTimeout(()=>URL.revokeObjectURL(a.href),1500);
+  listo(`Descargado: ${filas.length} ${filas.length===1?"fila":"filas"}`);
 }
 async function exportar(e){
   e.preventDefault();
   const que=$("#xQue").value, args={p_que:que};
-  if(que==="reservas"){ args.p_desde=$("#xDesde").value||null; args.p_hasta=$("#xHasta").value||null; }
+  if(que==="reservas"||que==="ingresos"){ args.p_desde=$("#xDesde").value||null; args.p_hasta=$("#xHasta").value||null; }
   const r=await hacer("estudio_exportar",args); if(!r) return;
-  const blob=new Blob([csv(que,r.filas||[])],{type:"text/csv;charset=utf-8"}), a=document.createElement("a");
-  a.href=URL.createObjectURL(blob); a.download=`bale-${que}-${hoy()}.csv`; document.body.append(a); a.click(); a.remove();
-  setTimeout(()=>URL.revokeObjectURL(a.href),1500);
-  listo(`Descargado: ${(r.filas||[]).length} filas`);
+  descargarCsv(que,r.filas||[]);
+}
+
+/* =========================================================
+   INGRESOS (dueña): por mes, forma de pago y concepto; cortesías aparte
+   ========================================================= */
+const sumarMeses = (s,n)=>{ const d=fromIso(s); d.setDate(1); d.setMonth(d.getMonth()+n); return iso(d); };
+const primeroDeMes = s=>s.slice(0,8)+"01";
+const fmtMes = m=>{ const [y,mo]=m.split("-").map(Number); const t=new Date(y,mo-1,1).toLocaleDateString("es-DO",{month:"long",year:"numeric"}); return t.charAt(0).toUpperCase()+t.slice(1); };
+async function cargarIngresos(){
+  const d=$("#iDesde").value, h=$("#iHasta").value;
+  if(!d||!h||h<d){ aviso("Revisa las fechas: «hasta» no puede ser antes de «desde».","mal"); return; }
+  const r=await hacer("estudio_ingresos",{p_desde:d,p_hasta:h}); if(!r) return;
+  const tabla=(cap,cols,filas)=>filas.length?`<div class="tablewrap"><table class="vtable"><caption class="sr-only">${esc(cap)}</caption><thead><tr>${cols.map(c=>`<th scope="col">${esc(c)}</th>`).join("")}</tr></thead><tbody>${filas.map(f=>`<tr>${f.map((x,i)=>i===0?`<th scope="row">${esc(x)}</th>`:`<td class="${i===f.length-1?"num":""}">${esc(x)}</td>`).join("")}</tr>`).join("")}</tbody></table></div>`:`<p class="privacy">Sin movimientos.</p>`;
+  $("#ingresos").innerHTML=`<div class="ebox"><h2>Total cobrado: ${esc(dinero(r.total))}</h2><p class="privacy">Del ${esc(fmtCorta(r.desde))} al ${esc(fmtCorta(r.hasta))}. Cuenta lo marcado como pagado (y los cargos de RD$300 cobrados). Las cortesías no suman: salen abajo.</p>
+      <h3>Por mes</h3>${tabla("Ingresos por mes",["Mes","Pagos","Total"],(r.por_mes||[]).map(x=>[fmtMes(x.mes),x.cantidad,dinero(x.total)]))}
+      <h3>Por forma de pago</h3>${tabla("Ingresos por forma de pago",["Forma de pago","Pagos","Total"],(r.por_metodo||[]).map(x=>[METODO_ING[x.metodo]||x.metodo,x.cantidad,dinero(x.total)]))}
+      <h3>Por plan o clase suelta</h3>${tabla("Ingresos por concepto",["Concepto","Pagos","Total"],(r.por_concepto||[]).map(x=>[x.concepto,x.cantidad,dinero(x.total)]))}
+      <h3>Cortesías</h3>${tabla("Cortesías",["Mes","Concepto","Cantidad","Valor"],(r.cortesias||[]).map(x=>[fmtMes(x.mes),x.concepto,x.cantidad,dinero(x.valor)]))}
+      <h3>Detalle</h3>${tabla("Detalle por mes, concepto y forma de pago",["Mes","Concepto","Forma de pago","Pagos","Total"],(r.filas||[]).map(x=>[fmtMes(x.mes),x.concepto,METODO_ING[x.metodo]||x.metodo,x.cantidad,dinero(x.total)]))}</div>`;
+}
+async function exportarIngresos(){
+  const r=await hacer("estudio_exportar",{p_que:"ingresos",p_desde:$("#iDesde").value||null,p_hasta:$("#iHasta").value||null}); if(!r) return;
+  descargarCsv("ingresos",(r.filas||[]).map(x=>Object.assign({},x,{mes:fmtMes(x.mes)})),`bale-ingresos-${hoy()}.csv`);
 }
 
 /* =========================================================
@@ -818,6 +1140,11 @@ function eventos(){
   $("#eOlvido").addEventListener("click",olvido);
   $("#fNueva").addEventListener("submit",nuevaClave);
   $("#cambiarClave").addEventListener("click",cambiarClave);
+  $("#seguridad").addEventListener("click",seguridad);
+  $("#fCodigo").addEventListener("submit",confirmarCodigo);
+  $("#eCodSalir").addEventListener("click",async()=>{ await sb.auth.signOut().catch(()=>{}); aviso(""); mostrarEntrar(); });
+  $("#fIng").addEventListener("submit",e=>{ e.preventDefault(); cargarIngresos(); });
+  $("#iExp").addEventListener("click",exportarIngresos);
   $("#salir").addEventListener("click",async()=>{ await sb.auth.signOut().catch(()=>{}); aviso("Saliste del área del estudio."); mostrarEntrar(); });
   $("#tabs").addEventListener("click",e=>{ const t=e.target.closest('[role="tab"]'); if(t) abrirTab(t.id.slice(2)); });
   $("#tabs").addEventListener("keydown",e=>{ const d=e.key==="ArrowRight"?1:e.key==="ArrowLeft"?-1:0; if(!d) return;
@@ -838,7 +1165,11 @@ function eventos(){
   // Clientas
   $("#qCli").addEventListener("input",()=>{ clearTimeout(qT); qT=setTimeout(buscarClientas,300); });
   $("#nuevaCli").addEventListener("click",nuevaClienta);
+  $("#p-clientas").addEventListener("change",e=>{ const s=e.target.closest("[data-ctrl]"); if(s&&CTRL){ ctrlF[s.dataset.ctrl]=s.value; pintarControl(); const n=$(`#control [data-ctrl="${s.dataset.ctrl}"]`); if(n) n.focus(); } });
   $("#p-clientas").addEventListener("click",e=>{
+    if(e.target.closest("[data-renovar-todas]")){ renovarTodas(); return; }
+    if(e.target.closest("[data-exp-control]")){ exportarControl(); return; }
+    if(e.target.closest("[data-importar]")){ importarMembresias(); return; }
     const t=e.target.closest("[data-ficha],[data-renovar],[data-fijo],[data-quitar-fijo],[data-mem],[data-cancel-mem],[data-borrar],[data-cobro-mem]"); if(!t) return;
     const d=t.dataset;
     if(d.cobroMem) cobrarConTarjeta({p_membresia_id:+d.cobroMem});
@@ -858,7 +1189,12 @@ function eventos(){
     const g=e.target.closest("[data-cargo]"); if(g){ cargo(g.dataset.r,g.dataset.cargo,g.dataset.q); return; }
     const en=e.target.closest("[data-enlace]"); if(en){ enlace(en.dataset.id,en.dataset.enlace,en.dataset.q); return; }
     const cp=e.target.closest("[data-copiar]"); if(cp){ copiar(cp.dataset.copiar,cp.dataset.que); return; }
-    const cr=e.target.closest("[data-cobro-reserva]"); if(cr) cobrarConTarjeta({p_reserva_id:+cr.dataset.cobroReserva},cargarCobros);
+    const cr=e.target.closest("[data-cobro-reserva]"); if(cr){ cobrarConTarjeta({p_reserva_id:+cr.dataset.cobroReserva},cargarCobros); return; }
+    const tr=e.target.closest("[data-transf]"); if(tr){ revisarTransf(tr.dataset.id,tr.dataset.transf,tr.dataset.q,tr.dataset.m); return; }
+    const fo=e.target.closest("[data-foto]"); if(fo){ verComprobante(fo.dataset.foto,fo.dataset.q); return; }
+    const pm=e.target.closest("[data-pagar-mem]"); if(pm){ pagarMembresia(pm.dataset.pagarMem,pm.dataset.q,false); return; }
+    const cm=e.target.closest("[data-cortesia-mem]"); if(cm){ pagarMembresia(cm.dataset.cortesiaMem,cm.dataset.q,true); return; }
+    const tm=e.target.closest("[data-cobro-mem2]"); if(tm) cobrarConTarjeta({p_membresia_id:+tm.dataset.cobroMem2},cargarCobros);
   });
   // Avisos y ajustes
   $("#p-avisos").addEventListener("change",e=>{ if(e.target.dataset.sw) interruptor(e.target); });
@@ -866,7 +1202,8 @@ function eventos(){
   $("#ajustes").addEventListener("click",e=>{ const h=e.target.closest("[data-hor]"); if(h){ editarHorario(h.dataset.hor); return; }
     const p=e.target.closest("[data-per]"); if(p) editarPersonal(p.dataset.per); });
   // Exportar
-  $("#xQue").addEventListener("change",()=>{ $("#xFechas").hidden=$("#xQue").value!=="reservas"; });
+  $("#xQue").addEventListener("change",()=>{ $("#xFechas").hidden=!["reservas","ingresos"].includes($("#xQue").value); });
+  $("#iDesde").value=primeroDeMes(sumarMeses(hoy(),-5)); $("#iHasta").value=hoy();
   $("#xDesde").value=sumar(hoy(),-30); $("#xHasta").value=sumar(hoy(),30);
   $("#fExp").addEventListener("submit",exportar);
 }

@@ -3,22 +3,21 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' data: blob:; connect-src 'self' https://*.supabase.co wss://*.supabase.co; base-uri 'self'; form-action 'self'; object-src 'none'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; font-src 'self'; img-src 'self' data: blob: https://*.supabase.co; connect-src 'self' https://*.supabase.co wss://*.supabase.co; base-uri 'self'; form-action 'self'; object-src 'none'">
 <title>Área del estudio · balé</title>
 <meta name="robots" content="noindex, nofollow">
 <meta name="referrer" content="no-referrer">
 <meta name="theme-color" content="#F3E4D8">
 <script src="js/modo-temprano.js"></script>
 <link rel="icon" href="img/bale-favicon.png">
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="preload" href="fonts/montserrat-latin.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="stylesheet" href="css/base.css">
 <link rel="stylesheet" href="css/bale.css">
 <link rel="stylesheet" href="css/estudio.css">
 <script src="js/vendor/supabase.js" defer></script>
 <script src="js/core.js" defer></script>
 <script src="js/calendario.js" defer></script>
+<script src="js/hojas.js" defer></script>
 <script src="js/estudio.js" defer></script>
 </head>
 <body data-page="bale-estudio">
@@ -27,6 +26,7 @@
     <a class="bmark" href="./" aria-label="balé, ir a la página"><img src="img/bale-logo-transparente.webp" alt="" width="1040" height="538"></a>
     <span class="quien" id="quien" hidden></span>
     <button class="modebtn" id="modeBtn" type="button" aria-label="Cambiar a modo oscuro" title="Modo oscuro / claro"><svg class="moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg><svg class="sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="4.5"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg></button>
+    <button class="linkbtn clave" type="button" id="seguridad" hidden>Seguridad</button>
     <button class="linkbtn clave" type="button" id="cambiarClave" hidden>Contraseña</button>
     <button class="tores" type="button" id="salir" hidden>Salir</button>
   </div>
@@ -44,6 +44,12 @@
       <label class="fld">Contraseña<input id="eClave" type="password" autocomplete="current-password" required></label>
       <button class="bbtn solid" type="submit" id="eBtn">Entrar</button>
       <button class="linkbtn" type="button" id="eOlvido">¿Olvidaste tu contraseña?</button>
+    </form>
+    <form class="form" id="fCodigo" novalidate hidden>
+      <p class="privacy">Tu cuenta tiene la verificación en dos pasos. Abre tu app de autenticación (Google Authenticator, Microsoft Authenticator…) y escribe el código de 6 números de balé.</p>
+      <label class="fld">Código<input id="eCodigo" inputmode="numeric" autocomplete="one-time-code" pattern="[0-9]{6}" maxlength="6" required></label>
+      <button class="bbtn solid" type="submit" id="eCodBtn">Confirmar</button>
+      <button class="linkbtn" type="button" id="eCodSalir">Entrar con otra cuenta</button>
     </form>
     <form class="form" id="fNueva" novalidate hidden>
       <p class="privacy">Escribe tu contraseña nueva (mínimo 8 caracteres).</p>
@@ -71,6 +77,7 @@
     </section>
 
     <section role="tabpanel" id="p-clientas" aria-labelledby="t-clientas" hidden>
+      <div class="ebox" id="control"></div>
       <div class="ebox" id="vencen"></div>
       <div class="ebuscar">
         <label class="fld">Buscar clienta (nombre, WhatsApp o correo)<input id="qCli" type="search" autocomplete="off"></label>
@@ -83,13 +90,20 @@
     </section>
 
     <section role="tabpanel" id="p-cobros" aria-labelledby="t-cobros" hidden>
+      <h2 class="vh2">Transferencias por confirmar</h2>
+      <p class="privacy">La clienta avisó que transfirió. Mira en el banco que el dinero entró y pulsa «Confirmar»; si no entró, «Rechazar» con el motivo. A ella le llega el aviso.</p>
+      <ul class="pays" id="cobTransf"></ul>
       <h2 class="vh2">Enlaces por enviar (tarjeta)</h2>
       <p class="privacy">Crea el cobro en CardNET con el monto y el WhatsApp de la clienta: CardNET se lo envía a nombre de NUTRIBEL NUTRICION PERSONALIZADA Y BIENESTAR. Luego marca «Enlace enviado» y, cuando pague, «Pagada (tarjeta)».</p>
       <ul class="pays" id="cobEnlaces"></ul>
       <h2 class="vh2">Clases sin pagar</h2>
       <ul class="pays" id="cobClases"></ul>
+      <h2 class="vh2">Membresías por pagar</h2>
+      <ul class="pays" id="cobMem"></ul>
       <h2 class="vh2">Cargos por cancelación tardía</h2>
       <ul class="pays" id="cobCargos"></ul>
+      <h2 class="vh2">Pagadas (últimos 14 días)</h2>
+      <ul class="pays" id="cobPagadas"></ul>
     </section>
 
     <section role="tabpanel" id="p-avisos" aria-labelledby="t-avisos" hidden>
@@ -100,12 +114,26 @@
       <div id="ajustes"></div>
     </section>
 
+    <section role="tabpanel" id="p-ingresos" aria-labelledby="t-ingresos" hidden>
+      <div class="ebox">
+        <h2>Ingresos</h2>
+        <form class="form" id="fIng" novalidate>
+          <div class="two">
+            <label class="fld">Desde<input type="date" id="iDesde"></label>
+            <label class="fld">Hasta<input type="date" id="iHasta"></label>
+          </div>
+          <div class="eacc"><button class="bbtn solid sm" type="submit">Ver</button><button class="bbtn line sm" type="button" id="iExp">Exportar a Excel</button></div>
+        </form>
+      </div>
+      <div id="ingresos"></div>
+    </section>
+
     <section role="tabpanel" id="p-exportar" aria-labelledby="t-exportar" hidden>
       <div class="ebox">
         <h2>Exportar para Excel</h2>
         <p class="privacy">Descarga un archivo CSV que Excel abre con los acentos bien. Cada descarga queda registrada.</p>
         <form class="form" id="fExp" novalidate>
-          <label class="fld">Qué<select id="xQue"><option value="clientas">Clientas</option><option value="reservas">Reservas</option><option value="membresias">Membresías</option></select></label>
+          <label class="fld">Qué<select id="xQue"><option value="clientas">Clientas</option><option value="reservas">Reservas</option><option value="membresias">Membresías</option><option value="control">Control de membresías</option><option value="ingresos">Ingresos</option></select></label>
           <div class="two" id="xFechas" hidden>
             <label class="fld">Desde<input type="date" id="xDesde"></label>
             <label class="fld">Hasta<input type="date" id="xHasta"></label>

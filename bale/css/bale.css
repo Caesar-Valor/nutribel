@@ -587,3 +587,12 @@ body.no-intro{--base:0s}
 /* Pagar con tarjeta (CardNET por cobro) */
 .paycard{display:grid;gap:6px;justify-items:start}
 .paycard .paynote{margin:0;font-size:13px;line-height:1.45;color:var(--muted)}
+/* «Ya transferí» (confirmación y mi-reserva, 4/11/2026) */
+.transf{display:grid;gap:8px;justify-items:start;width:100%}
+.transf .paynote{margin:0;font-size:13px;line-height:1.45;color:var(--muted)}
+.transf .paynote.mal{color:var(--b-ink);font-weight:600;border-left:3px solid #8f2f22;padding-left:8px}
+:root[data-mode="dark"] .transf .paynote.mal{border-color:#f0a596}
+.transf-form{border-top:1px solid var(--line);padding-top:10px}
+.transf-form .fld{width:100%}
+.transf-form input[type="file"]{font-size:13px;max-width:100%}
+.transf-btns{display:flex;flex-wrap:wrap;gap:8px 14px;align-items:center}

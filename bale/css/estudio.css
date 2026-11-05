@@ -104,3 +104,44 @@
 .btop .linkbtn.clave{font:600 11px/1 var(--b-sans);letter-spacing:.08em;min-height:44px;padding:0 6px}
 /* Contador de "Enlaces por enviar" en la pestaña Cobros */
 .est .tcnt{display:inline-block;min-width:20px;margin-left:6px;padding:2px 6px;border-radius:999px;background:var(--brown);color:var(--on-brown);font:600 11.5px/1.3 var(--b-sans);text-align:center;vertical-align:1px}
+/* ---------- Noviembre 2026: control de membresías, importar, renovar, transferencias, ingresos, 2FA ---------- */
+.kpis{list-style:none;margin:6px 0 12px;padding:0;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+.kpis li{padding:10px 12px;border-radius:12px;background:var(--b-bg);border:1px solid var(--line);color:var(--b-ink);display:grid;gap:2px}
+.kpis b{font:600 22px/1.1 var(--b-sans);color:var(--brown)}
+.kpis span{font-size:12.5px;color:var(--muted)}
+.kpis li.ojo{border:1.5px solid var(--brown)}
+.filtros{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:8px;margin-bottom:10px}
+.filtros .fld{min-width:0}
+.filtros select{width:100%;min-width:0;text-overflow:ellipsis;border:1.5px solid var(--line);background:var(--cream);color:var(--ink);border-radius:10px;padding:10px 12px;min-height:44px;margin-top:4px;font:500 14px var(--b-sans)}
+.vtable.ctrl{font-size:13px}
+.vtable .nw{white-space:nowrap}
+.vtable td.num{text-align:right;white-space:nowrap}
+.vtable th .linkbtn{text-align:left;min-height:32px;font-weight:600}
+span.est{display:inline-block;padding:2px 8px;border-radius:999px;font:600 11.5px/1.5 var(--b-sans);border:1px solid var(--line);color:var(--b-ink);white-space:nowrap}
+span.est.activa,span.est.bien{border-color:var(--brown);color:var(--brown)}
+span.est.renueva_pronto{background:var(--brown);color:var(--on-brown);border-color:transparent}
+span.est.vencida,span.est.mal{border:1.5px solid #8f2f22;color:#8f2f22}
+:root[data-mode="dark"] span.est.vencida,:root[data-mode="dark"] span.est.mal{border-color:#f0a596;color:#f0a596}
+.est .pend{color:var(--brown);font-weight:600}
+.impfilas{list-style:none;margin:0;padding:0;display:grid;gap:6px;max-height:50vh;overflow:auto}
+.impfilas li{padding:8px 10px;border-radius:12px;border:1px solid var(--line);background:var(--paper)}
+.impfilas li.bien{border-left:5px solid var(--brown)}
+.impfilas li.ojo{border-left:5px solid var(--pink)}
+.impfilas li.mal{border:1.5px solid #8f2f22;border-left-width:5px}
+:root[data-mode="dark"] .impfilas li.mal{border-color:#f0a596}
+.impfilas p{margin:0}
+.impfilas p span.est{margin-left:6px;vertical-align:1px}
+.impfilas small{display:block;width:100%;color:var(--muted);font-size:12.5px;overflow-wrap:anywhere}
+.impfilas small.err{color:#8f2f22;font-weight:600}
+:root[data-mode="dark"] .impfilas small.err{color:#f0a596}
+.edlg .note{margin:0;padding:10px 12px;border-radius:12px;border:1.5px solid #8f2f22;color:var(--b-ink);font-weight:600}
+:root[data-mode="dark"] .edlg .note{border-color:#f0a596}
+.edlg .note.bien{border-color:var(--brown)}
+.pasos{margin:0;padding-left:20px;display:grid;gap:6px;color:var(--b-ink);font-size:14px}
+.qr2fa{text-align:center}
+.qr2fa img{width:180px;height:180px;background:#fff;padding:8px;border-radius:12px}
+.clave2fa{overflow-wrap:anywhere;word-break:break-all}
+.comprob{text-align:center}
+.comprob img{max-width:100%;max-height:65vh;border-radius:12px;border:1px solid var(--line)}
+.est .pays small .linkbtn{min-height:32px}
+@media (min-width:900px){ .kpis{grid-template-columns:repeat(4,minmax(0,1fr))} }

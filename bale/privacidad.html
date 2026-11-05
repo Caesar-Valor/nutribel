@@ -3,15 +3,13 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' data:; connect-src 'self'; base-uri 'self'; form-action 'self'; object-src 'none'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; font-src 'self'; img-src 'self' data:; connect-src 'self'; base-uri 'self'; form-action 'self'; object-src 'none'">
 <title>Aviso de privacidad · balé</title>
 <meta name="description" content="Qué datos guarda balé cuando reservas una clase, para qué los usa, quién los ve y cómo pedir que se borren.">
 <meta name="theme-color" content="#F3E4D8">
 <script src="js/modo-temprano.js"></script>
 <link rel="icon" href="img/bale-favicon.png">
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="preload" href="fonts/montserrat-latin.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="stylesheet" href="css/base.css">
 <link rel="stylesheet" href="css/bale.css">
 <link rel="stylesheet" href="css/mi-reserva.css">
@@ -59,7 +57,7 @@
   <ul>
     <li>En Supabase, la base de datos del estudio, con servidores en Estados Unidos.</li>
     <li>En Gmail, para enviar los correos.</li>
-    <li>En WhatsApp, solo si marcaste que quieres recibir los avisos por ahí.</li>
+    <li>En WhatsApp, solo si marcaste que quieres recibir los avisos por ahí. Esos avisos salen de un servidor del estudio en Oracle Cloud, que guarda tu número junto con las claves de cifrado de WhatsApp.</li>
   </ul>
 
   <h2>Cuánto tiempo</h2>

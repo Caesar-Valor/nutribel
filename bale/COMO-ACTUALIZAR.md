@@ -48,7 +48,19 @@ Si algún día se quiere volver a usar: activar FormSubmit con el correo del est
 
 Archivo: `bale/data/comunidad.json`.
 
-**Evento con fecha** (lista `proximos`). Se muestra arriba en Comunidad y **desaparece solo** al día siguiente. Copia este bloque dentro de `proximos`:
+**Noviembre de 2026:** `proximos` está vacío (Halloween ya pasó y se quitó). Mientras no haya eventos, Comunidad muestra solo los momentos. En el archivo hay un bloque `_ejemplo_proximo` que **no se publica**: sirve de modelo.
+
+**Para añadir un evento** (cuando Marifer mande los de noviembre):
+
+1. Abre `bale/data/comunidad.json`.
+2. Copia el bloque `_ejemplo_proximo` y pégalo **dentro** de los corchetes de `"proximos": [ ]`.
+3. Cambia el `id` (sin espacios, por ejemplo `taller-21-nov`), el `titulo`, la `fecha`, la `hora`, el `precio`, el `texto` y el `mensaje`. Quita la palabra «EJEMPLO».
+4. Si hay dos eventos, sepáralos con una coma: `[ {…}, {…} ]`.
+5. Revisa en local y publica (último apartado).
+
+Lo mismo se puede hacer desde el panel del negocio (Próximos eventos) y «Descargar archivos para publicar». Sin emojis en los títulos ni en los textos.
+
+**Evento con fecha** (lista `proximos`). Se muestra arriba en Comunidad y **desaparece solo** al día siguiente. Cada evento es así:
 
 ```json
 {
