@@ -50,6 +50,18 @@ function revelar(){
 }
 revelar();   // sitio.js va con defer: corre con el HTML ya leído
 
+/* ---------- Telón de la portada: se salta con un clic o una tecla ---------- */
+(function(){
+  const t=document.getElementById("telon"); if(!t) return;
+  const h=document.documentElement;
+  if(!h.classList.contains("con-telon")){ t.remove(); return; }
+  const fin=()=>{ removeEventListener("pointerdown",saltar); removeEventListener("keydown",saltar); t.remove(); };
+  const saltar=()=>{ h.classList.add("telon-saltado"); fin(); };
+  addEventListener("pointerdown",saltar);
+  addEventListener("keydown",saltar);
+  setTimeout(fin,2400);
+})();
+
 /* ---------- Equipo: la biografía en 4 líneas y «Leer más» solo si no cabe ---------- */
 document.querySelectorAll(".member .mbio").forEach(b=>{
   const bt=b.nextElementSibling; if(!bt||!bt.classList.contains("biomore")) return;

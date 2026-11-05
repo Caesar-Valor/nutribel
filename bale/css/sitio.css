@@ -181,6 +181,35 @@ body.menu-abierto .barra-movil{display:none}
 .chip{display:inline-block;font:600 13px/1.2 var(--b-sans);background:var(--blush);color:var(--brown);border-radius:999px;padding:6px 12px}
 .chips{display:flex;flex-wrap:wrap;gap:8px;margin:0 0 16px}
 
+/* ---------- Entrada: telón (recuperado de la página única) ----------
+   El logo en crema sobre el telón marrón, la cinta rosa que se dibuja y el telón que se abre hacia
+   los lados. Solo en la portada, una vez por visita; un clic o una tecla lo salta; con movimiento
+   reducido no aparece. La portada entra cuando se abre (--telon). */
+.telon{position:fixed;inset:0;z-index:100;display:grid;place-items:center;animation:telonFuera 0s 2.3s forwards}
+.sin-telon .telon,.telon-saltado .telon{display:none}
+.telon .half{position:absolute;top:0;bottom:0;width:50.5%;background:
+  repeating-linear-gradient(90deg,rgba(0,0,0,.22) 0,rgba(0,0,0,0) 28px,rgba(255,255,255,.07) 52px,rgba(0,0,0,0) 76px,rgba(0,0,0,.22) 104px),
+  linear-gradient(180deg,#6B4030,#5A3426 70%,#46281E)}
+.telon .half.l{left:0;animation:telonL .95s 1.25s cubic-bezier(.7,0,.25,1) forwards}
+.telon .half.r{right:0;animation:telonR .95s 1.25s cubic-bezier(.7,0,.25,1) forwards}
+.telon .half.l::after,.telon .half.r::before{content:"";position:absolute;top:0;bottom:0;width:26px;background:linear-gradient(90deg,rgba(0,0,0,.28),transparent)}
+.telon .half.l::after{right:0;transform:scaleX(-1)}
+.telon .half.r::before{left:0}
+.telon .mark{position:relative;display:grid;justify-items:center;gap:14px;animation:telonMarcaFuera .35s 1.1s ease-in forwards}
+.telon .tlogo{display:block;animation:telonMarca .9s .15s cubic-bezier(.2,.8,.2,1) both}
+.telon img{width:min(300px,64vw);height:auto;filter:brightness(0) invert(.96) sepia(.35)}
+.telon svg{width:min(260px,56vw);height:28px;overflow:visible}
+.telon svg path{stroke:#F4C5CE;stroke-width:2;fill:none;stroke-linecap:round;stroke-dasharray:100;stroke-dashoffset:100;animation:telonCinta .8s .55s ease-out forwards}
+@keyframes telonMarca{from{opacity:0;transform:translateY(12px) scale(.94);filter:blur(8px)}}
+@keyframes telonMarcaFuera{to{opacity:0;transform:translateY(-8px)}}
+@keyframes telonCinta{to{stroke-dashoffset:0}}
+@keyframes telonL{to{transform:translateX(-101%)}}
+@keyframes telonR{to{transform:translateX(101%)}}
+@keyframes telonFuera{to{visibility:hidden;pointer-events:none}}
+/* Con telón, la portada espera a que se abra; si se salta, entra enseguida */
+.con-telon:not(.telon-saltado) .portada .entra{animation-delay:calc(1.45s + var(--e,0) * 140ms)}
+.con-telon:not(.telon-saltado) .btn.brillo::after{animation-delay:2.65s}
+
 /* ---------- Inicio: portada con el logo grande al centro ---------- */
 .portada{position:relative;isolation:isolate;min-height:max(540px,calc(100svh - var(--cab-h) - env(safe-area-inset-top,0px)));max-height:900px;display:grid;align-items:end;justify-items:center;color:#FFFAF6;overflow:hidden;background:#2E2723}
 .pfoto{position:absolute;inset:0;z-index:-1}
@@ -663,6 +692,7 @@ dialog.reserva[open]{animation:subir var(--dur-mid) var(--ease-out)}
 @media (prefers-reduced-motion:reduce){
   .js .shead[data-reveal] h2,.js .shead[data-reveal] .cinta,.js .shead[data-reveal] > *,.js .member[data-reveal] .mph{clip-path:none!important;opacity:1!important;transform:none!important;transition:none!important}
   .btn.brillo::after{display:none}
+  .telon{display:none!important}
   .ctype,.ctype .more span{transition:none!important;transform:none!important}
   .js .entra,.js [data-reveal],.js .pfoto img{opacity:1!important;transform:none!important;animation:none!important;transition:none!important}
   .seat.asienta,.seat.vibra,dialog.reserva[open]{animation:none!important}
