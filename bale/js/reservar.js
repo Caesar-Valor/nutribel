@@ -318,14 +318,16 @@ function renderSeats(){
   SALA.render($("#sala"),{filas:S.filas, porFila:S.por_fila, ocupados:set, elegido:bk.lugar, onPick:pickSeat});
   const L=lugarOf(bk.lugar);
   $("#pick").textContent=L?`Elegiste el ${lugarTxt(L).toLowerCase()}.`:`${cap(bk.c)-set.size} de ${cap(bk.c)} lugares libres. Toca uno.`;
-  $("#toDatos").disabled=!L;
+  botonLugar(L);
 }
+// Paso «Lugar»: solo la foto y este botón, que dice el lugar elegido
+function botonLugar(L){ const b=$("#toDatos"); b.disabled=!L; b.textContent=L?`Continuar con el lugar ${L.n}`:"Toca tu lugar en la foto"; }
 function pickSeat(n){
   if(taken(bk.c,bk.fecha).has(n)) return;
   bk.lugar=n; SALA.elegir(n);
   const L=lugarOf(n);
   $("#pick").textContent=L?`Elegiste el ${lugarTxt(L).toLowerCase()}.`:"";
-  $("#toDatos").disabled=!L;
+  botonLugar(L);
   // Teléfono: que «Continuar» quede a la vista (suave; sin animación con movimiento reducido)
   if(L&&matchMedia("(max-width:759px)").matches){ const c=$("#toDatos"); requestAnimationFrame(()=>c.scrollIntoView({block:"nearest",behavior:matchMedia("(prefers-reduced-motion: reduce)").matches?"auto":"smooth"})); }
 }

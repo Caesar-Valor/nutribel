@@ -4,10 +4,10 @@
    círculos están medidos en data/sala.json (→ js/sala-datos.js, lo genera construir.mjs).
    Distribución real: barra del espejo 9–16, barra del fondo 7–8 (junto a las cortinas) y tres barras
    de adelante 1–2, 3–4 y 5–6. Los números no cambian: solo dónde se dibuja cada uno.
-   Se elige siempre sobre la foto (9/11/2026): un botón encima de cada círculo. La foto se recorta a la
-   franja de las barras (sin techo ni piso de más) para que quepa entera con «Continuar» a la vista. En
-   el teléfono no cabe a un tamaño que se pueda tocar: la franja mide al menos 720 px (círculos a 44 px
-   o más de distancia) y se desliza de lado, empezando por el lugar elegido o el centro de la sala.
+   Se elige sobre la imagen oficial completa, tal cual (img/sala-espacios-completa.webp, 1536 × 1024, con
+   su título y «16 espacios · Elige tu lugar»), sin nada alrededor (9/11/2026, pedido de César): un botón
+   encima de cada círculo. Las medidas de sala.json son de la foto recortada; aquí se pasan a la completa.
+   En el teléfono, como los círculos de la imagen quedan pequeños, cada lugar se dibuja con su número.
    Estados, nunca solo con color: libre (anillo al pasar o enfocar), elegido (círculo marrón con el
    número en crema, se asienta) y ocupado (velo y tachado, «ocupado» en su nombre, sin decir de quién).
    Teclado: flechas según la posición en pantalla (lo de al lado, la barra de enfrente), Inicio/Fin,
@@ -19,8 +19,14 @@ const calma = ()=>matchMedia("(prefers-reduced-motion: reduce)").matches;
 const S = window.BALE_SALA_DATOS || {imagen:{ancho:1437,alto:740}, zonas:{}, lugares:[]};
 const AR = `${S.imagen.ancho}/${S.imagen.alto}`;
 const PUNTO = new Map(S.lugares.map(p=>[p.n,p]));
-// Franja de la foto que se muestra al elegir (en % del alto): de encima de los números al pie de las barras
-const RECORTE = {arriba:28, abajo:81};
+
+// La imagen completa y dónde cae en ella la foto recortada (data/sala.json → imagen.recorte_en_original)
+const COMPLETA = {ancho:1536, alto:1024};
+const RC = (S.imagen.recorte_en_original||[0,0,COMPLETA.ancho,COMPLETA.alto]);
+const enCompleta = p=>({n:p.n,
+  x:+((RC[0]+p.x/100*S.imagen.ancho)/COMPLETA.ancho*100).toFixed(2),
+  y:+((RC[1]+p.y/100*S.imagen.alto)/COMPLETA.alto*100).toFixed(2),
+  r:+(p.r*S.imagen.ancho/COMPLETA.ancho).toFixed(2)});
 const ORDEN = [9,10,11,12,13,14,15,16,7,8,1,2,3,4,5,6];
 
 const zonaDe = n=>{ const p=PUNTO.get(n); return p ? (S.zonas[p.zona]||"") : ""; };
@@ -45,32 +51,16 @@ function boton(n,op,extra=""){
 function pintar(){
   const {cont,op}=estado; if(!cont||!op) return;
   const total=S.lugares.length, libres=S.lugares.filter(p=>!op.ocupados.has(p.n)).length;
-  const alto=RECORTE.abajo-RECORTE.arriba;
-  const corte=`--ar:${AR};--ar-corte:${S.imagen.ancho}/${(S.imagen.alto*alto/100).toFixed(1)};--sube:${(-S.imagen.alto*RECORTE.arriba/S.imagen.ancho).toFixed(3)}%`;
-  cont.innerHTML=`<div class="sala-foto sala-elige" style="${corte}">
-    <p class="sf-desliza" aria-hidden="true">Desliza la foto de lado para ver toda la sala.</p>
-    <div class="sf-ventana">
-      <div class="sf-corte">
-        <div class="sf-lienzo">${foto("(min-width:1000px) 920px, 720px")}
-          <div id="seats" class="sf-botones" role="group" aria-label="Sala de barre: ${total} lugares, ${libres} libres. El espejo queda al fondo. Usa Tab o las flechas para moverte.">
-            ${S.lugares.map(p=>boton(p.n,op,`style="${pos(p)}"`)).join("")}
-          </div>
-        </div>
+  cont.innerHTML=`<div class="sala-foto sala-elige" style="--ar:${COMPLETA.ancho}/${COMPLETA.alto}">
+    <div class="sf-lienzo">
+      <img src="img/sala-espacios-completa.webp" width="${COMPLETA.ancho}" height="${COMPLETA.alto}" alt="balé studio, ubicación de espacios: 16 lugares en la sala de barre" decoding="async">
+      <div id="seats" class="sf-botones" role="group" aria-label="Sala de barre: ${total} lugares, ${libres} libres. Usa Tab o las flechas para moverte.">
+        ${S.lugares.map(enCompleta).map(p=>boton(p.n,op,`style="${pos(p)}"`)).join("")}
       </div>
     </div>
   </div>`;
   const im=cont.querySelector(".sf-lienzo img");
   if(im) im.addEventListener("error",()=>cont.querySelector(".sala-foto").classList.add("sin-foto"),{once:true});
-  requestAnimationFrame(()=>centrar(op.elegido,false));
-}
-// Teléfono: deja a la vista el lugar elegido (o el centro de la sala)
-function centrar(n,animar=true){
-  const v=estado.cont&&estado.cont.querySelector(".sf-ventana"); if(!v) return;
-  const desliza=v.scrollWidth>v.clientWidth+1;
-  v.closest(".sala-elige").classList.toggle("desliza",desliza);
-  if(!desliza) return;
-  const p=n&&PUNTO.get(n), fx=p?p.x/100:.5;
-  v.scrollTo({left:fx*v.scrollWidth-v.clientWidth/2, behavior:animar&&!calma()?"smooth":"auto"});
 }
 
 function botones(){ return [...estado.cont.querySelectorAll("#seats .seat")]; }
@@ -126,7 +116,6 @@ function elegir(n){
     b.setAttribute("aria-label",etiqueta(k,op));
     if(mio&&!calma()){ b.classList.remove("asienta"); void b.offsetWidth; b.classList.add("asienta"); }
   });
-  centrar(n);
 }
 
 function enfocar(n){ const b=estado.cont&&estado.cont.querySelector(`#seats .seat[data-n="${n}"]`); if(b) b.focus(); else { const f=estado.cont&&estado.cont.querySelector("#seats .seat:not(:disabled)"); if(f) f.focus(); } }

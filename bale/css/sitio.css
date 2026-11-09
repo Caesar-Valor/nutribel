@@ -658,14 +658,18 @@ dialog.reserva[open]{animation:subir var(--dur-mid) var(--ease-out)}
 .sf-lienzo picture,.sf-lienzo img{display:block;width:100%;height:100%}
 .sf-lienzo img{object-fit:cover}
 .sf-botones,.sf-marcas{position:absolute;inset:0;container-type:inline-size}
-/* Elegir sobre la foto (9/11/2026): solo la franja de las barras; en el teléfono mide 720 px y se desliza */
-.sala-elige .sf-ventana{overflow-x:auto;overflow-y:hidden;overscroll-behavior-x:contain;border-radius:22px;scrollbar-width:thin;-webkit-overflow-scrolling:touch}
-.sala-elige .sf-corte{position:relative;width:max(100%,720px);aspect-ratio:var(--ar-corte);overflow:hidden;border-radius:22px;background:var(--madera)}
-.sala-elige .sf-lienzo{margin-top:var(--sube);border-radius:0}
-/* Escritorio: que la franja quepa entera sobre «Continuar» en pantallas bajas (3.66 = proporción de la franja) */
-@media (min-width:760px){ .sala-elige .sf-corte{width:min(100%,max(600px,calc((100dvh - 570px) * 3.66)));margin-inline:auto} }
-.sf-desliza{display:none;margin:-4px 0 10px!important;font-size:14px;color:var(--muted)}
-.sala-elige.desliza .sf-desliza{display:block}
+/* Elegir sobre la imagen oficial completa (9/11/2026): solo la imagen y los lugares */
+.sala-elige .sf-lienzo{width:min(100%,max(480px,calc((100dvh - 440px) * 1.5)));margin-inline:auto;border-radius:16px;background:#F3E4D8}
+.sala-elige .sf-lienzo img{object-fit:contain}
+/* Imagen chica (teléfono): los círculos de la foto no se leen; cada lugar se dibuja encima con su número.
+   Toque de lo que permite la distancia entre lugares (≥ 24 px de ancho). */
+@container (max-width:640px){
+  .sala-elige .sf-botones .seat{width:max(24px,calc(var(--rn) * 3cqi));height:32px;aspect-ratio:auto;border-radius:12px;color:#2E2723}
+  .sala-elige .sf-botones .seat::before{width:max(19px,calc(var(--rn) * 2.4cqi));background:#F7EBDD;border:1.5px solid #2E2723}
+  .sala-elige .sf-botones .seat > span{font-size:11px;font-weight:700}
+  .sala-elige .sf-botones .seat[aria-pressed="true"]{color:var(--on-brown)}
+  .sala-elige .sf-botones .seat[aria-pressed="true"]::before{width:26px;background:var(--brown);border:2px solid #FFFAF6}
+}
 /* Un lugar sobre la foto: botón de 44 px o más, invisible; el anillo del tamaño del círculo */
 .seat{position:relative;display:grid;place-items:center;padding:0;border:0;background:none;cursor:pointer;font:600 16px/1 var(--b-sans);font-variant-numeric:tabular-nums;color:inherit;-webkit-tap-highlight-color:transparent}
 .sf-botones .seat{position:absolute;left:var(--x);top:var(--y);translate:-50% -50%;width:max(44px,calc(var(--rn) * 2.3cqi));aspect-ratio:1;border-radius:50%;color:transparent}
