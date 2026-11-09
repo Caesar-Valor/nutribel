@@ -659,7 +659,11 @@ dialog.reserva[open]{animation:subir var(--dur-mid) var(--ease-out)}
 .sf-lienzo img{object-fit:cover}
 .sf-botones,.sf-marcas{position:absolute;inset:0;container-type:inline-size}
 /* Elegir sobre la imagen oficial completa (9/11/2026): solo la imagen y los lugares */
-.sala-elige .sf-lienzo{width:min(100%,max(480px,calc((100dvh - 440px) * 1.5)));margin-inline:auto;border-radius:16px;background:#F3E4D8}
+.sala-elige{width:min(100%,max(560px,calc((100dvh - 360px) * 1.56)));margin-inline:auto;overflow:hidden;border-radius:16px;background:#FAF0E8}
+/* Sin el borde crema vacío de la imagen (el título y el marco se quedan): la imagen se ve más grande */
+.sala-elige .sf-lienzo{width:104%;margin:-2% -2% -2.4%;border-radius:0;background:#FAF0E8}
+/* Teléfono: la imagen de borde a borde de la pantalla */
+@media (max-width:759px){ .sala-elige{width:auto;margin-inline:calc(-1 * var(--bk-px,16px));border-radius:0} }
 .sala-elige .sf-lienzo img{object-fit:contain}
 /* Imagen chica (teléfono): los círculos de la foto no se leen; cada lugar se dibuja encima con su número.
    Toque de lo que permite la distancia entre lugares (≥ 24 px de ancho). */
