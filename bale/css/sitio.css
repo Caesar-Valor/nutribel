@@ -952,21 +952,31 @@ body:has(dialog[open]) .barra-movil{display:none}
   .cal > :not(.dias){padding-left:10px;padding-right:10px}
   .dbtn{min-width:44px}
 }
-/* ---------- Entrada a Comunidad (9/11/2026): breve, menos de 1 s, una sola vez al abrir ----------
-   La foto en arco de la cabecera sube como un telón, el título hace un «relevé» (sube desde su línea), la cinta de
-   satén se dibuja y las primeras tarjetas llegan escalonadas 60 ms. Solo opacity, transform y clip-path;
-   solo con JS en marcha (.js) y nada con movimiento reducido: el contenido ya está ahí. */
+/* ---------- Entradas (9/11/2026): las de Comunidad, en todo el sitio ----------
+   Cabecera de cada página (al abrirla): la foto en arco sube como un telón, el título hace un «relevé» (sube
+   desde su línea), la cinta de satén se dibuja y la entradilla llega. Secciones (cada vez que entran en
+   pantalla; las clases .a-* y .sec-anima/.sec-entra las pone sitio.js): título en relevé, el texto y las
+   tarjetas escalonados 70 ms, las fotos suben como telón. Menos de 1 s; solo opacity, transform y clip-path;
+   «backwards» para que al terminar mande otra vez el estilo normal (hover, :active). Sin JS o con
+   movimiento reducido no se esconde nada. */
 @keyframes com-arco{from{clip-path:inset(100% 0 0 0)}to{clip-path:inset(0)}}
 @keyframes com-releve{from{clip-path:inset(0 0 100% 0);transform:translateY(.35em)}to{clip-path:inset(-.2em -.1em -.3em -.1em);transform:none}}
 @keyframes com-cinta{from{transform:scaleX(0)}to{transform:scaleX(1)}}
 @keyframes com-sube{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:none}}
-.js .com-entra .phead-foto{animation:com-arco 700ms var(--ease-out) both}
-.js .com-entra .phead h1{animation:com-releve 560ms 80ms var(--ease-out) both}
-.js .com-entra .phead .cinta{transform-origin:0 50%;animation:com-cinta 480ms 280ms var(--ease-out) both}
-.js .com-entra .phead .lead{animation:com-sube 420ms 340ms var(--ease-out) both}
-.js .com-entra #comunidad .csec:nth-child(-n+2) > h2,.js .com-entra #comunidad .vacio-com{animation:com-sube 420ms 380ms var(--ease-out) both}
-.js .com-entra #comunidad .csec:nth-child(-n+2) li:nth-child(-n+2):not(.por-ver){animation:com-sube 460ms calc(440ms + var(--k,0) * 60ms) var(--ease-out) both}
+.js .pagina .phead-foto{animation:com-arco 700ms var(--ease-out) backwards}
+.js .pagina .phead h1{animation:com-releve 560ms 80ms var(--ease-out) backwards}
+.js .pagina .phead .cinta{transform-origin:0 50%;animation:com-cinta 480ms 280ms var(--ease-out) backwards}
+.js .pagina .phead .lead{animation:com-sube 420ms 340ms var(--ease-out) backwards}
+.js .com-entra #comunidad .csec:nth-child(-n+2) > h2,.js .com-entra #comunidad .vacio-com{animation:com-sube 420ms 380ms var(--ease-out) backwards}
+.js .com-entra #comunidad .csec:nth-child(-n+2) li:nth-child(-n+2):not(.por-ver){animation:com-sube 460ms calc(440ms + var(--k,0) * 60ms) var(--ease-out) backwards}
 .js .com-entra #comunidad .csec li:nth-child(2){--k:1}
+/* Para repetirlas al volver con atrás/adelante (bfcache) */
+.reinicia main.pagina *{animation:none!important}
+/* Secciones: esperando (fuera de pantalla) quedan escondidas; al entrar, se animan */
+.sec-anima:not(.sec-entra) :is(.a-titulo,.a-sube,.a-arco){opacity:0}
+.sec-entra .a-titulo{animation:com-releve 560ms var(--ease-out) backwards}
+.sec-entra .a-sube{animation:com-sube 460ms calc(160ms + var(--k,0) * 70ms) var(--ease-out) backwards}
+.sec-entra .a-arco{animation:com-arco 760ms calc(80ms + var(--k,0) * 70ms) var(--ease-out) backwards}
 @media (prefers-reduced-motion:reduce){
-  .js .com-entra .phead-foto,.js .com-entra .phead h1,.js .com-entra .phead .cinta,.js .com-entra .phead .lead,.js .com-entra #comunidad .csec h2,.js .com-entra #comunidad .vacio-com,.js .com-entra #comunidad li{animation:none!important;clip-path:none!important;opacity:1!important;transform:none!important}
+  .sec-anima :is(.a-titulo,.a-sube,.a-arco),.js .pagina .phead-foto,.js .pagina .phead h1,.js .pagina .phead .cinta,.js .pagina .phead .lead,.js .com-entra #comunidad .csec h2,.js .com-entra #comunidad .vacio-com,.js .com-entra #comunidad li{animation:none!important;clip-path:none!important;opacity:1!important;transform:none!important}
 }

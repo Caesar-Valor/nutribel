@@ -126,6 +126,46 @@ document.addEventListener("click",e=>{
   fig.replaceChildren(f); f.focus();
 });
 
+/* ---------- Entradas: la de Comunidad, en cada sección ----------
+   Cabecera de página: la anima el CSS al cargar; si el navegador la trae de su memoria (atrás/adelante,
+   bfcache), se reinicia para que se vea otra vez. Secciones: cada vez que entran en pantalla, el título
+   hace el relevé, el texto y las tarjetas llegan escalonados y las fotos suben como telón; al salir del
+   todo quedan listas para la próxima. Aquí solo se marcan (.a-titulo, .a-sube, .a-arco); el equipo
+   conserva su propio telón. Nada con movimiento reducido ni sin IntersectionObserver. */
+(function(){
+  addEventListener("pageshow",e=>{ if(e.persisted&&!calma()){ const h=document.documentElement; h.classList.add("reinicia"); void h.offsetWidth; h.classList.remove("reinicia"); } });
+  if(calma()||!("IntersectionObserver" in window)) return;
+  const BLOQUES="main section.sec, main section.clase, main .precios > *";
+  const LISTAS=".cl-lista > li, .momentos > li, .pbreve > li, .faq > details, .insta-fotos > li, .salas > *, .prices > *, .pinfo > *";
+  const FOTOS=".estfoto, .refo-ph, .cfoto, .ubic-mapa, .mapa, .mpair, .gcard";
+  const SUELTOS=".historia, .proxima-tarjeta, .pnota-clara, .acciones.fin, .otra";
+  const tope=n=>Math.min(n,5);
+  const bloques=[...document.querySelectorAll(BLOQUES)].filter(b=>!b.closest(".portada"));
+  if(!bloques.length) return;
+  bloques.forEach(b=>{
+    // El revelado general cede su sitio a esta entrada (salvo el telón del equipo)
+    [b,...b.querySelectorAll("[data-reveal]")].forEach(el=>{ if(el.matches("[data-reveal]")&&!el.classList.contains("member")){ el.removeAttribute("data-reveal"); el.classList.remove("por-ver"); } });
+    const items=[...b.querySelectorAll(LISTAS)];
+    const enItem=el=>items.some(i=>i!==el&&i.contains(el));
+    b.querySelectorAll("h2").forEach(h=>{
+      if(enItem(h)) return;
+      h.classList.add("a-titulo");
+      let k=1; for(let s=h.nextElementSibling;s;s=s.nextElementSibling){ s.classList.add("a-sube"); s.style.setProperty("--k",tope(k++)); }
+    });
+    b.querySelectorAll(SUELTOS).forEach(el=>{ if(!enItem(el)&&!el.classList.contains("a-sube")){ el.classList.add("a-sube"); el.style.setProperty("--k",3); } });
+    const grupos=new Map(); items.forEach(i=>{ const p=i.parentElement; grupos.set(p,(grupos.get(p)||0)+1); i.classList.add("a-sube"); i.style.setProperty("--k",tope(grupos.get(p))); });
+    b.querySelectorAll(FOTOS).forEach(f=>{ if(f.closest(".team")) return; f.classList.remove("a-sube"); f.classList.add("a-arco"); });
+    b.classList.add("sec-anima");
+  });
+  // Entra cuando su borde superior pasa el 88 % de la pantalla; sale cuando ya no se ve nada
+  let avisa=false;
+  const entra=new IntersectionObserver(es=>es.forEach(e=>{ avisa=true; if(e.isIntersecting) e.target.classList.add("sec-entra"); }),{rootMargin:"0px 0px -12% 0px"});
+  const sale=new IntersectionObserver(es=>es.forEach(e=>{ if(!e.isIntersecting) e.target.classList.remove("sec-entra"); }));
+  bloques.forEach(b=>{ entra.observe(b); sale.observe(b); });
+  // Respaldo: si el observador no llegó a avisar en 2,5 s, nada se queda escondido
+  setTimeout(()=>{ if(!avisa) bloques.forEach(b=>b.classList.remove("sec-anima")); },2500);
+})();
+
 /* ---------- WhatsApp ---------- */
 document.addEventListener("click",e=>{
   const b=e.target.closest("[data-wa]"); if(!b) return;
