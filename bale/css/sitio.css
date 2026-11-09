@@ -658,6 +658,14 @@ dialog.reserva[open]{animation:subir var(--dur-mid) var(--ease-out)}
 .sf-lienzo picture,.sf-lienzo img{display:block;width:100%;height:100%}
 .sf-lienzo img{object-fit:cover}
 .sf-botones,.sf-marcas{position:absolute;inset:0;container-type:inline-size}
+/* Elegir sobre la foto (9/11/2026): solo la franja de las barras; en el teléfono mide 720 px y se desliza */
+.sala-elige .sf-ventana{overflow-x:auto;overflow-y:hidden;overscroll-behavior-x:contain;border-radius:22px;scrollbar-width:thin;-webkit-overflow-scrolling:touch}
+.sala-elige .sf-corte{position:relative;width:max(100%,720px);aspect-ratio:var(--ar-corte);overflow:hidden;border-radius:22px;background:var(--madera)}
+.sala-elige .sf-lienzo{margin-top:var(--sube);border-radius:0}
+/* Escritorio: que la franja quepa entera sobre «Continuar» en pantallas bajas (3.66 = proporción de la franja) */
+@media (min-width:760px){ .sala-elige .sf-corte{width:min(100%,max(600px,calc((100dvh - 570px) * 3.66)));margin-inline:auto} }
+.sf-desliza{display:none;margin:-4px 0 10px!important;font-size:14px;color:var(--muted)}
+.sala-elige.desliza .sf-desliza{display:block}
 /* Un lugar sobre la foto: botón de 44 px o más, invisible; el anillo del tamaño del círculo */
 .seat{position:relative;display:grid;place-items:center;padding:0;border:0;background:none;cursor:pointer;font:600 16px/1 var(--b-sans);font-variant-numeric:tabular-nums;color:inherit;-webkit-tap-highlight-color:transparent}
 .sf-botones .seat{position:absolute;left:var(--x);top:var(--y);translate:-50% -50%;width:max(44px,calc(var(--rn) * 2.3cqi));aspect-ratio:1;border-radius:50%;color:transparent}
@@ -674,7 +682,7 @@ dialog.reserva[open]{animation:subir var(--dur-mid) var(--ease-out)}
 .sf-botones .seat:disabled::after,.marca.oc::after{content:"";position:absolute;z-index:0;left:50%;top:50%;width:calc(var(--rn) * 2cqi);height:1.5px;border-radius:1px;background:color-mix(in srgb,#2E2723 45%,transparent);translate:-50% -50%;rotate:-35deg}
 .marca.oc{z-index:0;color:color-mix(in srgb,#2E2723 75%,transparent)}
 .marca.oc::after{z-index:-1}
-/* Marcas (solo para mirar: modo plano y mi-reserva) */
+/* Marcas (solo para mirar: mi-reserva) */
 .marca{left:var(--x);top:var(--y);display:grid;place-items:center;color:transparent;font:600 max(11px,calc(var(--rn) * 1.15cqi))/1 var(--b-sans)}
 .marca.mio{background:var(--brown);border-color:#FFFAF6;color:var(--on-brown);box-shadow:0 4px 14px rgba(46,39,35,.35)}
 :root[data-mode="dark"] .sf-botones .seat[aria-pressed="true"],:root[data-mode="dark"] .marca.mio{color:#1d1715}
@@ -682,36 +690,8 @@ dialog.reserva[open]{animation:subir var(--dur-mid) var(--ease-out)}
 .sin-foto .sf-botones .seat{color:var(--b-ink)}
 .sin-foto .sf-botones .seat::before,.sin-foto .marca{background:#F7EBDD;border-color:color-mix(in srgb,var(--b-ink) 25%,transparent)}
 .sin-foto .marca{color:var(--b-ink)}
-/* Modo plano: la foto se acerca al lugar elegido; tocarla muestra la sala completa */
-.sf-ver{cursor:zoom-in}
-.sf-ver.cerca{cursor:zoom-out}
-.sf-ver > picture,.sf-ver > .sf-marcas{transform-origin:var(--zx,50%) var(--zy,50%);transition:transform 480ms var(--ease-out)}
-.sf-ver.cerca > picture,.sf-ver.cerca > .sf-marcas{transform:scale(2.1)}
-.sf-ver.sin-anim > *{transition:none}
-.sf-ver:focus-visible{outline:3px solid var(--ring);outline-offset:3px}
 .tu-lugar figcaption{font-size:15px;color:var(--muted);margin-top:10px}
 .mr-sala{margin:16px 0 0}
-/* El plano de botones (teléfono): ordenado como la sala vista desde la puerta */
-.plano-lugares{display:grid;gap:12px;margin-top:14px;grid-template-areas:"espejo" "fondo" "delante"}
-.pl-espejo{grid-area:espejo}.pl-fondo{grid-area:fondo}.pl-delante{grid-area:delante}
-@media (min-width:560px){ .plano-lugares{grid-template-columns:auto 1fr;grid-template-areas:"fondo espejo" "delante delante"} }
-.pl-grupo{border:1px solid var(--line);border-radius:18px;padding:10px 12px 12px;background:var(--paper)}
-.pl-titulo{font-size:13px;font-weight:600;color:var(--muted);margin:0 0 8px!important}
-.pl-titulo span{color:var(--b-ink);font-variant-numeric:tabular-nums}
-.pl-fila{display:grid;gap:8px;grid-template-columns:repeat(4,48px);justify-content:center}
-.pl-fondo .pl-fila{grid-template-columns:repeat(2,48px);justify-content:start}
-@media (min-width:640px){ .pl-espejo .pl-fila{grid-template-columns:repeat(8,minmax(44px,48px))} }
-.pl-delante .pl-fila{grid-template-columns:repeat(3,auto);gap:10px;justify-content:space-around}
-.pl-par{display:flex;gap:6px;padding-bottom:8px;border-bottom:4px solid var(--barra);border-radius:2px}
-.plano-lugares .seat{width:48px;height:48px;border-radius:50%;background:#F7EBDD;color:#2E2723;border:2px solid color-mix(in srgb,#2E2723 22%,transparent);box-shadow:0 2px 0 color-mix(in srgb,#2E2723 12%,transparent);transition:background-color var(--dur-hover),border-color var(--dur-hover),color var(--dur-hover)}
-.plano-lugares .seat:hover:not(:disabled){border-color:var(--brown);background:#FFF6EC}
-.plano-lugares .seat:focus-visible{outline:3px solid var(--ring);outline-offset:3px}
-.plano-lugares .seat[aria-pressed="true"],.plano-lugares .seat[aria-pressed="true"]:hover{background:var(--brown);border-color:var(--brown);color:var(--on-brown)}
-:root[data-mode="dark"] .plano-lugares .seat[aria-pressed="true"]{color:#1d1715}
-.plano-lugares .seat:disabled{cursor:not-allowed;background:color-mix(in srgb,var(--madera) 55%,transparent);color:color-mix(in srgb,#2E2723 72%,transparent);border-style:dashed;border-color:color-mix(in srgb,#2E2723 45%,transparent);box-shadow:none}
-:root[data-mode="dark"] .plano-lugares .seat:disabled{background:transparent;color:color-mix(in srgb,var(--b-ink) 60%,transparent);border-color:color-mix(in srgb,var(--b-ink) 45%,transparent)}
-.plano-lugares .seat{isolation:isolate}
-.plano-lugares .seat:disabled::after{content:"";position:absolute;z-index:-1;left:20%;right:20%;top:50%;height:1.5px;background:currentColor;opacity:.6;rotate:-35deg}
 .seat.asienta{animation:asienta 420ms var(--ease-spring)}
 @keyframes asienta{0%{transform:scale(.86)}60%{transform:scale(1.08)}100%{transform:scale(1)}}
 .seat.vibra{animation:vibra 360ms var(--ease-out)}
@@ -743,7 +723,6 @@ dialog.reserva[open]{animation:subir var(--dur-mid) var(--ease-out)}
   .ctype,.ctype .more span{transition:none!important;transform:none!important}
   .js .entra,.js .pfoto img{opacity:1!important;transform:none!important;animation:none!important;transition:none!important}
   .seat.asienta,.seat.vibra,dialog.reserva[open]{animation:none!important}
-  .sf-ver > *{transition:none!important}
   .done:not([hidden]) .ok circle,.done:not([hidden]) .ok path{animation:none!important;stroke-dashoffset:0}
   .done:not([hidden]) .cinta{animation:none!important}
   .menu{transition:none!important}
@@ -893,25 +872,12 @@ dialog.reserva[open]{animation:subir var(--dur-mid) var(--ease-out)}
 /* =========================================================
    Correcciones del sitio publicado (9/11/2026)
    ========================================================= */
-/* Reserva, paso «Lugar»: la foto no pasa de min(52vh, 480 px) de alto (sin deformarse) y la franja con la
+/* Reserva, paso «Lugar»: la franja con la
    leyenda, cuántos libres y «Continuar» queda fija abajo del diálogo */
-.sala-foto[data-modo="foto"] .sf-lienzo{width:min(100%,calc(min(52vh,480px) * 1437 / 740));margin-inline:auto}
 .lugar-pie{position:sticky;bottom:0;z-index:3;margin:12px calc(-1 * var(--bk-px,20px)) calc(-1 * var(--bk-pb,24px));padding:12px var(--bk-px,20px) calc(16px + env(safe-area-inset-bottom,0px));background:var(--b-bg);border-top:1px solid var(--line);box-shadow:0 -10px 24px -18px rgba(46,39,35,.45)}
 .lugar-pie .leyenda{margin:0 0 6px}
-.lugar-pie .pick{margin:0!important;text-align:center}
+.lugar-pie .pick{margin:0 auto!important;max-width:none;text-align:center}
 .lugar-pie .bkbtns{margin-top:10px}
-/* Teléfono: la sala en grande (pantalla completa, con zoom y desplazamiento) */
-.sf-ver{cursor:zoom-in}
-.sf-ver::after{content:"Toca para ver en grande";position:absolute;right:10px;bottom:10px;z-index:2;font:600 13px/1 var(--b-sans);background:rgba(30,22,20,.72);color:#FFFAF6;padding:7px 10px;border-radius:999px}
-.sala-grande{position:fixed;inset:0;z-index:20;display:flex;flex-direction:column;background:var(--b-bg)}
-.sg-barra{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:8px 12px;padding:calc(10px + env(safe-area-inset-top,0px)) 14px 10px;border-bottom:1px solid var(--line)}
-.sg-estado{margin:0!important;font-size:15px;font-weight:600;flex:1 1 180px}
-.sg-acc{display:flex;gap:8px;align-items:center}
-.sg-acc .icono{font:500 22px/1 var(--b-sans)}
-.sg-acc .icono:disabled{opacity:.4;cursor:default}
-.sg-vista{flex:1;display:flex;flex-direction:column;overflow:auto;overscroll-behavior:contain;-webkit-overflow-scrolling:touch;background:#2E2723}
-.sg-lienzo{flex:none;margin:auto 0;border-radius:0;max-width:none;transition:width var(--dur-mid) var(--ease-out)}
-html.sala-grande-abierta dialog.reserva .bk{overflow:hidden}
 /* La barra fija del teléfono no se ve con el diálogo de reserva abierto */
 body:has(dialog[open]) .barra-movil{display:none}
 
