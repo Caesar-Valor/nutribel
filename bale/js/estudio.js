@@ -111,21 +111,25 @@ const opt = (val,txt,sel)=>`<option value="${esc(val)}"${sel?" selected":""}>${e
 
 /* ---------- Sala: elegir un lugar (barra) ---------- */
 function sala(){ const S=(CAT&&CAT.sala)||{filas:2,por_fila:8}; return {filas:+S.filas||2, por_fila:+S.por_fila||8}; }
+// La sala real (foto «Ubicación de espacios», 8/11/2026): barra del espejo 9–16 y del fondo 7–8 arriba;
+// tres barras de adelante 1–2, 3–4 y 5–6 abajo. Si la sala no tiene 16 lugares, filas en orden.
+const ZONAS16=[{t:"Barra del fondo",ns:[7,8]},{t:"Barra del espejo",ns:[9,10,11,12,13,14,15,16]},{t:"Barras de adelante",ns:[1,2,3,4,5,6]}];
+function zonas(){ const S=sala(), tot=S.filas*S.por_fila;
+  return tot===16?ZONAS16:Array.from({length:S.filas},(_,f)=>({t:`Fila ${f+1}`,ns:Array.from({length:S.por_fila},(_,i)=>f*S.por_fila+i+1)})); }
 function salaSVG(ocup){
-  const S=sala(), set=new Set(ocup||[]), W=S.por_fila*44+16, Hh=S.filas*50+44; let marks="";
-  for(let f=1;f<=S.filas;f++) for(let i=1;i<=S.por_fila;i++){
-    const n=(f-1)*S.por_fila+i, x=8+22+(i-1)*44, y=44+12+(f-1)*50;
-    marks+=`<g class="mk ${set.has(n)?"busy":"free"}"><line x1="${x-14}" y1="${y-15}" x2="${x+14}" y2="${y-15}"/><circle cx="${x}" cy="${y+4}" r="15"/><text x="${x}" y="${y+9}">${n}</text></g>`;
-  }
-  return `<svg viewBox="0 0 ${W} ${Hh}" role="presentation"><rect class="mirror" x="8" y="6" width="${W-16}" height="16" rx="4"/><text class="mtxt" x="${W/2}" y="18">ESPEJO</text>${marks}</svg>`;
+  const set=new Set(ocup||[]), Z=zonas(), arriba=Z.length===3?[Z[0],Z[1]]:Z.slice(0,1), abajo=Z.length===3?[Z[2]]:Z.slice(1);
+  const fila=(gs,y)=>{ let x=30, m=""; gs.forEach((g,gi)=>{ g.ns.forEach((n,i)=>{ if(Z.length===3&&g.t.startsWith("Barras")&&i&&i%2===0) x+=22;
+      m+=`<g class="mk ${set.has(n)?"busy":"free"}"><line x1="${x-14}" y1="${y-15}" x2="${x+14}" y2="${y-15}"/><circle cx="${x}" cy="${y+4}" r="15"/><text x="${x}" y="${y+9}">${n}</text></g>`; x+=44; }); x+=22; }); return [m,x]; };
+  const [m1,w1]=fila(arriba,56), [m2,w2]=fila(abajo,106), W=Math.max(w1,w2)+8;
+  return `<svg viewBox="0 0 ${W} 136" role="presentation"><rect class="mirror" x="8" y="6" width="${W-16}" height="16" rx="4"/><text class="mtxt" x="${W/2}" y="18">ESPEJO</text>${m1}${m2}</svg>`;
 }
 // Botones de lugares dentro de un formulario; el elegido va en <input name="lugar">
 function seatsHTML(ocup){
-  const S=sala(), set=new Set(ocup||[]); let h=`<input type="hidden" name="lugar" value=""><div class="seats" data-seats>`;
-  for(let f=1;f<=S.filas;f++){
-    h+=`<div class="srow" role="group" aria-label="Fila ${f}"><span class="bar">Fila ${f}${f===1?" (junto al espejo)":""}</span><div style="--n:${S.por_fila}">`;
-    for(let i=1;i<=S.por_fila;i++){ const n=(f-1)*S.por_fila+i, b=set.has(n);
-      h+=`<button type="button" class="seat ${b?"busy":""}" data-n="${n}" ${b?"disabled":""} aria-pressed="false" aria-label="Lugar ${n}, fila ${f}${b?", ocupado":""}">${n}</button>`; }
+  const set=new Set(ocup||[]); let h=`<input type="hidden" name="lugar" value=""><div class="seats" data-seats>`;
+  for(const z of zonas()){
+    h+=`<div class="srow" role="group" aria-label="${z.t}"><span class="bar">${z.t} ${z.ns[0]}–${z.ns[z.ns.length-1]}</span><div style="--n:${Math.min(z.ns.length,8)}">`;
+    for(const n of z.ns){ const b=set.has(n);
+      h+=`<button type="button" class="seat ${b?"busy":""}" data-n="${n}" ${b?"disabled":""} aria-pressed="false" aria-label="Lugar ${n}, ${z.t.toLowerCase()}${b?", ocupado":""}">${n}</button>`; }
     h+=`</div></div>`;
   }
   return h+`</div>`;

@@ -1,138 +1,147 @@
 /* =========================================================
    balé — la sala: selector de lugar (barra) y dibujo del Reformer
-   Dibujo en SVG inspirado en la sala real (sin la foto: pedido de Marifer, 25/10/2026):
-   el espejo al fondo, el lugar de la instructora, la primera barra (1–8) junto al espejo y la
-   segunda (9–16) detrás, con postes negros y círculos crema con el número.
-   Cada lugar es un <button> encima del dibujo (posición en % del mismo lienzo):
-     libre: crema · elegido: marrón con número crema · ocupado (también el fijo de una miembro,
-     sin decir de quién): atenuado, tachado y «ocupado» en su nombre. Nunca solo el color.
-   Teclado: flechas para moverse, Inicio/Fin, Enter o Espacio para elegir (foco itinerante).
-   Si los lugares no caben a 44 px, la sala se gira (barras en columna) en vez de achicarse.
-   No decide nada de cupos: solo pinta lo que dice la base de datos.
+   Sobre la foto oficial «Ubicación de espacios» (img/sala-espacios*.webp, 5/11/2026): los centros de
+   los 16 círculos están medidos en data/sala.json (→ js/sala-datos.js, lo genera construir.mjs).
+   Distribución real: barra del espejo 9–16, barra del fondo 7–8 (junto a las cortinas) y tres barras
+   de adelante 1–2, 3–4 y 5–6. Los números no cambian: solo dónde se dibuja cada uno.
+   Dos modos, con un solo juego de botones (id="seats", data-n):
+     foto  (contenedor ≥ 760 px): un botón invisible encima de cada círculo de la foto;
+     plano (más estrecho): la foto arriba, solo para mirar, y debajo un plano de botones de 44 px
+           ordenado como la sala; al elegir, la foto se acerca a ese lugar.
+   Estados, nunca solo con color: libre (anillo al pasar o enfocar), elegido (círculo marrón con el
+   número en crema, se asienta) y ocupado (velo y tachado, «ocupado» en su nombre, sin decir de quién).
+   Teclado: flechas según la posición en pantalla (lo de al lado, la barra de enfrente), Inicio/Fin,
+   Enter o Espacio para elegir (foco itinerante). No decide nada de cupos: pinta lo que dice la base.
    ========================================================= */
 (function(){
 "use strict";
 const calma = ()=>matchMedia("(prefers-reduced-motion: reduce)").matches;
-const ANCHO_MIN = 520;    // por debajo, la sala va girada
+const ANCHO_FOTO = 760;   // por debajo, plano de botones
+const S = window.BALE_SALA_DATOS || {imagen:{ancho:1437,alto:740}, zonas:{}, lugares:[]};
+const AR = `${S.imagen.ancho}/${S.imagen.alto}`;
+const PUNTO = new Map(S.lugares.map(p=>[p.n,p]));
+// Plano del teléfono: como se ve la sala desde la puerta (el espejo al fondo, arriba)
+const GRUPOS = [
+  {id:"espejo", titulo:"Barra del espejo", ns:[9,10,11,12,13,14,15,16]},
+  {id:"fondo", titulo:"Barra del fondo", ns:[7,8]},
+  {id:"delante", titulo:"Barras de adelante", ns:[1,2,3,4,5,6], pares:true}
+];
+const ORDEN = GRUPOS.flatMap(g=>g.ns);
 
-// Geometría de cada orientación (unidades del lienzo SVG)
-const GEO = {
-  h:{ w:800, h:540,
-    filas:[{y:250, x0:110, x1:690, d:58, barra:205}, {y:420, x0:40, x1:760, d:66, barra:368}],
-    nombre:["primera barra","segunda barra"] },
-  v:{ w:520, h:940,
-    filas:[{x:236, y0:110, y1:850, d:66, barra:180}, {x:412, y0:70, y1:890, d:72, barra:352}],
-    nombre:["primera barra","segunda barra"] }
-};
+const zonaDe = n=>{ const p=PUNTO.get(n); return p ? (S.zonas[p.zona]||"") : ""; };
+const nombreFila = zonaDe;
 
-function svgH(G){
-  const f=G.filas, tablas=Array.from({length:11},(_,i)=>{ const t=i/10; return `<line class="tablas" x1="${90+620*t}" y1="78" x2="${800*t}" y2="540"/>`; }).join("");
-  const barra=(r,yLeg)=>`<line class="barra-l" x1="${r.x0-18}" y1="${r.barra}" x2="${r.x1+18}" y2="${r.barra}"/>`+
-    [r.x0-14,(r.x0+r.x1)/2,r.x1+14].map(x=>`<line class="poste" x1="${x}" y1="${r.barra}" x2="${x}" y2="${r.barra+yLeg}"/>`).join("");
-  return `<svg viewBox="0 0 ${G.w} ${G.h}" aria-hidden="true" focusable="false">
-    <polygon class="piso" points="90,78 710,78 800,540 0,540"/>${tablas}
-    <rect class="espejo" x="120" y="18" width="560" height="46" rx="6"/>
-    <line class="reflejo" x1="180" y1="56" x2="214" y2="26"/><line class="reflejo" x1="210" y1="56" x2="230" y2="38"/><line class="reflejo" x1="560" y1="56" x2="590" y2="28"/>
-    <text class="tx" x="400" y="47" text-anchor="middle">ESPEJO</text>
-    <ellipse class="inst" cx="400" cy="128" rx="74" ry="26"/><text class="tx" x="400" y="133" text-anchor="middle">Instructora</text>
-    ${barra(f[0],22)}${barra(f[1],26)}
-    <text class="tx-b" x="${f[0].x0-20}" y="${f[0].barra-14}">Primera barra · junto al espejo</text>
-    <text class="tx-b" x="${f[1].x0-12}" y="${f[1].barra-14}">Segunda barra</text>
-  </svg>`;
+function foto(sizes){
+  return `<picture>
+    <source type="image/avif" srcset="img/sala-espacios-800.avif 800w, img/sala-espacios-1200.avif 1200w, img/sala-espacios.avif 1437w" sizes="${sizes}">
+    <img src="img/sala-espacios-1200.webp" srcset="img/sala-espacios-800.webp 800w, img/sala-espacios-1200.webp 1200w, img/sala-espacios.webp 1437w" sizes="${sizes}" width="${S.imagen.ancho}" height="${S.imagen.alto}" alt="" decoding="async">
+  </picture>`;
 }
-function svgV(G){
-  const f=G.filas, tablas=Array.from({length:9},(_,i)=>`<line class="tablas" x1="70" y1="${40+i*108}" x2="520" y2="${i*117}"/>`).join("");
-  const barra=(r,xLeg)=>`<line class="barra-l" x1="${r.barra}" y1="${r.y0-24}" x2="${r.barra}" y2="${r.y1+24}"/>`+
-    [r.y0-20,(r.y0+r.y1)/2,r.y1+20].map(y=>`<line class="poste" x1="${r.barra}" y1="${y}" x2="${r.barra+xLeg}" y2="${y}"/>`).join("");
-  return `<svg viewBox="0 0 ${G.w} ${G.h}" aria-hidden="true" focusable="false">
-    <polygon class="piso" points="70,40 520,0 520,940 70,900"/>${tablas}
-    <rect class="espejo" x="14" y="110" width="40" height="720" rx="6"/>
-    <line class="reflejo" x1="22" y1="190" x2="46" y2="160"/><line class="reflejo" x1="22" y1="700" x2="46" y2="672"/>
-    <text class="tx" transform="translate(40 470) rotate(-90)" text-anchor="middle">ESPEJO</text>
-    <ellipse class="inst" cx="110" cy="470" rx="28" ry="70"/><text class="tx" transform="translate(115 470) rotate(-90)" text-anchor="middle">Instructora</text>
-    ${barra(f[0],20)}${barra(f[1],24)}
-    <text class="tx-b" transform="translate(${f[0].barra-14} 480) rotate(-90)" text-anchor="middle">Primera barra · junto al espejo</text>
-    <text class="tx-b" transform="translate(${f[1].barra-14} 480) rotate(-90)" text-anchor="middle">Segunda barra</text>
-  </svg>`;
+const pos = p=>`--x:${p.x}%;--y:${p.y}%;--rn:${p.r}`;
+
+const estado={cont:null, op:null, modo:null, ro:null};
+function st(n,op){ return op.ocupados.has(n)?"ocupado":n===op.elegido?"elegido":"libre"; }
+function etiqueta(n,op){ return `Lugar ${n}, ${zonaDe(n)}, ${st(n,op)}`; }
+function boton(n,op,foco,extra=""){
+  const oc=op.ocupados.has(n), mio=n===op.elegido;
+  return `<button type="button" class="seat" data-n="${n}" ${extra} ${oc?"disabled":""} aria-pressed="${mio}" tabindex="${n===foco?0:-1}" aria-label="${etiqueta(n,op)}"><span aria-hidden="true">${n}</span></button>`;
+}
+// Marcas sobre la foto (en modo plano, solo para mirar)
+function marcas(op){
+  return S.lugares.map(p=>{ const c=op.ocupados.has(p.n)?"oc":p.n===op.elegido?"mio":"";
+    return `<span class="marca ${c}" data-m="${p.n}" style="${pos(p)}">${p.n}</span>`; }).join("");
 }
 
-// Posición de cada lugar en % del lienzo
-function posiciones(o,porFila,filas){
-  const G=GEO[o], out=[];
-  for(let r=0;r<filas;r++){
-    const F=G.filas[Math.min(r,G.filas.length-1)];
-    for(let i=0;i<porFila;i++){
-      const t=(i+.5)/porFila, n=r*porFila+i+1;
-      const x=o==="h"?F.x0+(F.x1-F.x0)*t:F.x, y=o==="h"?F.y:F.y0+(F.y1-F.y0)*t;
-      out.push({n, fila:r, col:i, x:100*x/G.w, y:100*y/G.h, d:100*F.d/G.w});
-    }
-  }
-  return out;
-}
-
-const estado={cont:null, o:null, op:null, ro:null};
-function etiqueta(p,op){
-  const G=GEO[estado.o||"h"], fila=G.nombre[p.fila]||`fila ${p.fila+1}`;
-  const st=op.ocupados.has(p.n)?"ocupado":p.n===op.elegido?"elegido":"libre";
-  return `Lugar ${p.n}, ${fila}, ${st}`;
-}
 function pintar(){
   const {cont,op}=estado; if(!cont||!op) return;
-  const w=cont.clientWidth||ANCHO_MIN, o=w>=ANCHO_MIN?"h":"v";
-  estado.o=o;
-  const G=GEO[o], ps=posiciones(o,op.porFila,op.filas);
-  const libres=ps.filter(p=>!op.ocupados.has(p.n)).length;
-  const foco=op.elegido&&!op.ocupados.has(op.elegido)?op.elegido:(ps.find(p=>!op.ocupados.has(p.n))||{}).n;
-  cont.innerHTML=`<div class="plano" data-orient="${o}" style="--ar:${G.w}/${G.h}">
-    ${o==="h"?svgH(G):svgV(G)}
-    <div id="seats" role="group" aria-label="Sala de barre: ${ps.length} lugares, ${libres} libres. Usa las flechas para moverte.">
-      ${ps.map(p=>{ const oc=op.ocupados.has(p.n), mio=p.n===op.elegido;
-        return `<button type="button" class="seat" data-n="${p.n}" data-fila="${p.fila}" data-col="${p.col}" style="--x:${p.x.toFixed(2)}%;--y:${p.y.toFixed(2)}%;--d:${p.d.toFixed(2)}%" ${oc?"disabled":""} aria-pressed="${mio}" tabindex="${p.n===foco?0:-1}" aria-label="${etiqueta(p,op)}">${p.n}</button>`; }).join("")}
+  const modo=(cont.clientWidth||0)>=ANCHO_FOTO?"foto":"plano";
+  estado.modo=modo;
+  const total=S.lugares.length, libres=S.lugares.filter(p=>!op.ocupados.has(p.n)).length;
+  const foco=op.elegido&&!op.ocupados.has(op.elegido)?op.elegido:ORDEN.find(n=>!op.ocupados.has(n));
+  const grupo=`role="group" aria-label="Sala de barre: ${total} lugares, ${libres} libres. Usa las flechas para moverte."`;
+  if(modo==="foto"){
+    cont.innerHTML=`<div class="sala-foto" data-modo="foto" style="--ar:${AR}">
+      <div class="sf-lienzo">${foto("(min-width:1000px) 900px, 100vw")}
+        <div id="seats" class="sf-botones" ${grupo}>
+          ${S.lugares.map(p=>boton(p.n,op,foco,`style="${pos(p)}"`)).join("")}
+        </div>
+      </div>
+    </div>${leyenda()}`;
+  } else {
+    cont.innerHTML=`<div class="sala-foto" data-modo="plano" style="--ar:${AR}">
+      <button type="button" class="sf-lienzo sf-ver" aria-label="Ver la sala completa" aria-pressed="false">${foto("100vw")}<span class="sf-marcas" aria-hidden="true">${marcas(op)}</span></button>
     </div>
-  </div>
-  <ul class="leyenda" aria-hidden="true"><li><i></i>Libre</li><li><i class="l-mio"></i>Tu lugar</li><li><i class="l-oc"></i>Ocupado</li></ul>`;
+    <div id="seats" class="plano-lugares" ${grupo}>
+      ${GRUPOS.map(g=>`<div class="pl-grupo pl-${g.id}"><p class="pl-titulo" aria-hidden="true">${g.titulo} <span>${g.ns[0]}–${g.ns[g.ns.length-1]}</span></p>
+        <div class="pl-fila">${g.pares?[0,2,4].map(i=>`<span class="pl-par">${boton(g.ns[i],op,foco)}${boton(g.ns[i+1],op,foco)}</span>`).join(""):g.ns.map(n=>boton(n,op,foco)).join("")}</div></div>`).join("")}
+    </div>${leyenda()}`;
+    if(op.elegido) acercar(op.elegido,false);
+  }
+  const im=cont.querySelector(".sf-lienzo img");
+  if(im) im.addEventListener("error",()=>cont.querySelector(".sala-foto").classList.add("sin-foto"),{once:true});
 }
-function botones(){ return [...estado.cont.querySelectorAll(".seat")]; }
-function mover(desde,dir){
-  const bs=botones(), b0=bs.find(b=>+b.dataset.n===desde); if(!b0) return null;
-  const f=+b0.dataset.fila, c=+b0.dataset.col, n=estado.op.porFila, filas=estado.op.filas;
-  const en=(ff,cc)=>bs.find(b=>+b.dataset.fila===ff&&+b.dataset.col===cc);
-  const libre=b=>b&&!b.disabled;
-  // a lo largo de la barra
-  if(dir==="sig"||dir==="ant"){ const d=dir==="sig"?1:-1; for(let k=c+d;k>=0&&k<n;k+=d){ const b=en(f,k); if(libre(b)) return b; } return null; }
-  if(dir==="ini"||dir==="fin"){ const ks=[...Array(n).keys()]; if(dir==="fin") ks.reverse(); for(const k of ks){ const b=en(f,k); if(libre(b)) return b; } return null; }
-  // a la otra barra: el libre más cercano en la misma posición
-  const d=dir==="otra+"?1:-1, ff=f+d; if(ff<0||ff>=filas) return null;
-  for(let off=0;off<n;off++) for(const k of [c+off,c-off]){ const b=en(ff,k); if(k>=0&&k<n&&libre(b)) return b; }
-  return null;
+const leyenda=()=>`<ul class="leyenda" aria-hidden="true"><li><i></i>Libre</li><li><i class="l-mio"></i>Tu lugar</li><li><i class="l-oc"></i>Ocupado</li></ul>`;
+
+// Modo plano: la foto se acerca al lugar elegido (o vuelve a la sala completa)
+function acercar(n,animar=true){
+  const lz=estado.cont&&estado.cont.querySelector('.sala-foto[data-modo="plano"] .sf-lienzo'); if(!lz) return;
+  const p=n&&PUNTO.get(n);
+  lz.classList.toggle("sin-anim",!animar||calma());
+  if(p){ lz.style.setProperty("--zx",p.x+"%"); lz.style.setProperty("--zy",p.y+"%"); lz.classList.add("cerca"); lz.setAttribute("aria-pressed","false"); }
+  else lz.classList.remove("cerca");
+}
+
+function botones(){ return [...estado.cont.querySelectorAll("#seats .seat")]; }
+// Vecino en una dirección según dónde está cada botón en pantalla (sirve igual en la foto y en el plano)
+function vecino(b0,dir){
+  const r0=b0.getBoundingClientRect(), c0={x:r0.left+r0.width/2,y:r0.top+r0.height/2};
+  let mejor=null, dMin=Infinity;
+  const lado=dir==="der"||dir==="izq";
+  // a los lados: primero en la misma barra (misma altura); si no hay libre, el más cercano
+  const misma=lado?botones().filter(b=>{ const r=b.getBoundingClientRect(); return Math.abs(r.top+r.height/2-c0.y)<=r0.height*.75; }):null;
+  for(const b of (misma&&misma.some(x=>x!==b0&&!x.disabled&&({der:1,izq:-1}[dir])*(x.getBoundingClientRect().left-r0.left)>4)?misma:botones())){
+    if(b===b0||b.disabled) continue;
+    const r=b.getBoundingClientRect(), dx=r.left+r.width/2-c0.x, dy=r.top+r.height/2-c0.y;
+    const prim={der:dx,izq:-dx,abajo:dy,arriba:-dy}[dir], sec=dir==="der"||dir==="izq"?Math.abs(dy):Math.abs(dx);
+    if(prim<=4) continue;
+    const d=prim+sec*3;
+    if(d<dMin){ dMin=d; mejor=b; }
+  }
+  return mejor;
 }
 function teclado(e){
-  const b=e.target.closest(".seat"); if(!b) return;
-  const h=estado.o==="h", map=h
-    ? {ArrowRight:"sig",ArrowLeft:"ant",ArrowUp:"otra-",ArrowDown:"otra+",Home:"ini",End:"fin"}
-    : {ArrowDown:"sig",ArrowUp:"ant",ArrowLeft:"otra-",ArrowRight:"otra+",Home:"ini",End:"fin"};
-  const dir=map[e.key]; if(!dir) return;
+  const b=e.target.closest("#seats .seat"); if(!b) return;
+  let t=null;
+  const dir={ArrowRight:"der",ArrowLeft:"izq",ArrowDown:"abajo",ArrowUp:"arriba"}[e.key];
+  if(dir) t=vecino(b,dir);
+  else if(e.key==="Home"||e.key==="End"){ const ls=ORDEN.map(n=>botones().find(x=>+x.dataset.n===n)).filter(x=>x&&!x.disabled); t=e.key==="Home"?ls[0]:ls[ls.length-1]; }
+  else return;
   e.preventDefault();
-  const t=mover(+b.dataset.n,dir); if(!t) return;
+  if(!t) return;
   botones().forEach(x=>{ x.tabIndex=x===t?0:-1; });
   t.focus();
 }
 function clic(e){
-  const b=e.target.closest(".seat"); if(!b||b.disabled) return;
+  const ver=e.target.closest(".sf-ver");
+  if(ver){ const cerca=ver.classList.contains("cerca"); if(cerca){ ver.classList.remove("cerca"); ver.setAttribute("aria-pressed","true"); } else if(estado.op&&estado.op.elegido) acercar(estado.op.elegido); return; }
+  const b=e.target.closest("#seats .seat"); if(!b||b.disabled) return;
   estado.op.onPick(+b.dataset.n);
 }
 
 // API
 function render(cont,op){
   const nuevo=estado.cont!==cont;
-  estado.cont=cont; estado.op=Object.assign({filas:2,porFila:8,ocupados:new Set(),elegido:null,onPick:()=>{}},op);
+  estado.cont=cont; estado.op=Object.assign({ocupados:new Set(),elegido:null,onPick:()=>{}},op);
   if(nuevo){
     cont.addEventListener("keydown",teclado);
     cont.addEventListener("click",clic);
     if("ResizeObserver" in window){
       if(estado.ro) estado.ro.disconnect();
-      let ultimo=null;
-      estado.ro=new ResizeObserver(()=>{ const o=(cont.clientWidth||0)>=ANCHO_MIN?"h":"v"; if(o!==ultimo&&cont.isConnected&&cont.offsetParent){ ultimo=o; if(o!==estado.o){ const f=document.activeElement&&cont.contains(document.activeElement)?+document.activeElement.dataset.n:null; pintar(); if(f) enfocar(f); } } });
+      estado.ro=new ResizeObserver(()=>{
+        if(!cont.isConnected||!cont.offsetParent) return;
+        const m=(cont.clientWidth||0)>=ANCHO_FOTO?"foto":"plano";
+        if(m!==estado.modo){ const a=document.activeElement, f=a&&cont.contains(a)&&a.dataset?+a.dataset.n:null; pintar(); if(f) enfocar(f); }
+      });
       estado.ro.observe(cont);
     }
   }
@@ -146,18 +155,29 @@ function elegir(n){
     const k=+b.dataset.n, mio=k===n;
     b.setAttribute("aria-pressed",String(mio));
     b.tabIndex=mio?0:-1;
-    b.setAttribute("aria-label",etiqueta({n:k,fila:+b.dataset.fila},op));
+    b.setAttribute("aria-label",etiqueta(k,op));
     if(mio&&!calma()){ b.classList.remove("asienta"); void b.offsetWidth; b.classList.add("asienta"); }
   });
+  estado.cont.querySelectorAll(".marca").forEach(m=>m.classList.toggle("mio",+m.dataset.m===n&&!op.ocupados.has(n)));
+  acercar(n);
 }
-function enfocar(n){ const b=estado.cont&&estado.cont.querySelector(`.seat[data-n="${n}"]`); if(b) b.focus(); else { const f=estado.cont&&estado.cont.querySelector(".seat:not(:disabled)"); if(f) f.focus(); } }
+function enfocar(n){ const b=estado.cont&&estado.cont.querySelector(`#seats .seat[data-n="${n}"]`); if(b) b.focus(); else { const f=estado.cont&&estado.cont.querySelector("#seats .seat:not(:disabled)"); if(f) f.focus(); } }
 // Lugar que se acaba de ocupar: vibración corta (la explicación va en texto aparte)
 function vibrar(n){
-  const b=estado.cont&&estado.cont.querySelector(`.seat[data-n="${n}"]`); if(!b||calma()) return;
+  const b=estado.cont&&estado.cont.querySelector(`#seats .seat[data-n="${n}"]`); if(!b||calma()) return;
   b.classList.remove("vibra"); void b.offsetWidth; b.classList.add("vibra");
   b.addEventListener("animationend",()=>b.classList.remove("vibra"),{once:true});
 }
-const nombreFila = n=>{ const op=estado.op||{porFila:8}; return GEO.h.nombre[Math.floor((n-1)/op.porFila)]||""; };
+
+// Solo para mirar (mi-reserva): la foto con tu lugar marcado
+function mostrar(cont,n){
+  const p=PUNTO.get(n); if(!cont||!p){ if(cont) cont.hidden=true; return; }
+  cont.innerHTML=`<figure class="sala-foto tu-lugar" style="--ar:${AR}">
+    <div class="sf-lienzo">${foto("(min-width:700px) 640px, 100vw")}<span class="sf-marcas" aria-hidden="true"><span class="marca mio" style="${pos(p)}">${n}</span></span></div>
+    <figcaption>Tu lugar: el ${n}, ${zonaDe(n)}.</figcaption>
+  </figure>`;
+  cont.hidden=false;
+}
 
 // Reformer: las máquinas, por cupo (la base de datos no asigna máquina; la elige la instructora)
 function reformer(cont,{capacidad,ocupados}){
@@ -165,5 +185,5 @@ function reformer(cont,{capacidad,ocupados}){
   cont.innerHTML=`<div class="reformer" role="img" aria-label="Sala de Reformer: ${n} máquinas, ${n-oc} libres">${Array.from({length:n},(_,i)=>`<span class="maq ${i<oc?"oc":""}">${i<oc?"Ocupada":"Libre"}</span>`).join("")}</div>`;
 }
 
-window.BALE_SALA = {render, elegir, enfocar, vibrar, reformer, nombreFila};
+window.BALE_SALA = {render, elegir, enfocar, vibrar, reformer, nombreFila, zona:zonaDe, mostrar, lugares:S.lugares.map(p=>p.n)};
 })();

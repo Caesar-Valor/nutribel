@@ -4,7 +4,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; font-src 'self'; img-src 'self' data: blob: https://*.supabase.co; connect-src 'self' https://*.supabase.co wss://*.supabase.co; frame-src https://www.google.com; base-uri 'self'; form-action 'self'; object-src 'none'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; font-src 'self'; img-src 'self' data: blob: https://*.supabase.co; connect-src 'self' https://*.supabase.co wss://*.supabase.co; frame-src https://www.google.com https://www.instagram.com; base-uri 'self'; form-action 'self'; object-src 'none'">
 <title>El estudio · balé</title>
 <meta name="description" content="Balé Studio en La Vega: nuestra historia, la sala de barre con 16 lugares, la sala de Pilates Reformer con 6 máquinas, el equipo de instructoras y cómo llegar.">
 <link rel="canonical" href="https://caesar-valor.github.io/nutribel/bale/nosotras.html">
@@ -52,7 +52,6 @@
 </header>
 <main id="contenido" class="pagina">
 <header class="phead">
-  <span class="kick">El estudio</span>
   <h1>Balé Studio</h1>
   <span class="cinta" aria-hidden="true"></span>
 </header>
@@ -68,23 +67,19 @@
 <section class="sec papel" aria-labelledby="t-salas">
   <div class="cont">
     <header class="shead" data-reveal>
-      <span class="kick">Las salas</span>
       <h2 id="t-salas">Un lugar para cada clase</h2>
-      <span class="cinta" aria-hidden="true"></span>
     </header>
     <div class="salas">
       <article class="sala-card" data-reveal>
-        <figure><img src="img/barras-nuevas.webp" srcset="img/barras-nuevas-480.webp 480w, img/barras-nuevas-800.webp 800w, img/barras-nuevas.webp 1200w" sizes="(min-width:1024px) 460px, 92vw" alt="Sala de barre de balé: dos barras negras con los lugares numerados en círculos crema y piso de madera clara" width="1200" height="1500" loading="lazy" decoding="async"></figure>
+        <figure><img src="img/barras-nuevas.webp" srcset="img/barras-nuevas-480.webp 480w, img/barras-nuevas-800.webp 800w, img/barras-nuevas.webp 1200w" sizes="(min-width:1024px) 460px, 92vw" alt="Sala de barre de balé: barras negras con los lugares numerados en círculos crema y piso de madera clara" width="1200" height="1500" loading="lazy" decoding="async"></figure>
         <div>
-          <span class="kick">Barre</span>
           <h3>La sala de barre</h3>
-          <p>Dos barras con 8 lugares cada una: 16 en total. Cada lugar tiene su número en un círculo, y al reservar eliges el tuyo en el dibujo de la sala.</p>
+          <p>16 lugares numerados: la barra del espejo (9 a 16), la del fondo (7 y 8) y tres barras de adelante (1 a 6). Al reservar eliges el tuyo sobre la foto de la sala.</p>
         </div>
       </article>
       <article class="sala-card" data-reveal>
         <figure><img src="img/reformer-sala.webp" srcset="img/reformer-sala-480.webp 480w, img/reformer-sala-800.webp 800w, img/reformer-sala.webp 1200w" sizes="(min-width:1024px) 460px, 92vw" alt="Sala de Pilates Reformer de balé con máquinas de madera clara" width="1200" height="1500" loading="lazy" decoding="async"></figure>
         <div>
-          <span class="kick">Pilates Reformer</span>
           <h3>La sala de Pilates Reformer</h3>
           <p>Seis máquinas por clase: grupos pequeños y la instructora siempre cerca.</p>
         </div>
@@ -96,10 +91,8 @@
 <section class="sec" id="equipo" aria-labelledby="t-equipo">
   <div class="cont">
     <header class="shead" data-reveal>
-      <span class="kick">El equipo</span>
       <h2 id="t-equipo">Nuestro equipo</h2>
-      <span class="cinta" aria-hidden="true"></span>
-      <p>Un equipo de instructoras especializadas en ballet clásico, Pilates Reformer y barre, con una misma misión: una experiencia de movimiento de calidad, cercana, profesional y llena de energía.</p>
+      <p>Instructoras especializadas en ballet clásico, Pilates Reformer y barre. Clases cercanas, profesionales y con mucha energía.</p>
     </header>
     <ul class="team" role="list"><li class="member" data-reveal style="--r:0">
   <div class="mph"><img src="img/equipo/marifer.webp" alt="María Fernanda Pimentel, ceo de balé" width="800" height="1000" loading="lazy" decoding="async"></div>
@@ -140,9 +133,7 @@
 <section class="sec suave" id="ubicacion" aria-labelledby="t-ubic">
   <div class="cont dos centrado">
     <div>
-      <span class="kick">Ubicación</span>
       <h2 id="t-ubic">Te esperamos en balé</h2>
-      <span class="cinta" aria-hidden="true"></span>
       <p class="where">En el edificio de NutriBEL</p>
       <p class="city">La Vega, República Dominicana</p>
       <p class="addr">C. José Horacio Rodríguez #30, frente al Country Club, La Vega</p>
@@ -158,34 +149,40 @@
 </section>
 </main>
 <footer class="pie">
+  <div class="pie-cta">
+    <p>Tu lugar en la barra te espera.</p>
+    <a class="btn" href="reservar.html?primera=1">Reserva tu primera clase</a>
+  </div>
   <div class="pie-in">
     <div class="pie-marca">
       <img src="img/bale-logo-transparente.webp" alt="balé, Barre, Ballet &amp; Pilates" width="1040" height="538" loading="lazy" decoding="async">
       <p>C. José Horacio Rodríguez #30, frente al Country Club, La Vega<br>En el edificio de NutriBEL, La Vega</p>
     </div>
-    <div class="pie-col">
+    <div class="pie-col pie-contacto">
       <h2>Contacto</h2>
       <a href="https://wa.me/18496386337" target="_blank" rel="noopener">WhatsApp +1 849-638-6337</a>
       <a href="https://www.instagram.com/balestudio.rd/" target="_blank" rel="noopener">Instagram @balestudio.rd</a>
       <a href="https://www.google.com/maps/search/?api=1&amp;query=C.%20Jos%C3%A9%20Horacio%20Rodr%C3%ADguez%20%2330%2C%20frente%20al%20Country%20Club%2C%20La%20Vega%2C%20Rep%C3%BAblica%20Dominicana" target="_blank" rel="noopener">Cómo llegar</a>
     </div>
     <div class="pie-col">
-      <h2>Horario</h2>
-      <p class="pie-dato">Clases de lunes a sábado.</p>
-      <a href="reservar.html">Ver el horario de la semana</a>
+      <h2>Clases</h2>
+      <p class="pie-dato">De lunes a sábado.</p>
+      <a href="reservar.html">Horario de la semana</a>
+      <a href="precios.html">Precios</a>
       <a href="preguntas.html">Preguntas frecuentes</a>
     </div>
     <div class="pie-col">
       <h2>balé</h2>
-      <a href="privacidad.html">Aviso de privacidad</a>
-      <a href="cuenta.html">Mi cuenta</a>
       <a href="comunidad.html">Comunidad</a>
+      <a href="cuenta.html">Mi cuenta</a>
+      <a href="privacidad.html">Aviso de privacidad</a>
     </div>
   </div>
   <div class="pie-fin">
     <p>balé · Barre, Ballet &amp; Pilates · La Vega, República Dominicana</p>
   </div>
 </footer>
+
 <div class="barra-movil">
   <a class="btn" href="reservar.html">Reservar mi lugar</a>
 </div>

@@ -121,7 +121,7 @@ const clsName = c=>c.titulo||c.clase;
 const tagOf = c=>c.etiqueta?D.etiquetas[c.etiqueta]:null;
 const tagTxt = c=>{ const t=tagOf(c); return t?t.texto:""; };
 const lugarOf = n=>D.sala.lugares.find(l=>l.n===n);
-const lugarTxt = L=>`Lugar ${L.n}, ${L.fila===1?"primera barra":L.fila===2?"segunda barra":`fila ${L.fila}`}`;
+const lugarTxt = L=>{ const z=SALA&&SALA.zona(L.n); return `Lugar ${L.n}${z?`, ${z}`:""}`; };   // la zona real de la sala (data/sala.json)
 const seatTxt = r=>{ const L=r.lugar&&lugarOf(r.lugar); return L?lugarTxt(L):"Sin lugar fijo (cupo por número)"; };
 const digits = s=>String(s||"").replace(/\D/g,"");
 const fmtWa = s=>{ const d=digits(s).replace(/^1(?=\d{10}$)/,""); return d.length===10?`${d.slice(0,3)}-${d.slice(3,6)}-${d.slice(6)}`:s; };

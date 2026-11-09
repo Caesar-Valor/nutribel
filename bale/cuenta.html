@@ -4,7 +4,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; font-src 'self'; img-src 'self' data: blob: https://*.supabase.co; connect-src 'self' https://*.supabase.co wss://*.supabase.co; frame-src https://www.google.com; base-uri 'self'; form-action 'self'; object-src 'none'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; font-src 'self'; img-src 'self' data: blob: https://*.supabase.co; connect-src 'self' https://*.supabase.co wss://*.supabase.co; frame-src https://www.google.com https://www.instagram.com; base-uri 'self'; form-action 'self'; object-src 'none'">
 <title>Mi cuenta · balé</title>
 <meta name="description" content="Tu cuenta de balé: tus reservas, tu membresía y tus avisos.">
 <link rel="canonical" href="https://caesar-valor.github.io/nutribel/bale/cuenta.html">
@@ -46,7 +46,6 @@
 </header>
 <main id="contenido" class="pagina estrecha">
 <header class="phead">
-  <span class="kick">balé</span>
   <h1 id="cuTitulo">Mi cuenta</h1>
   <span class="cinta" aria-hidden="true"></span>
 </header>
@@ -123,34 +122,40 @@
 </dialog>
 </main>
 <footer class="pie">
+  <div class="pie-cta">
+    <p>Tu lugar en la barra te espera.</p>
+    <a class="btn" href="reservar.html?primera=1">Reserva tu primera clase</a>
+  </div>
   <div class="pie-in">
     <div class="pie-marca">
       <img src="img/bale-logo-transparente.webp" alt="balé, Barre, Ballet &amp; Pilates" width="1040" height="538" loading="lazy" decoding="async">
       <p>C. José Horacio Rodríguez #30, frente al Country Club, La Vega<br>En el edificio de NutriBEL, La Vega</p>
     </div>
-    <div class="pie-col">
+    <div class="pie-col pie-contacto">
       <h2>Contacto</h2>
       <a href="https://wa.me/18496386337" target="_blank" rel="noopener">WhatsApp +1 849-638-6337</a>
       <a href="https://www.instagram.com/balestudio.rd/" target="_blank" rel="noopener">Instagram @balestudio.rd</a>
       <a href="https://www.google.com/maps/search/?api=1&amp;query=C.%20Jos%C3%A9%20Horacio%20Rodr%C3%ADguez%20%2330%2C%20frente%20al%20Country%20Club%2C%20La%20Vega%2C%20Rep%C3%BAblica%20Dominicana" target="_blank" rel="noopener">Cómo llegar</a>
     </div>
     <div class="pie-col">
-      <h2>Horario</h2>
-      <p class="pie-dato">Clases de lunes a sábado.</p>
-      <a href="reservar.html">Ver el horario de la semana</a>
+      <h2>Clases</h2>
+      <p class="pie-dato">De lunes a sábado.</p>
+      <a href="reservar.html">Horario de la semana</a>
+      <a href="precios.html">Precios</a>
       <a href="preguntas.html">Preguntas frecuentes</a>
     </div>
     <div class="pie-col">
       <h2>balé</h2>
-      <a href="privacidad.html">Aviso de privacidad</a>
-      <a href="cuenta.html">Mi cuenta</a>
       <a href="comunidad.html">Comunidad</a>
+      <a href="cuenta.html">Mi cuenta</a>
+      <a href="privacidad.html">Aviso de privacidad</a>
     </div>
   </div>
   <div class="pie-fin">
     <p>balé · Barre, Ballet &amp; Pilates · La Vega, República Dominicana</p>
   </div>
 </footer>
+
 
 </body>
 </html>

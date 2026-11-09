@@ -7,8 +7,8 @@
     "Balé Studio nace en el corazón de La Vega de la unión de dos pasiones: la nutrición y el movimiento. Una médica nutrióloga y una comunicadora corporativa crearon un espacio de bienestar integral donde mujeres y niñas descubren el placer de ejercitarse y fortalecer su cuerpo.",
     "Más que un estudio de ejercicio, balé es una comunidad donde cada mujer y cada niña encuentra un espacio para crecer, sentirse fuerte, conectar consigo misma y disfrutar del movimiento."
   ],
-  "que_es_barre": "Una disciplina inspirada en el ballet clásico que fusiona movimientos de danza, pilates y fortalecimiento muscular. Desarrolla fuerza, resistencia, estabilidad, equilibrio y conciencia corporal, y trabaja todo el cuerpo sin necesidad de experiencia previa en ballet.",
-  "equipo_texto": "Un equipo de instructoras especializadas en ballet clásico, Pilates Reformer y barre, con una misma misión: una experiencia de movimiento de calidad, cercana, profesional y llena de energía.",
+  "que_es_barre": "Inspirada en el ballet clásico, mezcla danza, pilates y fortalecimiento. Trabaja todo el cuerpo: fuerza, resistencia, equilibrio y conciencia corporal. No necesitas experiencia en ballet.",
+  "equipo_texto": "Instructoras especializadas en ballet clásico, Pilates Reformer y barre. Clases cercanas, profesionales y con mucha energía.",
   "_clases": "Cada clase de la página Clases. texto, para y nivel: textos POR CONFIRMAR con Marifer (4/11/2026). reserva: en_linea | inscripcion. slug: el ancla en clases.html (#hot-barre).",
   "clases": [
     {
@@ -80,7 +80,7 @@
       ],
       "grupo": "Pilates",
       "reserva": "en_linea",
-      "texto": "Tenemos una sala de Pilates Reformer. El Pilates Reformer es una modalidad de Pilates que se realiza sobre una máquina especializada llamada Reformer, equipada con resortes, poleas y una plataforma deslizante que permite trabajar todo el cuerpo mediante movimientos controlados. Ven a vivir la experiencia guiada con nuestra instructora Viviana.",
+      "texto": "Pilates sobre la máquina Reformer: resortes, poleas y una plataforma que se desliza para trabajar todo el cuerpo con control. Clases guiadas por Viviana.",
       "para": "Para todas: la máquina se ajusta a tu nivel. Son 6 máquinas por clase.",
       "nivel": "Todos los niveles",
       "dias": "Vie con Viviana",
@@ -125,8 +125,8 @@
   ],
   "reformer": {
     "titulo": "Nuevo espacio de Reformer",
-    "texto": "Tenemos una sala de Pilates Reformer. El Pilates Reformer es una modalidad de Pilates que se realiza sobre una máquina especializada llamada Reformer, equipada con resortes, poleas y una plataforma deslizante que permite trabajar todo el cuerpo mediante movimientos controlados. Ven a vivir la experiencia guiada con nuestra instructora Viviana.",
-    "boton": "Reserva tu Reformer del viernes",
+    "texto": "Máquinas de madera clara con resortes, poleas y una plataforma que se desliza. Trabajas todo el cuerpo con movimientos controlados y grupos pequeños.",
+    "boton": "Reserva el Reformer del viernes",
     "fotos": [
       {
         "src": "img/reformer-sala.webp",
@@ -440,5 +440,7 @@
   "pendiente": [
     "Datos bancarios para las transferencias",
     "Más fotos de Hot Barre con el mat beige de balé"
-  ]
+  ],
+  "_testimonios": "Testimonios reales de clientas (Marifer los da, con permiso de cada una): [{\"texto\": \"...\", \"nombre\": \"Nombre A.\", \"clase\": \"Hot Barre\"}]. Vacío = la sección no aparece.",
+  "testimonios": []
 }

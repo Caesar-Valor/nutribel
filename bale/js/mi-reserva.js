@@ -59,6 +59,8 @@ function pintarMembresia(){
   waLink();
 }
 
+// El lugar con su zona real de la sala (la base aún dice «fila»: ver DECISIONES)
+function lugarTexto(r){ const z=r.lugar&&window.BALE_SALA&&window.BALE_SALA.zona(+r.lugar); return z?`Lugar ${r.lugar}, ${z}`:r.lugar_texto; }
 function pintar(){
   if(esMem){ pintarMembresia(); return; }
   const r=R;
@@ -70,9 +72,11 @@ function pintar(){
   estado(msg);
   const estadoTxt=r.clase_cancelada?"Clase cancelada por el estudio":r.estado==="cancelada"?"Cancelada":"Confirmada";
   const filas=[["Clase",r.clase],["Día",r.fecha_larga],["Hora",range(r.hora,r.hora_fin)],["Instructora",r.instructora],
-    ["Lugar",r.lugar_texto],["Pago",r.pago_texto],["Estado",estadoTxt]].filter(x=>x[1]);
+    ["Lugar",lugarTexto(r)],["Pago",r.pago_texto],["Estado",estadoTxt]].filter(x=>x[1]);
   $("#mrSum").innerHTML=filas.map(([k,v])=>`<div><dt>${esc(k)}</dt><dd>${esc(v)}</dd></div>`).join("");
   $("#mrSum").hidden=false; $("#mrBtns").hidden=false;
+  const SALA=window.BALE_SALA, ms=$("#mrSala");
+  if(ms){ if(SALA&&r.lugar&&r.estado!=="cancelada"&&!r.clase_cancelada) SALA.mostrar(ms,+r.lugar); else ms.hidden=true; }
   pintarPago();
   $("#mrCancel").hidden=!r.cancelable;
   $("#mrIcs").hidden=r.estado!=="activa"||r.clase_cancelada;

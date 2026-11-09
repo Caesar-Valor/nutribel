@@ -110,10 +110,13 @@ function toggleMode(){
       {duration:650,easing:cssVar("--ease-in-out")||"cubic-bezier(.65,0,.35,1)",pseudoElement:"::view-transition-new(root)"});
   }).catch(()=>{});
 }
-let m="light"; try{m=localStorage.getItem(MODE_KEY)||"light"}catch(e){}
-applyMode(m);
+// Sin elección guardada, sigue al sistema (prefers-color-scheme) y cambia con él; el botón elige y se recuerda
+const sistemaOscuro=matchMedia("(prefers-color-scheme: dark)");
+const guardado=()=>{ try{ const v=localStorage.getItem(MODE_KEY); return v==="dark"||v==="light"?v:null; }catch(e){ return null; } };
+applyMode(guardado()||(sistemaOscuro.matches?"dark":"light"));
+sistemaOscuro.addEventListener("change",e=>{ if(!guardado()) applyMode(e.matches?"dark":"light"); });
 const mb=$("#modeBtn"); if(mb) mb.addEventListener("click",toggleMode);
-addEventListener("storage",e=>{ if(e.key===MODE_KEY) applyMode(e.newValue||"light"); });
+addEventListener("storage",e=>{ if(e.key===MODE_KEY) applyMode(e.newValue||(sistemaOscuro.matches?"dark":"light")); });
 document.body.insertAdjacentHTML("beforeend",`<div class="toast" id="toast" role="status" aria-live="polite"></div>`);
 
 window.BALE = {$, esc, money, toast, load, ready, srcset, fmtH, whatsapp:openWA, waLink, cfg:()=>cfg, panel, mergeCfg, fmtPhone, igUser, PANEL_KEY};

@@ -64,7 +64,7 @@ function pintar(j){
   const box=$("#comunidad");
   box.innerHTML=(prox.length?`<section class="csec" aria-labelledby="t-prox"><h2 id="t-prox">Próximas actividades</h2><ul class="actividades" role="list">${prox.map(tarjeta).join("")}</ul></section>`:"")+
     (resto.length?`<section class="csec" aria-labelledby="t-mom"><h2 id="t-mom">Momentos</h2><ul class="momentos" role="list">${resto.map(tarjeta).join("")}</ul></section>`:"")+
-    (!PUBS.length?`<section class="csec"><p class="vacio">Pronto publicamos las próximas actividades.</p></section>`:"");
+    (!prox.length?`<section class="csec"><p class="vacio-com">Pronto anunciamos la próxima actividad. <a href="https://www.instagram.com/balestudio.rd/" target="_blank" rel="noopener">Síguenos en Instagram</a>.</p></section>`:"");
   box.dataset.fuente="db";
   $("#comSolo").hidden=!(j.ocultas>0&&!conSesion);
   if(location.hash){ const el=document.getElementById(location.hash.slice(1)); if(el) el.scrollIntoView({block:"start"}); }

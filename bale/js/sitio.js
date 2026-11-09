@@ -39,16 +39,35 @@ if(btn&&menu){
   matchMedia("(min-width:900px)").addEventListener("change",m=>{ if(m.matches&&abierto) menuAbrir(false); });
 }
 
-/* ---------- Revelado ---------- */
+/* ---------- Revelado ----------
+   El contenido es visible por defecto (sin JS, o si algo falla, se ve todo). Aquí, ya en marcha, se
+   esconde solo lo que está por debajo de la pantalla y se revela una vez al llegar. */
 function revelar(){
   const els=[...document.querySelectorAll("[data-reveal]:not(.visto)")];
-  if(calma()||!("IntersectionObserver" in window)){ els.forEach(el=>el.classList.add("visto")); return; }
-  const io=new IntersectionObserver(es=>es.forEach(e=>{ if(e.isIntersecting){ e.target.classList.add("visto"); io.unobserve(e.target); } }),{threshold:.08,rootMargin:"0px 0px -32px 0px"});
-  // Nada se mide antes de pintar (eso retrasaba la primera imagen): el observador avisa en el primer
-  // cuadro de lo que ya está a la vista, y eso aparece con su fundido.
-  els.forEach(el=>io.observe(el));
+  if(calma()||!("IntersectionObserver" in window)){ els.forEach(el=>{ el.classList.remove("por-ver"); el.classList.add("visto"); }); return; }
+  const io=new IntersectionObserver(es=>es.forEach(e=>{ if(e.isIntersecting){ e.target.classList.remove("por-ver"); e.target.classList.add("visto"); io.unobserve(e.target); } }),{threshold:.08,rootMargin:"0px 0px -32px 0px"});
+  const alto=innerHeight;
+  els.forEach(el=>{
+    if(el.getBoundingClientRect().top>alto) el.classList.add("por-ver");   // ya a la vista: no se esconde
+    io.observe(el);
+  });
 }
 revelar();   // sitio.js va con defer: corre con el HTML ya leído
+
+/* ---------- Cabecera: se compacta al bajar ---------- */
+(function(){
+  const h=document.documentElement; let on=false;
+  const ver=()=>{ const v=scrollY>24; if(v!==on){ on=v; h.classList.toggle("cab-compacta",v); } };
+  addEventListener("scroll",ver,{passive:true}); ver();
+})();
+
+/* ---------- Teléfono: la barra «Reservar» aparece al pasar la portada (allí ya está el botón) ---------- */
+(function(){
+  const p=document.querySelector(".portada"), b=document.querySelector(".barra-movil");
+  if(!p||!b||!("IntersectionObserver" in window)) return;
+  document.body.classList.add("barra-oculta");
+  new IntersectionObserver(([e])=>document.body.classList.toggle("barra-oculta",e.isIntersecting),{rootMargin:"0px 0px -35% 0px"}).observe(p);
+})();
 
 /* ---------- Telón de la portada: se salta con un clic o una tecla ---------- */
 (function(){
@@ -74,6 +93,19 @@ document.querySelectorAll(".member .mbio").forEach(b=>{
     bt.setAttribute("aria-expanded",String(!open));
     bt.textContent=open?"Leer más":"Leer menos";
   });
+});
+
+/* ---------- Instagram en Comunidad: el embed oficial solo al pulsar «Ver aquí» ---------- */
+document.addEventListener("click",e=>{
+  const b=e.target.closest("[data-ig]"); if(!b) return;
+  const url=b.dataset.ig; if(!/^https:\/\/www\.instagram\.com\/(p|reel)\/[A-Za-z0-9_-]+\/embed\/$/.test(url)) return;
+  const li=b.closest(".ig-post"), marco=li&&li.querySelector("[data-ig-marco]"); if(!marco) return;
+  const f=document.createElement("iframe");
+  f.src=url; f.title="Publicación de Instagram de balé"; f.loading="lazy"; f.className="ig-embed";
+  f.setAttribute("referrerpolicy","strict-origin-when-cross-origin");
+  marco.replaceChildren(f); marco.classList.add("con-embed");
+  b.remove();
+  f.focus();
 });
 
 /* ---------- WhatsApp ---------- */

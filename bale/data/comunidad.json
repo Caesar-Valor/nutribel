@@ -48,5 +48,15 @@
       "foto": "img/balexnutribel-matcha.webp",
       "alt": "Vaso de matcha con hielo y hojas de menta junto a los logos de NutriBEL y balé"
     }
-  ]
+  ],
+  "_instagram": "Publicaciones de Instagram de @balestudio.rd para Comunidad. Cada una: url (enlace de un post o reel, https://www.instagram.com/p/... o /reel/...), foto (una foto propia en img/, la que elija Marifer como vista previa), alt (qué se ve en la foto), y opcionales titulo, texto corto y fecha_texto. La publicación de Instagram solo se carga si la clienta pulsa «Ver aquí».",
+  "_ejemplo_instagram": {
+    "url": "https://www.instagram.com/p/DfYPjKolLgA/",
+    "foto": "img/comunidad/<foto-elegida>.webp",
+    "alt": "Describe la foto",
+    "titulo": "Título corto",
+    "texto": "Una o dos frases.",
+    "fecha_texto": "6 de noviembre"
+  },
+  "instagram": []
 }

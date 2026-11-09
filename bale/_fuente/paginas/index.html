@@ -40,9 +40,7 @@
 <section class="sec suave" aria-labelledby="t-estudio">
   <div class="cont best">
     <div>
-      <span class="kick">El estudio</span>
       <h2 id="t-estudio">Balé Studio</h2>
-      <span class="cinta" aria-hidden="true"></span>
       <div class="historia">{{historia}}</div>
       <a class="btn line" href="nosotras.html">Conoce el estudio</a>
     </div>
@@ -54,10 +52,8 @@
 
 <section class="sec papel" aria-labelledby="t-clases">
   <div class="cont">
-    <header class="shead" data-reveal>
-      <span class="kick">Barre, Pilates y Ballet</span>
+    <header class="shead lado" data-reveal>
       <h2 id="t-clases">Nuestras clases</h2>
-      <span class="cinta" aria-hidden="true"></span>
       <p>{{que-es-barre}}</p>
     </header>
     {{clases-tarjetas}}
@@ -71,11 +67,9 @@
 <section class="sec papel" aria-labelledby="t-proxima">
   <div class="cont dos centrado">
     <header class="shead" data-reveal>
-      <span class="kick">Horario y reservas</span>
       <h2 id="t-proxima">La próxima clase con lugar</h2>
-      <span class="cinta" aria-hidden="true"></span>
-      <p>En las clases de barra escoges tu lugar en la sala. Tu reserva se confirma al momento.</p>
-      <a class="btn line" href="reservar.html">Ver el horario de la semana</a>
+      <p>En las clases de barra eliges tu lugar en la sala. La reserva se confirma al momento.</p>
+      <a class="btn texto" href="reservar.html">Ver el horario de la semana</a>
     </header>
     <div class="proxima-tarjeta" id="proxima" aria-live="polite">
       <p class="pcarga">Buscando la próxima clase…</p>
@@ -86,47 +80,47 @@
 <section class="sec" aria-labelledby="t-planes">
   <div class="cont">
     <header class="shead" data-reveal>
-      <span class="kick">Precios</span>
       <h2 id="t-planes">Elige tu ritmo</h2>
-      <span class="cinta" aria-hidden="true"></span>
-      <p>Paga cada clase o asegura tu lugar todo el mes con una membresía. Las medias antideslizantes son obligatorias.</p>
+      <p>Paga por clase o asegura tu lugar todo el mes con una membresía.</p>
     </header>
     {{precios-breve}}
-    <div class="acciones fin"><a class="btn" href="precios.html">Ver todos los precios</a></div>
+    {{precios-nota}}
+    <div class="acciones fin"><a class="btn line" href="precios.html">Ver todos los precios</a></div>
   </div>
 </section>
 
 <section class="sec suave" aria-labelledby="t-comunidad">
   <div class="cont">
     <header class="shead" data-reveal>
-      <span class="kick">Comunidad</span>
       <h2 id="t-comunidad">Más que clases</h2>
-      <span class="cinta" aria-hidden="true"></span>
     </header>
     {{comunidad-tarjetas}}
-    <div class="acciones fin"><a class="btn line" href="comunidad.html">Ver la comunidad</a></div>
+    <div class="acciones fin"><a class="btn texto" href="comunidad.html">Ver la comunidad</a></div>
   </div>
+</section>
+
+{{testimonios}}
+
+<section class="sec instagram" aria-labelledby="t-insta">
+  <div class="cont">{{instagram-fotos}}</div>
 </section>
 
 <section class="sec papel" aria-labelledby="t-equipo">
   <div class="cont">
     <header class="shead" data-reveal>
-      <span class="kick">El equipo</span>
       <h2 id="t-equipo">Nuestro equipo</h2>
-      <span class="cinta" aria-hidden="true"></span>
       <p>{{equipo-texto}}</p>
     </header>
     {{equipo-breve}}
-    <div class="acciones fin"><a class="btn line" href="nosotras.html#equipo">Conoce al equipo</a></div>
+    <div class="acciones fin"><a class="btn texto" href="nosotras.html#equipo">Conoce al equipo</a></div>
   </div>
 </section>
 
 <section class="sec" aria-labelledby="t-faq">
-  <div class="cont">
+  <div class="cont faq-lado">
     <header class="shead" data-reveal>
-      <span class="kick">Preguntas frecuentes</span>
       <h2 id="t-faq">Antes de tu primera clase</h2>
-      <span class="cinta" aria-hidden="true"></span>
+      <a class="btn texto" href="preguntas.html">Todas las preguntas</a>
     </header>
     {{preguntas}}
   </div>
@@ -135,7 +129,6 @@
 <section class="sec suave" aria-labelledby="t-ubic">
   <div class="cont ubic">
     <div>
-      <span class="kick">Ubicación</span>
       <h2 id="t-ubic">Te esperamos en balé</h2>
       <p class="where">{{ubicacion}}</p>
       <p class="city">La Vega, República Dominicana</p>
@@ -143,8 +136,7 @@
     </div>
     <div class="acciones">
       <a class="btn" href="{{maps}}" target="_blank" rel="noopener">Cómo llegar</a>
-      <a class="btn line" href="{{whatsapp-url}}" target="_blank" rel="noopener">WhatsApp {{whatsapp-texto}}</a>
-      <a class="btn line" href="{{instagram-url}}" target="_blank" rel="noopener">Instagram {{instagram-usuario}}</a>
+      <a class="btn line" href="{{whatsapp-url}}" target="_blank" rel="noopener">Escríbenos por WhatsApp</a>
     </div>
   </div>
 </section>

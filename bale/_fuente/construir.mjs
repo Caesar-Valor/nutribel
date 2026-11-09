@@ -77,24 +77,22 @@ const momentos = (pagina) => {
 
 // ---------- Bloques que salen de los JSON ----------
 const bloques = {
-  // ===== Piezas de la versión de una sola página (octubre de 2026), recuperadas en el sitio de varias páginas =====
-
-  // Inicio y Clases: una tarjeta por clase, con sus dos fotos arriba
-  'clases-tarjetas': () => `<div class="ctypes" role="region" aria-label="Tipos de clase" tabindex="0">${B.clases.map((cl) => {
-    const tags = etiquetasDe(cl), fotos = cl.fotos.slice(0, 2);
-    return `<article class="ctype">
-  <div class="phs n${fotos.length}">${fotos.map((f) => img(f, '(min-width:1040px) 150px, (min-width:700px) 45vw, 40vw')).join('')}</div>
-  <div class="ct">
-    <span class="kick">${esc(cl.grupo)}</span>
+  // Inicio: lista editorial de clases, cada una con su foto en arco y el texto completo (nada cortado)
+  'clases-tarjetas': () => `<ul class="cl-lista" role="list">${B.clases.map((cl) => {
+    const tags = etiquetasDe(cl), f = cl.fotos[0];
+    return `<li class="cl-item">
+  <figure class="cl-foto">${f ? img(f, '(min-width:900px) 180px, 120px', { w: 1200, h: 1500 }) : ''}</figure>
+  <div class="cl-tx">
     <h3>${esc(cl.tipo)}</h3>
-    ${tags.map((t) => `<span class="badge">${esc(t.destacado)}</span>`).join('')}
-    <p class="ctx">${esc(cl.texto)}</p>
+    ${tags.map((t) => `<p class="badge">${esc(t.destacado)}</p>`).join('')}
+    <p>${esc(cl.texto)}</p>
     ${cl.edades ? `<ul class="ages" aria-label="Grupos por edad">${cl.edades.map((a) => `<li>${esc(a)}</li>`).join('')}</ul>` : ''}
-    <p class="meta">${esc(cl.dias)}</p>
-    <a class="more" href="clases.html#${esc(cl.slug)}">Ver la clase<span class="sr-only"> ${esc(cl.tipo)}</span> <span aria-hidden="true">→</span></a>
+    <p class="cl-meta">${esc(cl.dias)}</p>
+    <p class="mode${cl.reserva === 'inscripcion' ? ' wa-mode' : ''}">${cl.reserva === 'inscripcion' ? 'Inscripción por WhatsApp' : 'Se reserva en línea'}</p>
+    <a class="enlace" href="clases.html#${esc(cl.slug)}">Ver la clase<span class="sr-only"> ${esc(cl.tipo)}</span></a>
   </div>
-</article>`;
-  }).join('')}</div>`,
+</li>`;
+  }).join('')}</ul>`,
 
   // Clases: una sección por clase, foto en arco a un lado (alterna en escritorio)
   'clases-detalle': () => B.clases.map((cl, i) => {
@@ -105,7 +103,6 @@ const bloques = {
     return `<section class="clase ${i % 2 ? 'alt' : ''}" id="${esc(cl.slug)}" aria-labelledby="t-${esc(cl.slug)}" data-reveal>
   <figure class="cfoto">${f ? img(f, '(min-width:1024px) 460px, 92vw', { lazy: i > 0, prioridad: i === 0 }) : ''}</figure>
   <div class="ctexto">
-    <span class="kick">${esc(cl.grupo)}</span>
     <h2 id="t-${esc(cl.slug)}">${esc(cl.tipo)}</h2>
     ${tags.length || cl.edades ? `<div class="chips">${tags.map((t) => `<span class="badge">${esc(t.destacado)}</span>`).join('')}${(cl.edades || []).map((a) => `<span class="chip">${esc(a)}</span>`).join('')}</div>` : ''}
     <p class="lead">${esc(cl.texto)}</p>
@@ -121,36 +118,66 @@ const bloques = {
 </section>`;
   }).join('\n'),
 
-  // Inicio: el nuevo espacio de Reformer (foto grande en arco y dos debajo)
+  // Inicio: el espacio de Reformer (mosaico de fotos en arco) y el horario en una frase
   'reformer': () => {
     const R = B.reformer, ses = H.clases.filter((c) => c.clase === 'Pilates Reformer').sort((a, b) => ORDEN.indexOf(a.dia) - ORDEN.indexOf(b.dia) || toH(a.inicio) - toH(b.inicio));
     const porDia = {};
-    for (const c of ses) (porDia[c.dia] = porDia[c.dia] || []).push(hora(c.inicio).replace(':00', ''));
+    for (const c of ses) (porDia[c.dia] = porDia[c.dia] || []).push(c.inicio);
+    const yLista = (xs) => xs.length > 1 ? `${xs.slice(0, -1).join(', ')} y ${xs[xs.length - 1]}` : xs.join('');
+    const horas = (hs) => { const t = hs.map(hora), suf = t[0].slice(-2); return t.every((x) => x.endsWith(suf)) ? `${yLista(t.map((x) => x.slice(0, -3).replace(':00', '')))} ${suf}` : yLista(t.map((x) => x.replace(':00', ''))); };
+    const insts = [...new Set(ses.map((c) => instr(c.instructora).nombre))];
     const cupo = (B.cupos || {})['Pilates Reformer'];
+    const frase = `${cupo ? `${cupo} máquinas. ` : ''}${Object.entries(porDia).map(([d, hs]) => `${DIAS[d]} ${horas(hs)}`).join('; ')}${insts.length ? `, con ${yLista(insts)}` : ''}.`;
     return `<div class="refo">
-  <div class="refo-ph">${R.fotos.map((f, i) => img(f, i ? '(min-width:900px) 290px, 45vw' : '(min-width:900px) 580px, 92vw', { cls: i ? '' : 'big' })).join('')}</div>
+  <div class="refo-ph">${R.fotos.map((f, i) => img(f, i ? '(min-width:900px) 260px, 44vw' : '(min-width:900px) 360px, 56vw', { cls: `r${i}` })).join('')}</div>
   <div class="refo-tx">
-    <span class="kick">Pilates Reformer</span>
     <h2 id="t-reformer">${esc(R.titulo)}</h2>
-    <span class="cinta" aria-hidden="true"></span>
+    <p class="refo-meta">${esc(frase)}</p>
     <p>${esc(R.texto)}</p>
-    <p class="refo-meta">${Object.entries(porDia).map(([d, hs]) => `<span>${esc(DIAS[d])} · ${esc(hs.join(', '))}</span>`).join('')}${cupo ? `<span>Cupo: ${cupo} máquinas</span>` : ''}</p>
     <a class="btn" href="reservar.html?tipo=${encodeURIComponent('Pilates Reformer')}">${esc(R.boton)}</a>
   </div>
 </div>`;
   },
 
-  // Inicio: los precios en breve, en tres tarjetas como las de Precios
+  // Inicio: los precios en breve. Verticales; la recomendada (ilimitada) con el arco de la sala
   'precios-breve': () => {
     const ind = P.individual.items, mem = P.membresia.items;
     const desde = Math.min(...ind.filter((x) => !/ballet/i.test(x.tipo)).map((x) => x.precio));
     const memMin = Math.min(...mem.filter((x) => !x.destacado).map((x) => x.precio));
     const ilim = mem.find((x) => x.destacado) || mem[mem.length - 1];
     return `<ul class="pbreve" role="list">
-  <li class="pblock"><span class="kick">${esc(P.individual.nota)}</span><h3>${esc(P.individual.titulo)}</h3><p class="pdesde"><small>desde</small> ${esc(dinero(desde))}</p><p class="pdet">Barre, Pilates Reformer o ballet clásico, cuando quieras.</p></li>
-  <li class="pblock"><span class="kick">${esc(P.membresia.nota)}</span><h3>${esc(P.membresia.titulo)}</h3><p class="pdesde"><small>desde</small> ${esc(dinero(memMin))}<small> al mes</small></p><p class="pdet">4 u 8 clases al mes, o el combo de Pilates y Barre.</p></li>
-  <li class="pblock dest"><span class="kick">Todo el mes</span><h3>${esc(ilim.nombre)}</h3><p class="pdesde">${esc(dinero(ilim.precio))}<small> al mes</small></p><p class="pdet">${esc(ilim.detalle)}</p></li>
+  <li class="pblock"><h3>${esc(P.individual.titulo)}</h3><p class="pdesde"><small>Desde</small> ${esc(dinero(desde))}</p><p class="pdet">Barre, Pilates Reformer o ballet clásico, cuando quieras. ${esc(P.individual.nota)}.</p></li>
+  <li class="pblock"><h3>${esc(P.membresia.titulo)}</h3><p class="pdesde"><small>Desde</small> ${esc(dinero(memMin))}<small> al mes</small></p><p class="pdet">4 u 8 clases al mes, o el combo de Pilates y Barre. ${esc(P.membresia.nota)}.</p></li>
+  <li class="pblock dest"><p class="badge">Sin límite de clases</p><h3>${esc(ilim.nombre)}</h3><p class="pdesde">${esc(dinero(ilim.precio))}<small> al mes</small></p><p class="pdet">${esc(ilim.detalle)}</p></li>
 </ul>`;
+  },
+
+  // Inicio: medias y cancelación en una nota clara (no en letra pequeña)
+  'precios-nota': () => `<div class="pnota-clara"><p><b>Medias antideslizantes obligatorias</b> en todas las clases: te dan agarre en la barra y en el Reformer. <a href="precios.html#medias">Pide las tuyas</a>.</p><p><b>Cancelación:</b> ${esc(CFG.cancelacion.texto)}</p></div>`,
+
+  // Inicio: testimonios reales (bale.json → testimonios). Sin testimonios no sale nada
+  'testimonios': () => {
+    const T = (B.testimonios || []).filter((t) => t && t.texto && t.nombre);
+    if (!T.length) return '';
+    return `<section class="sec suave" aria-labelledby="t-testimonios">
+  <div class="cont">
+    <h2 id="t-testimonios">Lo que dicen en balé</h2>
+    <ul class="testimonios" role="list">${T.map((t) => `<li><blockquote><p>${esc(t.texto)}</p></blockquote><p class="quien">${esc(t.nombre)}${t.clase ? ` · ${esc(t.clase)}` : ''}</p></li>`).join('')}</ul>
+  </div>
+</section>`;
+  },
+
+  // Inicio: Instagram con fotos propias de la web (sin widgets de terceros)
+  'instagram-fotos': () => {
+    const fotos = [...B.clases.map((c) => c.fotos[c.fotos.length > 1 ? 1 : 0]), ...(C.momentos || []).filter((m) => m.foto).map((m) => ({ src: m.foto, alt: m.alt }))].filter(Boolean).slice(0, 6);
+    return `<div class="insta">
+  <div class="insta-tx">
+    <h2 id="t-insta">Síguenos en Instagram</h2>
+    <p>Clases, eventos y el día a día del estudio.</p>
+    <a class="btn line" href="${esc(CFG.instagram)}" target="_blank" rel="noopener">${esc(CFG.instagram_usuario)} en Instagram</a>
+  </div>
+  <ul class="insta-fotos" role="list">${fotos.map((f) => `<li>${img(f, '(min-width:900px) 200px, 30vw', { w: 1200, h: 1200 })}</li>`).join('')}</ul>
+</div>`;
   },
 
   'precios': () => {
@@ -235,8 +262,23 @@ ${S ? `<article class="socks" id="medias" aria-labelledby="t-medias" data-reveal
     return `${prox.length ? `<section class="csec" aria-labelledby="t-prox"><h2 id="t-prox">Próximas actividades</h2><ul class="actividades" role="list">${prox.map((e) => {
       const [, m, d] = e.fecha.split('-').map(Number);
       return `<li class="actividad"><p class="afecha" aria-hidden="true"><b>${d}</b><span>${MESES[m - 1].slice(0, 3)}</span></p><div><span class="kick">Próximo evento</span><h3>${esc(e.titulo)}</h3><p class="ameta">${d} de ${MESES[m - 1]}${e.hora ? ` · ${esc(hora(e.hora))}` : ''}${e.precio != null ? ` · ${esc(dinero(e.precio))}` : ''}</p><p>${esc(e.texto)}</p>${e.mensaje ? `<button class="btn sm" type="button" ${wa(e.mensaje)}>${esc(e.boton || 'Reservar por WhatsApp')}</button>` : ''}</div></li>`;
-    }).join('')}</ul></section>` : ''}
+    }).join('')}</ul></section>` : `<section class="csec"><p class="vacio-com">Pronto anunciamos la próxima actividad. <a href="${esc(CFG.instagram)}" target="_blank" rel="noopener">Síguenos en Instagram</a>.</p></section>`}
 <section class="csec" aria-labelledby="t-mom"><h2 id="t-mom">Momentos</h2>${momentos(true)}</section>`;
+  },
+
+  // Comunidad: publicaciones de Instagram de @balestudio.rd (comunidad.json → instagram). El embed oficial
+  // solo se carga si la clienta pulsa «Ver aquí» (sitio.js); al abrir la página no se pide nada a Instagram.
+  'instagram-posts': () => {
+    const RE = /^https:\/\/www\.instagram\.com\/(p|reel)\/([A-Za-z0-9_-]{5,40})\/?$/;
+    const L = (C.instagram || []).map((x) => ({ ...x, m: RE.exec(String(x.url || '').trim()) })).filter((x) => x.m && x.foto && x.alt);
+    if (!L.length) return '';
+    return `<section class="csec" aria-labelledby="t-ig"><h2 id="t-ig">En Instagram</h2><ul class="momentos ig-posts" role="list">${L.map((x) => {
+      const url = `https://www.instagram.com/${x.m[1]}/${x.m[2]}/`;
+      return `<li class="momento ig-post"><figure data-ig-marco>${img({ src: x.foto, alt: x.alt }, '(min-width:700px) 240px, 92vw', { w: 1080, h: 1350 })}</figure>
+  <div class="mtexto">${x.fecha_texto ? `<span class="kick">${esc(x.fecha_texto)}</span>` : ''}${x.titulo ? `<h3>${esc(x.titulo)}</h3>` : ''}${x.texto ? `<p>${esc(x.texto)}</p>` : ''}
+    <div class="acciones"><button class="btn line sm" type="button" data-ig="${esc(url)}embed/">Ver aquí</button><a class="btn texto" href="${esc(url)}" target="_blank" rel="noopener">Ver en Instagram</a></div></div>
+</li>`;
+    }).join('')}</ul><p class="ig-nota">Al pulsar «Ver aquí» se carga la publicación desde Instagram.</p></section>`;
   },
 
   // Inicio: los momentos de la comunidad en tarjetas
@@ -372,6 +414,17 @@ if (mapa != null) {
     const locs = (s) => (s.match(/<loc>[^<]+<\/loc>/g) || []).join();
     if (locs(viejo) !== locs(mapa)) { distintas++; if (COMPROBAR) console.error('No está al día: sitemap.xml'); }
     if (!COMPROBAR) writeFileSync(ruta, mapa);
+  }
+}
+// La sala (data/sala.json → js/sala-datos.js): el selector la necesita al momento, sin esperar un fetch
+{
+  const S = json('sala.json');
+  const datos = `/* Generado por _fuente/construir.mjs desde data/sala.json: no editar a mano. */\nwindow.BALE_SALA_DATOS = ${JSON.stringify({ imagen: S.imagen, zonas: S.zonas, lugares: S.lugares })};\n`;
+  const ruta = join(BALE, 'js', 'sala-datos.js');
+  if (!existsSync(ruta) || readFileSync(ruta, 'utf8').replace(/\r\n/g, '\n') !== datos) {
+    distintas++;
+    if (COMPROBAR) console.error('No está al día: bale/js/sala-datos.js');
+    else writeFileSync(ruta, datos);
   }
 }
 if (COMPROBAR) {

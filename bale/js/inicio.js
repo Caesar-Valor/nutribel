@@ -25,12 +25,12 @@ function cuando(fecha){
 }
 function pintar(s,conCupo){
   const box=$("#proxima"); if(!box) return;
-  if(!s){ box.innerHTML=`<p class="pq">Esta semana ya no quedan lugares en línea.</p><p class="pl">Mira el horario de la semana que viene o escríbenos por WhatsApp.</p><a class="btn line" href="reservar.html">Ver el horario</a>`; return; }
+  if(!s){ box.classList.add("vacia"); box.innerHTML=`<p class="pn">No quedan lugares en línea esta semana.</p><p class="pl">Mira la semana que viene o escríbenos por WhatsApp.</p><a class="btn line" href="reservar.html">Ver el horario</a>`; return; }
   const libres=conCupo?Math.max(0,(+s.capacidad||0)-(+s.ocupados||0)):null;
   const q=new URLSearchParams({clase:s.horario_id||s.id||"",fecha:s.fecha}).toString();
-  box.innerHTML=`<p class="pq">${esc(cuando(s.fecha))} · ${esc(NB.fmtH(toH(s.inicio)))} · con ${esc(s.instructora)}</p>
+  box.classList.remove("vacia"); box.innerHTML=`<p class="pq">${esc(cuando(s.fecha))} · ${esc(NB.fmtH(toH(s.inicio)))} · con ${esc(s.instructora)}</p>
     <p class="pn">${esc(s.titulo||s.clase)}</p>
-    ${libres!=null?`<p class="pl">${libres} de ${+s.capacidad} ${s.modo==="cupos"?"máquinas libres":"lugares libres"}</p>`:""}
+    ${libres!=null?`<p class="pl"><b>${libres}</b> de ${+s.capacidad} ${s.modo==="cupos"?"máquinas libres":"lugares libres"}</p>`:""}
     <a class="btn" href="reservar.html?${esc(q)}">Reservar mi lugar</a>`;
 }
 async function proxima(){
