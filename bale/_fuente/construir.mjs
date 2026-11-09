@@ -9,6 +9,7 @@
 // =========================================================
 import { readFileSync, writeFileSync, readdirSync, existsSync } from 'node:fs';
 import { join, dirname } from 'node:path';
+import { createHash } from 'node:crypto';
 import { fileURLToPath } from 'node:url';
 
 const FUENTE = dirname(fileURLToPath(import.meta.url));
@@ -393,13 +394,38 @@ function sitemap(paginas, fecha) {
   return [...sinBale.slice(0, fin), ...nuevas, ...sinBale.slice(fin)].join('\n');
 }
 
+let salaDistinta = false;
+// La sala (data/sala.json → js/sala-datos.js): el selector la necesita al momento, sin esperar un fetch
+{
+  const S = json('sala.json');
+  const datos = `/* Generado por _fuente/construir.mjs desde data/sala.json: no editar a mano. */\nwindow.BALE_SALA_DATOS = ${JSON.stringify({ imagen: S.imagen, zonas: S.zonas, lugares: S.lugares })};\n`;
+  const ruta = join(BALE, 'js', 'sala-datos.js');
+  if (!existsSync(ruta) || readFileSync(ruta, 'utf8').replace(/\r\n/g, '\n') !== datos) {
+    salaDistinta = true;
+    if (COMPROBAR) console.error('No está al día: bale/js/sala-datos.js');
+    else writeFileSync(ruta, datos);
+  }
+}
+// ---------- Versiones de CSS y JS ----------
+// Cada página pide sus archivos con ?v=<huella del contenido>: al cambiar un archivo cambia la dirección y
+// el navegador (o GitHub Pages, que guarda 10 min) no puede servir la versión vieja. Sin cambios, la misma.
+const huellas = new Map();
+function huella(rel) {
+  if (!huellas.has(rel)) {
+    const ruta = join(BALE, rel);
+    huellas.set(rel, existsSync(ruta) ? createHash('sha1').update(readFileSync(ruta, 'utf8').replace(/\r\n/g, '\n')).digest('hex').slice(0, 8) : null);
+  }
+  return huellas.get(rel);
+}
+const conVersion = (html) => html.replace(/(<(?:link|script)\b[^>]*?\b(?:href|src)=")((?:css|js)\/[^"?#]+\.(?:css|js))"/g, (m, a, rel) => { const h = huella(rel); return h ? `${a}${rel}?v=${h}"` : m; });
+
 // ---------- Armar ----------
 const nombres = readdirSync(join(FUENTE, 'paginas')).filter((f) => f.endsWith('.html')).sort();
 const hechas = [];
 let distintas = 0;
 for (const n of nombres) {
   const fuente = readFileSync(join(FUENTE, 'paginas', n), 'utf8');
-  const html = pagina(n, fuente);
+  const html = conVersion(pagina(n, fuente));
   const meta = JSON.parse(fuente.match(/^<!--@([\s\S]*?)@-->/)[1]);
   const destino = join(BALE, n);
   const igual = existsSync(destino) && readFileSync(destino, 'utf8').replace(/\r\n/g, '\n') === html;
@@ -409,6 +435,7 @@ for (const n of nombres) {
   if (COMPROBAR) console.error(`No está al día: bale/${n}`);
   else writeFileSync(destino, html);
 }
+if (salaDistinta) distintas++;
 const mapa = sitemap(hechas, new Date().toISOString().slice(0, 10));
 if (mapa != null) {
   const ruta = join(RAIZ, 'sitemap.xml'), viejo = readFileSync(ruta, 'utf8').replace(/\r\n/g, '\n');
@@ -417,17 +444,6 @@ if (mapa != null) {
     const locs = (s) => (s.match(/<loc>[^<]+<\/loc>/g) || []).join();
     if (locs(viejo) !== locs(mapa)) { distintas++; if (COMPROBAR) console.error('No está al día: sitemap.xml'); }
     if (!COMPROBAR) writeFileSync(ruta, mapa);
-  }
-}
-// La sala (data/sala.json → js/sala-datos.js): el selector la necesita al momento, sin esperar un fetch
-{
-  const S = json('sala.json');
-  const datos = `/* Generado por _fuente/construir.mjs desde data/sala.json: no editar a mano. */\nwindow.BALE_SALA_DATOS = ${JSON.stringify({ imagen: S.imagen, zonas: S.zonas, lugares: S.lugares })};\n`;
-  const ruta = join(BALE, 'js', 'sala-datos.js');
-  if (!existsSync(ruta) || readFileSync(ruta, 'utf8').replace(/\r\n/g, '\n') !== datos) {
-    distintas++;
-    if (COMPROBAR) console.error('No está al día: bale/js/sala-datos.js');
-    else writeFileSync(ruta, datos);
   }
 }
 if (COMPROBAR) {
