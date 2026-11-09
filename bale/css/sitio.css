@@ -784,8 +784,13 @@ dialog.reserva[open]{animation:subir var(--dur-mid) var(--ease-out)}
 /* Cabeceras de página: el arco de los espejos, en línea fina */
 .phead{position:relative}
 .phead h1{max-width:18ch}
+/* Cabeceras con foto en arco a la derecha (desde 900 px): dos columnas, sin superponerse */
+.phead-foto{display:none;margin:0}
 @media (min-width:900px){
-  .phead::after{content:"";position:absolute;right:var(--gutter);bottom:0;width:180px;height:230px;border-radius:90px 90px 0 0;border:1.5px solid color-mix(in srgb,var(--brown) 22%,transparent);border-bottom:0;pointer-events:none}
+  .phead.con-foto{display:grid;grid-template-columns:minmax(0,1fr) 280px;column-gap:64px;align-items:center}
+  .phead.con-foto .phead-tx{max-width:60ch;min-width:0}
+  .phead-foto{display:block;width:100%;aspect-ratio:4/5;border-radius:50% 50% 0 0/40% 40% 0 0;overflow:hidden;background:var(--pink)}
+  .phead-foto img{width:100%;height:100%;object-fit:cover}
 }
 /* El estudio: el titular grande y el primer párrafo como entrada */
 .best h2{font-size:clamp(36px,5.4vw,64px);margin-bottom:20px}
@@ -946,4 +951,22 @@ body:has(dialog[open]) .barra-movil{display:none}
   .cal{padding-left:4px;padding-right:4px;--dg:2px}
   .cal > :not(.dias){padding-left:10px;padding-right:10px}
   .dbtn{min-width:44px}
+}
+/* ---------- Entrada a Comunidad (9/11/2026): breve, menos de 1 s, una sola vez al abrir ----------
+   La foto en arco de la cabecera sube como un telón, el título hace un «relevé» (sube desde su línea), la cinta de
+   satén se dibuja y las primeras tarjetas llegan escalonadas 60 ms. Solo opacity, transform y clip-path;
+   solo con JS en marcha (.js) y nada con movimiento reducido: el contenido ya está ahí. */
+@keyframes com-arco{from{clip-path:inset(100% 0 0 0)}to{clip-path:inset(0)}}
+@keyframes com-releve{from{clip-path:inset(0 0 100% 0);transform:translateY(.35em)}to{clip-path:inset(-.2em -.1em -.3em -.1em);transform:none}}
+@keyframes com-cinta{from{transform:scaleX(0)}to{transform:scaleX(1)}}
+@keyframes com-sube{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:none}}
+.js .com-entra .phead-foto{animation:com-arco 700ms var(--ease-out) both}
+.js .com-entra .phead h1{animation:com-releve 560ms 80ms var(--ease-out) both}
+.js .com-entra .phead .cinta{transform-origin:0 50%;animation:com-cinta 480ms 280ms var(--ease-out) both}
+.js .com-entra .phead .lead{animation:com-sube 420ms 340ms var(--ease-out) both}
+.js .com-entra #comunidad .csec:nth-child(-n+2) > h2,.js .com-entra #comunidad .vacio-com{animation:com-sube 420ms 380ms var(--ease-out) both}
+.js .com-entra #comunidad .csec:nth-child(-n+2) li:nth-child(-n+2):not(.por-ver){animation:com-sube 460ms calc(440ms + var(--k,0) * 60ms) var(--ease-out) both}
+.js .com-entra #comunidad .csec li:nth-child(2){--k:1}
+@media (prefers-reduced-motion:reduce){
+  .js .com-entra .phead-foto,.js .com-entra .phead h1,.js .com-entra .phead .cinta,.js .com-entra .phead .lead,.js .com-entra #comunidad .csec h2,.js .com-entra #comunidad .vacio-com,.js .com-entra #comunidad li{animation:none!important;clip-path:none!important;opacity:1!important;transform:none!important}
 }
