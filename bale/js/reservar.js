@@ -307,6 +307,7 @@ function aReserva(){
   else { show("stDatos"); $("#confirmBtn").focus(); }
 }
 function show(id){
+  if(SALA&&SALA.cerrarGrande) SALA.cerrarGrande();
   ["stLugar","stDatos","stListo"].forEach(s=>{ $("#"+s).hidden=s!==id; });
   const salta=!!(bk.c&&(bk.wait||!isBarra(bk.c)));
   paso(id==="stLugar"?2:id==="stDatos"?3:4,salta);
@@ -325,6 +326,8 @@ function pickSeat(n){
   const L=lugarOf(n);
   $("#pick").textContent=L?`Elegiste el ${lugarTxt(L).toLowerCase()}.`:"";
   $("#toDatos").disabled=!L;
+  // Teléfono: que «Continuar» quede a la vista (suave; sin animación con movimiento reducido)
+  if(L&&matchMedia("(max-width:759px)").matches){ const c=$("#toDatos"); requestAnimationFrame(()=>c.scrollIntoView({block:"nearest",behavior:matchMedia("(prefers-reduced-motion: reduce)").matches?"auto":"smooth"})); }
 }
 
 /* ---------- Datos: errores junto al campo ---------- */
@@ -672,7 +675,7 @@ function init(){
   $("#bkDone").addEventListener("click",()=>dlg.close());
   dlg.addEventListener("click",e=>{ if(e.target===dlg) dlg.close(); });
   let opener=null;
-  dlg.addEventListener("close",()=>{ if(opener&&document.contains(opener)) opener.focus(); else { const f=$("#rows .rbtn"); if(f) f.focus(); } });
+  dlg.addEventListener("close",()=>{ if(SALA&&SALA.cerrarGrande) SALA.cerrarGrande(); if(opener&&document.contains(opener)) opener.focus(); else { const f=$("#rows .rbtn"); if(f) f.focus(); } });
   document.addEventListener("click",e=>{ const b=e.target.closest("[data-book],[data-wait]"); if(b) opener=b; },true);
 }
 function invalidSinFoco(el,msg){ el.setAttribute("aria-invalid","true"); const b=document.getElementById("e-"+el.id); if(b){ b.textContent=msg; b.hidden=false; } }

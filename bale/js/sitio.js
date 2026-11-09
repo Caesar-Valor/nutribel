@@ -45,12 +45,21 @@ if(btn&&menu){
 function revelar(){
   const els=[...document.querySelectorAll("[data-reveal]:not(.visto)")];
   if(calma()||!("IntersectionObserver" in window)){ els.forEach(el=>{ el.classList.remove("por-ver"); el.classList.add("visto"); }); return; }
-  const io=new IntersectionObserver(es=>es.forEach(e=>{ if(e.isIntersecting){ e.target.classList.remove("por-ver"); e.target.classList.add("visto"); io.unobserve(e.target); } }),{threshold:.08,rootMargin:"0px 0px -32px 0px"});
-  const alto=innerHeight;
+  let activo=false;
+  const ver=el=>{ el.classList.remove("por-ver"); el.classList.add("visto"); };
+  const io=new IntersectionObserver(es=>{ activo=true; es.forEach(e=>{ if(e.isIntersecting){ ver(e.target); io.unobserve(e.target); } }); },{threshold:.08,rootMargin:"0px 0px -32px 0px"});
+  // Lo que apunta el # de la dirección (p. ej. nosotras.html#equipo) se ve desde el principio
+  const destino=()=>{ try{ return location.hash.length>1?document.getElementById(decodeURIComponent(location.hash.slice(1))):null; }catch(e){ return null; } };
+  const enDestino=(el,d)=>d&&(el.contains(d)||d.contains(el));
+  const d=destino(), alto=innerHeight;
   els.forEach(el=>{
-    if(el.getBoundingClientRect().top>alto) el.classList.add("por-ver");   // ya a la vista: no se esconde
+    if(!enDestino(el,d)&&el.getBoundingClientRect().top>alto) el.classList.add("por-ver");   // ya a la vista: no se esconde
+    else ver(el);
     io.observe(el);
   });
+  addEventListener("hashchange",()=>{ const t=destino(); if(t) document.querySelectorAll("[data-reveal].por-ver").forEach(el=>{ if(enDestino(el,t)) ver(el); }); });
+  // Respaldo: si el observador no llegó a avisar en 2,5 s, se muestra todo
+  setTimeout(()=>{ if(!activo) document.querySelectorAll("[data-reveal].por-ver").forEach(ver); },2500);
 }
 revelar();   // sitio.js va con defer: corre con el HTML ya leído
 
@@ -106,6 +115,15 @@ document.addEventListener("click",e=>{
   marco.replaceChildren(f); marco.classList.add("con-embed");
   b.remove();
   f.focus();
+});
+
+/* ---------- Mapa de la portada: solo se carga al tocar «Ver el mapa» ---------- */
+document.addEventListener("click",e=>{
+  const b=e.target.closest("[data-ver-mapa]"); if(!b) return;
+  const fig=b.closest("[data-mapa]"), url=fig&&fig.dataset.mapa; if(!url||!/^https:\/\/www\.google\.com\/maps\?/.test(url)) return;
+  const f=document.createElement("iframe");
+  f.src=url; f.title="Mapa: balé en La Vega"; f.loading="lazy"; f.setAttribute("referrerpolicy","no-referrer-when-downgrade");
+  fig.replaceChildren(f); f.focus();
 });
 
 /* ---------- WhatsApp ---------- */

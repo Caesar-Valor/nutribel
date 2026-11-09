@@ -102,7 +102,7 @@ body.sitio{background:var(--b-bg);color:var(--b-ink);font:400 16px/1.6 var(--b-s
 .cab-in{transition:height var(--dur-mid) var(--ease-out)}
 body.menu-abierto .cab::before{background:var(--b-bg)}
 .cab-in{max-width:1120px;margin:0 auto;padding:0 var(--gutter);height:var(--cab-h);display:flex;align-items:center;gap:16px}
-.logo{line-height:0;border-radius:8px;flex:none}
+.logo{line-height:0;border-radius:8px;flex:none;min-height:44px;display:inline-flex;align-items:center}
 .logo img{height:34px;width:auto;transition:height var(--dur-mid) var(--ease-out)}
 .cab-compacta .logo img{height:30px}
 :root[data-mode="dark"] .logo img,:root[data-mode="dark"] .pie-marca img{filter:invert(1) sepia(.25) saturate(1.4) hue-rotate(-12deg) brightness(.97)}
@@ -132,7 +132,7 @@ body.menu-abierto .cab::before{background:var(--b-bg)}
   .menu{display:flex;align-items:center;margin-left:24px}
   .menu-pie{display:none}
   .menu-enlaces{display:flex;gap:4px}
-  .menu-enlaces a{font:500 15px/1 var(--b-sans);letter-spacing:0;color:var(--b-ink);padding:10px 12px;border-radius:999px;transition:color var(--dur-hover),background-color var(--dur-hover)}
+  .menu-enlaces a{font:500 15px/1 var(--b-sans);letter-spacing:0;color:var(--b-ink);padding:10px 12px;min-height:44px;display:inline-flex;align-items:center;border-radius:999px;transition:color var(--dur-hover),background-color var(--dur-hover)}
   .menu-enlaces a:hover{color:var(--brown)}
   .menu-enlaces a[aria-current="page"]{color:var(--brown);background:color-mix(in srgb,var(--brown) 9%,transparent);font-weight:600}
   .menu-enlaces a[href="reservar.html"]{display:none}   /* el botón «Reservar» ya está a la derecha */
@@ -156,6 +156,7 @@ body.menu-abierto .barra-movil{display:none}
 .pie h2{font-size:15px!important;font-weight:600!important;letter-spacing:0;color:var(--b-ink);margin:0 0 12px!important}
 .pie-col{display:grid;gap:8px;align-content:start}
 .pie a,.pie .pie-dato{color:var(--muted);text-decoration:none;min-height:32px;display:inline-flex;align-items:center}
+.pie a{min-height:44px}
 .pie-col a{justify-self:start}
 .pie a:hover{color:var(--brown);text-decoration:underline}
 .pie p{margin:0;max-width:none}
@@ -515,7 +516,7 @@ body.menu-abierto .barra-movil{display:none}
 .flecha{width:44px;height:44px;border-radius:50%;border:1.5px solid var(--line);background:var(--b-bg);display:grid;place-items:center;color:var(--b-ink);cursor:pointer}
 .flecha svg{width:20px;height:20px}
 .flecha:disabled{opacity:.35;cursor:not-allowed}
-.dias{position:relative;display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:4px;margin-bottom:16px}
+.dias{position:relative;display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:var(--dg,4px);margin-bottom:16px}
 .dbtn{position:relative;z-index:1;display:grid;justify-items:center;gap:2px;padding:10px 0 12px;min-height:64px;border:0;border-radius:16px;background:transparent;color:var(--b-ink);cursor:pointer;transition:color var(--dur-mid)}
 .dbtn .dw{font-size:13px;font-weight:600;color:var(--muted)}
 .dbtn .dn{font-size:20px;font-weight:500;line-height:1.1}
@@ -525,7 +526,7 @@ body.menu-abierto .barra-movil{display:none}
 .dbtn[aria-pressed="true"]{color:var(--on-brown)}
 .dbtn[aria-pressed="true"] .dw{color:var(--on-brown)}
 .dbtn[aria-pressed="true"] i.has{background:var(--on-brown)}
-.dpill{grid-row:1;grid-column:1;align-self:stretch;z-index:0;border-radius:16px;background:var(--brown);transform:translateX(calc((100% + 4px) * var(--i,0)));transition:transform var(--dur-mid) var(--ease-spring);pointer-events:none}
+.dpill{grid-row:1;grid-column:1;align-self:stretch;z-index:0;border-radius:16px;background:var(--brown);transform:translateX(calc((100% + var(--dg,4px)) * var(--i,0)));transition:transform var(--dur-mid) var(--ease-spring);pointer-events:none}
 .dbtn{grid-row:1}
 .dpill.still{transition:none}
 .filtros-h{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:24px}
@@ -569,10 +570,10 @@ body.menu-abierto .barra-movil{display:none}
 /* ---------- Reservar: el diálogo por pasos ---------- */
 dialog.reserva{border:0;padding:0;background:transparent;color:var(--b-ink);width:100%;max-width:100%;max-height:100%;margin:0;inset:auto 0 0 0}
 dialog.reserva::backdrop{background:rgba(30,22,20,.55);backdrop-filter:blur(2px)}
-dialog.reserva .bk{background:var(--b-bg);border-radius:24px 24px 0 0;padding:20px var(--gutter) calc(24px + env(safe-area-inset-bottom,0px));max-height:92svh;overflow:auto;overscroll-behavior:contain}
+dialog.reserva .bk{--bk-px:var(--gutter);--bk-pb:calc(24px + env(safe-area-inset-bottom,0px));background:var(--b-bg);border-radius:24px 24px 0 0;padding:20px var(--bk-px) var(--bk-pb);max-height:92svh;overflow:auto;overscroll-behavior:contain}
 @media (min-width:768px){
   dialog.reserva{inset:0;margin:auto;max-width:640px;height:fit-content}
-  dialog.reserva .bk{border-radius:28px;padding:28px 32px 32px;max-height:88vh}
+  dialog.reserva .bk{--bk-px:32px;--bk-pb:32px;border-radius:28px;padding:28px 32px 32px;max-height:88vh}
   dialog.reserva.peq{max-width:460px}
 }
 dialog.reserva[open]{animation:subir var(--dur-mid) var(--ease-out)}
@@ -667,9 +668,12 @@ dialog.reserva[open]{animation:subir var(--dur-mid) var(--ease-out)}
 .sf-botones .seat:focus-visible::before{border-color:var(--ring);box-shadow:0 0 0 3px #FFFAF6,0 0 0 6px var(--ring)}
 .sf-botones .seat[aria-pressed="true"]{color:var(--on-brown)}
 .sf-botones .seat[aria-pressed="true"]::before{background:var(--brown);border-color:#FFFAF6;box-shadow:0 4px 14px rgba(46,39,35,.35)}
-.sf-botones .seat:disabled{cursor:not-allowed}
-.sf-botones .seat:disabled::before,.marca.oc{background:color-mix(in srgb,#2E2723 58%,transparent);border-color:color-mix(in srgb,#FFFAF6 55%,transparent)}
-.sf-botones .seat:disabled::after,.marca.oc::after{content:"";position:absolute;left:50%;top:50%;width:calc(var(--rn) * 2cqi + 4px);height:3px;border-radius:2px;background:#FFFAF6;translate:-50% -50%;rotate:-35deg}
+.sf-botones .seat:disabled{cursor:not-allowed;color:#2E2723}
+.sf-botones .seat:disabled > span{opacity:.72}
+.sf-botones .seat:disabled::before,.marca.oc{background:color-mix(in srgb,#FFFAF6 80%,transparent);border:2px dashed color-mix(in srgb,#2E2723 70%,transparent)}
+.sf-botones .seat:disabled::after,.marca.oc::after{content:"";position:absolute;z-index:0;left:50%;top:50%;width:calc(var(--rn) * 2cqi);height:1.5px;border-radius:1px;background:color-mix(in srgb,#2E2723 45%,transparent);translate:-50% -50%;rotate:-35deg}
+.marca.oc{z-index:0;color:color-mix(in srgb,#2E2723 75%,transparent)}
+.marca.oc::after{z-index:-1}
 /* Marcas (solo para mirar: modo plano y mi-reserva) */
 .marca{left:var(--x);top:var(--y);display:grid;place-items:center;color:transparent;font:600 max(11px,calc(var(--rn) * 1.15cqi))/1 var(--b-sans)}
 .marca.mio{background:var(--brown);border-color:#FFFAF6;color:var(--on-brown);box-shadow:0 4px 14px rgba(46,39,35,.35)}
@@ -695,7 +699,7 @@ dialog.reserva[open]{animation:subir var(--dur-mid) var(--ease-out)}
 .pl-titulo{font-size:13px;font-weight:600;color:var(--muted);margin:0 0 8px!important}
 .pl-titulo span{color:var(--b-ink);font-variant-numeric:tabular-nums}
 .pl-fila{display:grid;gap:8px;grid-template-columns:repeat(4,48px);justify-content:center}
-.pl-fondo .pl-fila{grid-template-columns:repeat(2,48px)}
+.pl-fondo .pl-fila{grid-template-columns:repeat(2,48px);justify-content:start}
 @media (min-width:640px){ .pl-espejo .pl-fila{grid-template-columns:repeat(8,minmax(44px,48px))} }
 .pl-delante .pl-fila{grid-template-columns:repeat(3,auto);gap:10px;justify-content:space-around}
 .pl-par{display:flex;gap:6px;padding-bottom:8px;border-bottom:4px solid var(--barra);border-radius:2px}
@@ -704,9 +708,10 @@ dialog.reserva[open]{animation:subir var(--dur-mid) var(--ease-out)}
 .plano-lugares .seat:focus-visible{outline:3px solid var(--ring);outline-offset:3px}
 .plano-lugares .seat[aria-pressed="true"],.plano-lugares .seat[aria-pressed="true"]:hover{background:var(--brown);border-color:var(--brown);color:var(--on-brown)}
 :root[data-mode="dark"] .plano-lugares .seat[aria-pressed="true"]{color:#1d1715}
-.plano-lugares .seat:disabled{cursor:not-allowed;background:color-mix(in srgb,var(--madera) 60%,var(--line));color:color-mix(in srgb,#2E2723 50%,transparent);border-style:dashed;box-shadow:none}
+.plano-lugares .seat:disabled{cursor:not-allowed;background:color-mix(in srgb,var(--madera) 55%,transparent);color:color-mix(in srgb,#2E2723 72%,transparent);border-style:dashed;border-color:color-mix(in srgb,#2E2723 45%,transparent);box-shadow:none}
 :root[data-mode="dark"] .plano-lugares .seat:disabled{background:transparent;color:color-mix(in srgb,var(--b-ink) 60%,transparent);border-color:color-mix(in srgb,var(--b-ink) 45%,transparent)}
-.plano-lugares .seat:disabled::after{content:"";position:absolute;left:18%;right:18%;top:50%;height:2px;background:currentColor;rotate:-35deg}
+.plano-lugares .seat{isolation:isolate}
+.plano-lugares .seat:disabled::after{content:"";position:absolute;z-index:-1;left:20%;right:20%;top:50%;height:1.5px;background:currentColor;opacity:.6;rotate:-35deg}
 .seat.asienta{animation:asienta 420ms var(--ease-spring)}
 @keyframes asienta{0%{transform:scale(.86)}60%{transform:scale(1.08)}100%{transform:scale(1)}}
 .seat.vibra{animation:vibra 360ms var(--ease-out)}
@@ -837,6 +842,7 @@ dialog.reserva[open]{animation:subir var(--dur-mid) var(--ease-out)}
 
 /* Comunidad (inicio): horizontales con la fecha destacada */
 .momento .kick{background:var(--blush);color:var(--brown);padding:4px 12px;border-radius:999px;font-size:13px}
+:root[data-mode="dark"] .momento .kick{background:var(--brown);color:var(--on-brown)}
 
 /* Testimonios reales (apagado mientras no haya) */
 .testimonios{list-style:none;margin:32px 0 0;padding:0;display:grid;gap:16px}
@@ -878,3 +884,66 @@ dialog.reserva[open]{animation:subir var(--dur-mid) var(--ease-out)}
 .ig-post figure.con-embed{aspect-ratio:auto;background:var(--paper)}
 .ig-embed{display:block;width:100%;min-height:560px;border:0;background:var(--paper)}
 .ig-nota{font-size:14px;color:var(--muted);margin:12px 0 0}
+
+/* =========================================================
+   Correcciones del sitio publicado (9/11/2026)
+   ========================================================= */
+/* Reserva, paso «Lugar»: la foto no pasa de min(52vh, 480 px) de alto (sin deformarse) y la franja con la
+   leyenda, cuántos libres y «Continuar» queda fija abajo del diálogo */
+.sala-foto[data-modo="foto"] .sf-lienzo{width:min(100%,calc(min(52vh,480px) * 1437 / 740));margin-inline:auto}
+.lugar-pie{position:sticky;bottom:0;z-index:3;margin:12px calc(-1 * var(--bk-px,20px)) calc(-1 * var(--bk-pb,24px));padding:12px var(--bk-px,20px) calc(16px + env(safe-area-inset-bottom,0px));background:var(--b-bg);border-top:1px solid var(--line);box-shadow:0 -10px 24px -18px rgba(46,39,35,.45)}
+.lugar-pie .leyenda{margin:0 0 6px}
+.lugar-pie .pick{margin:0!important;text-align:center}
+.lugar-pie .bkbtns{margin-top:10px}
+/* Teléfono: la sala en grande (pantalla completa, con zoom y desplazamiento) */
+.sf-ver{cursor:zoom-in}
+.sf-ver::after{content:"Toca para ver en grande";position:absolute;right:10px;bottom:10px;z-index:2;font:600 13px/1 var(--b-sans);background:rgba(30,22,20,.72);color:#FFFAF6;padding:7px 10px;border-radius:999px}
+.sala-grande{position:fixed;inset:0;z-index:20;display:flex;flex-direction:column;background:var(--b-bg)}
+.sg-barra{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:8px 12px;padding:calc(10px + env(safe-area-inset-top,0px)) 14px 10px;border-bottom:1px solid var(--line)}
+.sg-estado{margin:0!important;font-size:15px;font-weight:600;flex:1 1 180px}
+.sg-acc{display:flex;gap:8px;align-items:center}
+.sg-acc .icono{font:500 22px/1 var(--b-sans)}
+.sg-acc .icono:disabled{opacity:.4;cursor:default}
+.sg-vista{flex:1;display:flex;flex-direction:column;overflow:auto;overscroll-behavior:contain;-webkit-overflow-scrolling:touch;background:#2E2723}
+.sg-lienzo{flex:none;margin:auto 0;border-radius:0;max-width:none;transition:width var(--dur-mid) var(--ease-out)}
+html.sala-grande-abierta dialog.reserva .bk{overflow:hidden}
+/* La barra fija del teléfono no se ve con el diálogo de reserva abierto */
+body:has(dialog[open]) .barra-movil{display:none}
+
+/* Inicio, clases: si quedan impares, la última ocupa las dos columnas en horizontal (sin huecos) */
+@media (min-width:900px){
+  .cl-item:last-child:nth-child(odd){grid-column:1/-1;grid-template-columns:180px minmax(0,1fr)}
+  .cl-item:last-child:nth-child(odd) .cl-tx{display:grid;grid-template-columns:minmax(0,1.3fr) minmax(0,1fr);column-gap:48px;align-items:start}
+  .cl-item:last-child:nth-child(odd) .cl-tx > :not(.cl-datos){grid-column:1}
+  .cl-item:last-child:nth-child(odd) .cl-datos{grid-column:2;grid-row:1 / span 6;padding-top:6px}
+}
+.cl-datos{display:flex;flex-direction:column;align-items:flex-start;gap:8px}
+/* Inicio, precios: las tres alineadas por arriba, por el título y por el monto; el arco crece solo hacia arriba */
+@media (min-width:800px){
+  .pbreve{align-items:stretch;padding-top:48px}
+  .pbreve .pblock.dest{position:relative;margin-top:-48px;padding-top:calc(28px + 48px)!important}
+  .pbreve .pblock.dest .badge{position:absolute;top:30px;left:50%;transform:translateX(-50%)}
+  .pbreve .pblock h3{min-height:1.3em}
+}
+/* El revelado nunca deja huecos: al imprimir, todo se ve */
+@media print{ [data-reveal],[data-reveal].por-ver{opacity:1!important;transform:none!important} .member[data-reveal] .mph{clip-path:none!important} }
+/* Te esperamos en balé: el mapa solo carga al tocarlo */
+.ubic-mapa{position:relative;margin:0;border-radius:28px;overflow:hidden;border:1px solid var(--line);aspect-ratio:4/3;width:100%;
+  background:radial-gradient(circle at 50% 44%,var(--brown) 0 8px,transparent 9px),repeating-linear-gradient(45deg,var(--paper) 0 18px,var(--blush) 18px 36px)}
+.ubic-mapa{display:grid;place-items:center;padding-top:72px}
+.ubic-mapa .btn{background:var(--b-bg)}
+.ubic-mapa iframe{display:block;width:100%;height:100%;border:0}
+.ubic-mapa .nota-mapa{position:absolute;left:0;right:0;bottom:12px;text-align:center;font-size:13px;color:var(--muted);margin:0;max-width:none}
+@media (min-width:900px){ .ubic{grid-template-columns:minmax(0,1fr) minmax(0,1.1fr);align-items:center;gap:56px} }
+/* Comunidad: el botón de la tarjeta, a todo el ancho de la tarjeta y en una línea */
+.momento > .acciones{grid-column:1/-1;margin:0;padding:0 20px 22px}
+.momento > .acciones .btn{width:100%;font-size:15px;white-space:nowrap}
+@media (min-width:900px){ .momento > .acciones{padding:0 24px 24px} }
+.cl-datos p{margin:0;max-width:none}
+/* Teléfono estrecho: los 7 días con 44 px de ancho (menos margen lateral del calendario) */
+@media (max-width:479px){
+  .horario{padding-left:12px;padding-right:12px}
+  .cal{padding-left:4px;padding-right:4px;--dg:2px}
+  .cal > :not(.dias){padding-left:10px;padding-right:10px}
+  .dbtn{min-width:44px}
+}

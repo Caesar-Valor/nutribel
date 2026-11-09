@@ -109,8 +109,11 @@
     <div class="step" id="stLugar">
       <p class="steph">Elige tu lugar en la sala</p>
       <div class="sala" id="sala"></div>
-      <p class="pick" id="pick" aria-live="polite">Toca un lugar libre.</p>
-      <div class="bkbtns"><button class="btn" type="button" id="toDatos" disabled>Continuar</button></div>
+      <div class="lugar-pie">
+        <ul class="leyenda" aria-hidden="true"><li><i></i>Libre</li><li><i class="l-mio"></i>Tu lugar</li><li><i class="l-oc"></i>Ocupado</li></ul>
+        <p class="pick" id="pick" aria-live="polite">Toca un lugar libre.</p>
+        <div class="bkbtns"><button class="btn" type="button" id="toDatos" disabled>Continuar</button></div>
+      </div>
     </div>
 
     <form class="step form" id="stDatos" novalidate hidden>

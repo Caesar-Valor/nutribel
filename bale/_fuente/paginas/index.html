@@ -133,10 +133,15 @@
       <p class="where">{{ubicacion}}</p>
       <p class="city">La Vega, República Dominicana</p>
       <p class="addr">{{direccion}}</p>
+      <div class="acciones">
+        <a class="btn" href="{{maps}}" target="_blank" rel="noopener">Cómo llegar</a>
+        <a class="btn line" href="{{whatsapp-url}}" target="_blank" rel="noopener">Escríbenos por WhatsApp</a>
+      </div>
     </div>
-    <div class="acciones">
-      <a class="btn" href="{{maps}}" target="_blank" rel="noopener">Cómo llegar</a>
-      <a class="btn line" href="{{whatsapp-url}}" target="_blank" rel="noopener">Escríbenos por WhatsApp</a>
-    </div>
+    <!-- El mapa solo se carga al tocarlo: al abrir la página no se pide nada a terceros -->
+    <figure class="ubic-mapa" data-mapa="{{mapa-embed}}">
+      <button class="btn line" type="button" data-ver-mapa>Ver el mapa</button>
+      <p class="nota-mapa">Se carga desde Google Maps al tocarlo.</p>
+    </figure>
   </div>
 </section>

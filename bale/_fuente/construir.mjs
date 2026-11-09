@@ -69,7 +69,8 @@ const equipo = (conBio) => `<ul class="team" role="list">${B.instructoras.map((p
 const momentos = (pagina) => {
   const lista = `<ul class="momentos" role="list">${(C.momentos || []).map((k, i) => `<li class="momento"${pagina && i ? ' data-reveal' : ''}>
   ${k.foto ? `<figure>${img({ src: k.foto, alt: k.alt }, '(min-width:700px) 240px, 82vw', pagina && !i ? { lazy: false, prioridad: true } : {})}</figure>` : ''}
-  <div class="mtexto">${k.kick ? `<span class="kick">${esc(k.kick)}${k.fecha_texto ? ` · ${esc(k.fecha_texto)}` : ''}</span>` : ''}<h3>${esc(k.titulo)}</h3><p>${esc(k.texto)}</p>${k.mensaje ? `<div class="acciones"><button class="btn line sm" type="button" ${wa(k.mensaje)}>${esc(k.boton)}</button></div>` : ''}</div>
+  <div class="mtexto">${k.kick ? `<span class="kick">${esc(k.kick)}${k.fecha_texto ? ` · ${esc(k.fecha_texto)}` : ''}</span>` : ''}<h3>${esc(k.titulo)}</h3><p>${esc(k.texto)}</p></div>
+  ${k.mensaje ? `<div class="acciones"><button class="btn line" type="button" ${wa(k.mensaje)}>${esc(k.boton)}</button></div>` : ''}
 </li>`).join('')}</ul>`;
   return pagina ? lista : `<div class="carrusel" role="region" aria-label="Momentos de la comunidad" tabindex="0">${lista}</div>`;
 };
@@ -86,10 +87,12 @@ const bloques = {
     <h3>${esc(cl.tipo)}</h3>
     ${tags.map((t) => `<p class="badge">${esc(t.destacado)}</p>`).join('')}
     <p>${esc(cl.texto)}</p>
-    ${cl.edades ? `<ul class="ages" aria-label="Grupos por edad">${cl.edades.map((a) => `<li>${esc(a)}</li>`).join('')}</ul>` : ''}
-    <p class="cl-meta">${esc(cl.dias)}</p>
-    <p class="mode${cl.reserva === 'inscripcion' ? ' wa-mode' : ''}">${cl.reserva === 'inscripcion' ? 'Inscripción por WhatsApp' : 'Se reserva en línea'}</p>
-    <a class="enlace" href="clases.html#${esc(cl.slug)}">Ver la clase<span class="sr-only"> ${esc(cl.tipo)}</span></a>
+    <div class="cl-datos">
+      ${cl.edades ? `<ul class="ages" aria-label="Grupos por edad">${cl.edades.map((a) => `<li>${esc(a)}</li>`).join('')}</ul>` : ''}
+      <p class="cl-meta">${esc(cl.dias)}</p>
+      <p class="mode${cl.reserva === 'inscripcion' ? ' wa-mode' : ''}">${cl.reserva === 'inscripcion' ? 'Inscripción por WhatsApp' : 'Se reserva en línea'}</p>
+      <a class="enlace" href="clases.html#${esc(cl.slug)}">Ver la clase<span class="sr-only"> ${esc(cl.tipo)}</span></a>
+    </div>
   </div>
 </li>`;
   }).join('')}</ul>`,
