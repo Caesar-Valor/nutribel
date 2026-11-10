@@ -1,6 +1,6 @@
 # Área del estudio: guía para Marifer y Brittany
 
-Entra desde el teléfono o la computadora a **https://caesar-valor.github.io/nutribel/bale/estudio.html** (guárdala en favoritos o en la pantalla de inicio). No tiene enlace en la página pública. Entra con tu correo y tu contraseña; si la olvidaste, escribe tu correo y pulsa **¿Olvidaste tu contraseña?**: te llega un enlace para poner una nueva.
+Entra desde el teléfono o la computadora a **https://balestudiord.com/estudio.html** (guárdala en favoritos o en la pantalla de inicio). No tiene enlace en la página pública. Entra con tu correo y tu contraseña; si la olvidaste, escribe tu correo y pulsa **¿Olvidaste tu contraseña?**: te llega un enlace para poner una nueva.
 
 Capturas de ejemplo (datos ficticios) en `referencia/capturas-sistema/despues/`.
 

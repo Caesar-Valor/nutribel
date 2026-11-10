@@ -114,7 +114,7 @@ async function cancelar(){
 
 function ics(){
   if(!R||esMem) return;
-  const desc=`Clase de ${R.clase} con ${R.instructora}.\n${R.lugar_texto}.\n\n${R.cancelacion_texto||""}\nPara ver o cancelar tu reserva: ${location.href}`;
+  const desc=`Clase de ${R.clase} con ${R.instructora}.\n${R.lugar_texto}.\n\n${R.cancelacion_texto||""}\nPara ver o cancelar tu reserva: ${NB.sitioUrl("mi-reserva.html"+location.hash)}`;
   NB.toast("Descargando el archivo del calendario");
   window.BALE_ICS.descargar(window.BALE_ICS.archivo("balé",[{uid:`reserva-${R.id}@bale`,fecha:R.fecha,inicio:R.inicio,fin:R.fin,
     resumen:`balé · ${R.clase}`,descripcion:desc,lugar:`balé, ${CFG?CFG.direccion:""}`}]),`bale-${R.fecha}-${R.inicio.replace(":","")}.ics`);

@@ -5,7 +5,8 @@
 // Las páginas salen de _fuente/paginas/*.html (cabecera <!--@ {...} @--> con el título y lo demás) y de los
 // parciales de _fuente/parciales/. Lo que viene de los JSON (clases, precios, equipo, preguntas, comunidad
 // de respaldo) se escribe en HTML estático: lo leen los buscadores y la página no parpadea.
-// GitHub Pages no publica _fuente/ (Jekyll ignora las carpetas que empiezan por «_»).
+// GitHub Pages no publica _fuente/ (Jekyll ignora las carpetas que empiezan por «_»); en Cloudflare Pages
+// la tapa bale/_redirects. Además de las páginas genera sitemap.xml, robots.txt, _headers, js/dominio.js y js/sala-datos.js.
 // =========================================================
 import { readFileSync, writeFileSync, readdirSync, existsSync } from 'node:fs';
 import { join, dirname } from 'node:path';
@@ -15,13 +16,25 @@ import { fileURLToPath } from 'node:url';
 const FUENTE = dirname(fileURLToPath(import.meta.url));
 const BALE = join(FUENTE, '..');
 const RAIZ = join(BALE, '..');
-const URL_BASE = 'https://caesar-valor.github.io/nutribel/bale/';
 const COMPROBAR = process.argv.includes('--comprobar');
 
 const leer = (r) => readFileSync(join(BALE, 'data', r), 'utf8');
 const json = (r) => JSON.parse(leer(r));
 const B = json('bale.json'), H = json('horario.json'), P = json('precios.json'), C = json('comunidad.json'), CFG = json('config.json');
 const parcial = (n) => readFileSync(join(FUENTE, 'parciales', n + '.html'), 'utf8');
+
+// La dirección del sitio, en un solo lugar: config.json → sitio.url (10/11/2026: https://balestudiord.com,
+// en Cloudflare Pages). De aquí salen canonical, og, JSON-LD, sitemap.xml, robots.txt y js/dominio.js.
+const SITIO = String((CFG.sitio && CFG.sitio.url) || '').replace(/\/+$/, '');
+if (!/^https:\/\/[a-z0-9.-]+$/i.test(SITIO)) throw new Error(`config.json → sitio.url no es una dirección https válida: «${SITIO}»`);
+const URL_BASE = SITIO + '/';
+// Dirección pública de una página. Cloudflare Pages sirve las páginas sin «.html» (clases.html → /clases, con 308),
+// así que canonical y sitemap usan la forma final; el enlace con .html sigue funcionando.
+const urlDe = (nombre) => URL_BASE + (nombre === 'index.html' ? '' : nombre.replace(/\.html$/, ''));
+// Política de contenido (CSP), la misma en el <meta> de cada página y en bale/_headers. No ampliarla sin motivo.
+const CSP = "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; font-src 'self'; img-src 'self' data: blob: https://*.supabase.co; connect-src 'self' https://*.supabase.co wss://*.supabase.co; frame-src https://www.google.com https://www.instagram.com; base-uri 'self'; form-action 'self'; object-src 'none'";
+// estudio.html (se edita a mano) lleva la suya: la misma sin frame-src (no muestra mapas ni Instagram)
+const CSP_ESTUDIO = CSP.replace(/ frame-src [^;]+;/, '');
 
 // ---------- Utilidades ----------
 const esc = (s) => String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
@@ -316,7 +329,7 @@ const jsonld = {
     const ev = (C.proximos || []).filter((e) => e.fecha >= hoy).map((e) => ({ '@context': 'https://schema.org', '@type': 'Event', name: e.titulo, description: e.texto,
       startDate: `${e.fecha}${e.hora ? `T${e.hora}:00-04:00` : ''}`, eventAttendanceMode: 'https://schema.org/OfflineEventAttendanceMode', eventStatus: 'https://schema.org/EventScheduled',
       location: { '@type': 'Place', name: 'balé', address: CFG.direccion }, organizer: { '@type': 'Organization', name: 'balé', url: URL_BASE },
-      ...(e.precio != null ? { offers: { '@type': 'Offer', price: e.precio, priceCurrency: 'DOP', url: URL_BASE + 'comunidad.html' } } : {}) }));
+      ...(e.precio != null ? { offers: { '@type': 'Offer', price: e.precio, priceCurrency: 'DOP', url: urlDe('comunidad.html') } } : {}) }));
     return ev.length ? ev : null;
   },
 };
@@ -328,7 +341,7 @@ function rellenar(t, vars) { return t.replace(/\{\{([a-z_-]+)\}\}/g, (m, k) => (
 
 function head(meta) {
   const titulo = meta.titulo === 'balé' ? 'balé · Barre, Ballet & Pilates en La Vega' : `${meta.titulo} · balé`;
-  const url = URL_BASE + (meta.ruta === 'index.html' ? '' : meta.ruta);
+  const url = urlDe(meta.ruta);
   const ld = (meta.jsonld || []).map((k) => jsonld[k] && jsonld[k]()).filter(Boolean).flat();
   return rellenar(parcial('head'), {
     titulo: esc(titulo), descripcion: esc(meta.descripcion), canonical: esc(url),
@@ -343,13 +356,15 @@ function head(meta) {
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
 <meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="${URL_BASE}img/bale-og.jpg">
 `,
-    jsonld: ld.map((o) => `<script type="application/ld+json">${JSON.stringify(o)}</script>\n`).join(''),
+    // «<» como \u003c: ningún texto de los JSON puede cerrar el <script> (seguridad, 10/11/2026)
+    jsonld: ld.map((o) => `<script type="application/ld+json">${JSON.stringify(o).replace(/</g, '\\u003c')}</script>\n`).join(''),
     previos: (meta.previos || []).join('\n') + ((meta.previos || []).length ? '\n' : ''),
     precarga_letra: meta.sin_precarga_letra ? '' : '<link rel="preload" href="fonts/montserrat-latin.woff2" as="font" type="font/woff2" crossorigin>\n',
     css: ['css/base.css', 'css/sitio.css'].concat(meta.css || []).map((h) => `<link rel="stylesheet" href="${h}">`).join('\n'),
     scripts: ['js/core.js', 'js/sitio.js'].concat(meta.scripts || []).map((s) => `<script src="${s}" defer></script>`).join('\n'),
-    csp: (meta.csp_extra || '').trim(),
+    csp_politica: CSP, csp: (meta.csp_extra || '').trim(),
   });
 }
 
@@ -378,37 +393,37 @@ ${meta.sin_barra ? '' : rellenar(parcial('barra'), vars)}
 `;
 }
 
-// ---------- Sitemap del sitio (las páginas públicas de balé en el sitemap de la raíz) ----------
-function sitemap(paginas, fecha) {
-  const ruta = join(RAIZ, 'sitemap.xml');
-  if (!existsSync(ruta)) return null;
-  const actual = readFileSync(ruta, 'utf8');
-  const sinBale = actual.split('\n').filter((l) => !l.includes('/nutribel/bale/'));
-  const fin = sinBale.findIndex((l) => l.includes('</urlset>'));
-  const nuevas = paginas.filter((p) => !p.meta.noindex && p.nombre !== '404.html').map((p) => {
-    const loc = URL_BASE + (p.nombre === 'index.html' ? '' : p.nombre);
-    const viejo = actual.split('\n').find((l) => l.includes(`<loc>${loc}</loc>`));
-    const lastmod = (viejo && p.igual && (viejo.match(/<lastmod>([^<]+)</) || [])[1]) || fecha;
-    return `  <url><loc>${loc}</loc><lastmod>${lastmod}</lastmod><priority>${p.nombre === 'index.html' ? '0.9' : '0.7'}</priority></url>`;
-  });
-  return [...sinBale.slice(0, fin), ...nuevas, ...sinBale.slice(fin)].join('\n');
+// ---------- Archivos generados (además de las páginas) ----------
+// Cada uno se escribe solo si cambió; con --comprobar, falla si alguno no está al día.
+let distintas = 0;
+function generado(rel, contenido, { soloSi = null } = {}) {
+  const ruta = join(BALE, rel), viejo = existsSync(ruta) ? readFileSync(ruta, 'utf8').replace(/\r\n/g, '\n') : null;
+  if (viejo === contenido) return;
+  // soloSi: cuándo cuenta como distinto (el sitemap no cuenta si solo cambian las fechas)
+  if (viejo == null || !soloSi || soloSi(viejo, contenido)) { distintas++; if (COMPROBAR) console.error(`No está al día: bale/${rel}`); }
+  if (!COMPROBAR) writeFileSync(ruta, contenido);
 }
 
-let salaDistinta = false;
 // La sala (data/sala.json → js/sala-datos.js): el selector la necesita al momento, sin esperar un fetch
 {
   const S = json('sala.json');
-  const datos = `/* Generado por _fuente/construir.mjs desde data/sala.json: no editar a mano. */\nwindow.BALE_SALA_DATOS = ${JSON.stringify({ imagen: S.imagen, zonas: S.zonas, lugares: S.lugares })};\n`;
-  const ruta = join(BALE, 'js', 'sala-datos.js');
-  if (!existsSync(ruta) || readFileSync(ruta, 'utf8').replace(/\r\n/g, '\n') !== datos) {
-    salaDistinta = true;
-    if (COMPROBAR) console.error('No está al día: bale/js/sala-datos.js');
-    else writeFileSync(ruta, datos);
-  }
+  generado('js/sala-datos.js', `/* Generado por _fuente/construir.mjs desde data/sala.json: no editar a mano. */\nwindow.BALE_SALA_DATOS = ${JSON.stringify({ imagen: S.imagen, zonas: S.zonas, lugares: S.lugares })};\n`);
 }
+// La dirección vieja (GitHub Pages) lleva a la misma página en el dominio nuevo, con su ?… y su #… (el #t= de
+// mi-reserva). Archivo aparte (la CSP no deja scripts en línea). No hace nada en localhost ni en el dominio nuevo.
+generado('js/dominio.js', `/* Generado por _fuente/construir.mjs desde data/config.json (sitio.url): no editar a mano.
+   balé tiene su dominio propio: quien entre por caesar-valor.github.io/nutribel/bale/… va a la misma página en
+   ${SITIO}, con su ?… y su #… Solo en github.io: nunca en localhost ni en el dominio nuevo. */
+(function(){
+  if(!/(^|\\.)github\\.io$/i.test(location.hostname)) return;
+  var ruta=location.pathname.replace(/^.*?\\/bale(?=\\/|$)/,"")||"/";
+  location.replace(${JSON.stringify(SITIO)}+ruta+location.search+location.hash);
+})();
+`);
+
 // ---------- Versiones de CSS y JS ----------
 // Cada página pide sus archivos con ?v=<huella del contenido>: al cambiar un archivo cambia la dirección y
-// el navegador (o GitHub Pages, que guarda 10 min) no puede servir la versión vieja. Sin cambios, la misma.
+// el navegador (o el servidor) no puede servir la versión vieja. Sin cambios, la misma.
 const huellas = new Map();
 function huella(rel) {
   if (!huellas.has(rel)) {
@@ -422,7 +437,6 @@ const conVersion = (html) => html.replace(/(<(?:link|script)\b[^>]*?\b(?:href|sr
 // ---------- Armar ----------
 const nombres = readdirSync(join(FUENTE, 'paginas')).filter((f) => f.endsWith('.html')).sort();
 const hechas = [];
-let distintas = 0;
 for (const n of nombres) {
   const fuente = readFileSync(join(FUENTE, 'paginas', n), 'utf8');
   const html = conVersion(pagina(n, fuente));
@@ -430,23 +444,102 @@ for (const n of nombres) {
   const destino = join(BALE, n);
   const igual = existsSync(destino) && readFileSync(destino, 'utf8').replace(/\r\n/g, '\n') === html;
   hechas.push({ nombre: n, meta, igual });
-  if (igual) continue;
-  distintas++;
-  if (COMPROBAR) console.error(`No está al día: bale/${n}`);
-  else writeFileSync(destino, html);
+  generado(n, html);
 }
-if (salaDistinta) distintas++;
-const mapa = sitemap(hechas, new Date().toISOString().slice(0, 10));
-if (mapa != null) {
-  const ruta = join(RAIZ, 'sitemap.xml'), viejo = readFileSync(ruta, 'utf8').replace(/\r\n/g, '\n');
-  if (viejo !== mapa) {
-    // solo cuenta como distinto si cambian las direcciones (la fecha sola no)
-    const locs = (s) => (s.match(/<loc>[^<]+<\/loc>/g) || []).join();
-    if (locs(viejo) !== locs(mapa)) { distintas++; if (COMPROBAR) console.error('No está al día: sitemap.xml'); }
-    if (!COMPROBAR) writeFileSync(ruta, mapa);
-  }
+
+// estudio.html y panel.html se editan a mano: aquí solo se ponen al día las ?v= de sus CSS y JS
+for (const n of ['estudio.html', 'panel.html']) {
+  const r = join(BALE, n);
+  if (existsSync(r)) generado(n, conVersion(readFileSync(r, 'utf8').replace(/\r\n/g, '\n').replace(/(\.(?:css|js))\?v=[0-9a-f]{8}"/g, '$1"')));
 }
+
+// ---------- sitemap.xml y robots.txt (en bale/: Cloudflare Pages publica bale/ como raíz del dominio) ----------
+// Fuera del sitemap: lo marcado noindex (cuenta, mi-reserva), 404 y las que se editan a mano (estudio, panel).
+const PRIVADAS = ['estudio', 'panel', 'cuenta', 'mi-reserva'];
+{
+  const ruta = join(BALE, 'sitemap.xml'), viejo = existsSync(ruta) ? readFileSync(ruta, 'utf8') : '';
+  const hoy = new Date().toISOString().slice(0, 10);
+  const urls = hechas.filter((p) => !p.meta.noindex && p.nombre !== '404.html' && !PRIVADAS.includes(p.nombre.replace('.html', ''))).map((p) => {
+    const loc = urlDe(p.nombre);
+    const ant = viejo.split('\n').find((l) => l.includes(`<loc>${loc}</loc>`));
+    const lastmod = (ant && p.igual && (ant.match(/<lastmod>([^<]+)</) || [])[1]) || hoy;
+    return `  <url><loc>${loc}</loc><lastmod>${lastmod}</lastmod><priority>${p.nombre === 'index.html' ? '1.0' : '0.7'}</priority></url>`;
+  });
+  const locs = (s) => (s.match(/<loc>[^<]+<\/loc>/g) || []).join();
+  generado('sitemap.xml', `<?xml version="1.0" encoding="UTF-8"?>\n<!-- Generado por bale/_fuente/construir.mjs: no editar a mano. -->\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n${urls.join('\n')}\n</urlset>\n`, { soloSi: (a, b) => locs(a) !== locs(b) });
+}
+// robots: «Disallow: /estudio» cubre /estudio y /estudio.html (Pages sirve las dos)
+generado('robots.txt', `# Generado por bale/_fuente/construir.mjs: no editar a mano.
+User-agent: *
+Allow: /
+${PRIVADAS.map((p) => `Disallow: /${p}`).join('\n')}
+
+Sitemap: ${URL_BASE}sitemap.xml
+`);
+
+// ---------- _redirects (Cloudflare Pages) ----------
+// Lo que no se publica (la fuente del compilado, img/fuente y cada .md de bale/) se reescribe (200) a una ruta
+// que no existe: Pages responde con 404.html y estado 404, y la dirección no cambia.
+{
+  const docs = readdirSync(BALE).filter((f) => /\.md$/i.test(f)).sort();
+  const fila = (de, a, st) => `${de.padEnd(34)} ${a.padEnd(14)} ${st}`;
+  generado('_redirects', `# Generado por bale/_fuente/construir.mjs: no editar a mano.
+# Redirecciones de Cloudflare Pages (bale/ es la raíz de ${SITIO}). GitHub Pages no publica este archivo.
+#
+# www → sin www: Pages no redirige entre dominios desde aquí (solo rutas); va como regla de Cloudflare
+# (Reglas → Redirect Rules). Las direcciones viejas de js/anclas.js (/#horario, /#precios…, ?vista=estudio)
+# tampoco: el # no llega al servidor y Pages no distingue el ?…; siguen en el navegador (js/anclas.js).
+
+# La ruta de GitHub Pages pegada al dominio nuevo (…/nutribel/bale/clases.html → /clases.html)
+${fila('/nutribel/bale', '/', 301)}
+${fila('/nutribel/bale/*', '/:splat', 301)}
+${fila('/bale', '/', 301)}
+${fila('/bale/*', '/:splat', 301)}
+
+# No se publica: responde 404
+${['/_fuente', '/_fuente/*', '/img/fuente/*', ...docs.map((d) => '/' + d)].map((r) => fila(r, '/no-publicado', 200)).join('\n')}
+`);
+}
+
+// ---------- _headers (Cloudflare Pages): seguridad y caché ----------
+// La CSP es la misma del <meta> (constante CSP) más frame-ancestors, que solo vale como cabecera.
+// Una regla más concreta suma sus cabeceras a las de /*; «! Nombre» quita la general antes de poner otra.
+{
+  const SEG = (csp, ref = 'strict-origin-when-cross-origin') => [
+    `Content-Security-Policy: ${csp}; frame-ancestors 'none'`,
+    'X-Content-Type-Options: nosniff',
+    'X-Frame-Options: DENY',
+    `Referrer-Policy: ${ref}`,
+    'Permissions-Policy: camera=(), microphone=(), geolocation=(), payment=(), usb=(), browsing-topics=()',
+    'Strict-Transport-Security: max-age=31536000',
+  ];
+  const regla = (rutas, lineas) => rutas.map((r) => `${r}\n${lineas.map((l) => `  ${l}`).join('\n')}`).join('\n\n');
+  const quitar = (nombres) => nombres.map((n) => `! ${n}`);
+  const noIndex = 'X-Robots-Tag: noindex, nofollow';
+  generado('_headers', `# Generado por bale/_fuente/construir.mjs: no editar a mano (la CSP sale de la constante CSP).
+# Cabeceras de Cloudflare Pages. GitHub Pages no lo publica (Jekyll ignora lo que empieza por «_»).
+
+# Todas las respuestas: seguridad, y el HTML siempre se vuelve a preguntar (caché corta)
+${regla(['/*'], [...SEG(CSP), 'Cache-Control: public, max-age=0, must-revalidate'])}
+
+# Fotos, letras y videos: casi nunca cambian (caché larga, 30 días)
+${regla(['/img/*', '/fonts/*', '/video/*'], [...quitar(['Cache-Control']), 'Cache-Control: public, max-age=2592000'])}
+
+# CSS y JS: las páginas los piden con ?v=<huella>, así que pueden guardarse un día
+${regla(['/css/*', '/js/*'], [...quitar(['Cache-Control']), 'Cache-Control: public, max-age=86400'])}
+
+# Datos: caché corta (5 minutos), para que un cambio de horario o precios se vea pronto
+${regla(['/data/*'], [...quitar(['Cache-Control']), 'Cache-Control: public, max-age=300'])}
+
+# Área del estudio: su propia CSP (sin mapas ni Instagram) y sin referer; nunca en buscadores
+${regla(['/estudio', '/estudio.html'], [...quitar(['Content-Security-Policy', 'Referrer-Policy']), `Content-Security-Policy: ${CSP_ESTUDIO}; frame-ancestors 'none'`, 'Referrer-Policy: no-referrer', noIndex])}
+
+# Páginas privadas: fuera de los buscadores (llevan datos de la reserva o la cuenta en el #)
+${regla(['/panel', '/panel.html', '/cuenta', '/cuenta.html', '/mi-reserva', '/mi-reserva.html'], [noIndex])}
+`);
+}
+
 if (COMPROBAR) {
   if (distintas) { console.error(`\n${distintas} archivo(s) sin compilar: ejecuta  node bale/_fuente/construir.mjs`); process.exit(1); }
-  console.log(`Al día: ${nombres.length} páginas.`);
-} else console.log(`Listo: ${nombres.length} páginas (${distintas} cambiaron) y sitemap.xml.`);
+  console.log(`Al día: ${nombres.length} páginas, sitemap.xml, robots.txt, _redirects, _headers y js/dominio.js.`);
+} else console.log(`Listo: ${nombres.length} páginas, sitemap.xml, robots.txt, _redirects, _headers y js/dominio.js (${distintas} cambiaron).`);

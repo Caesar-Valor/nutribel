@@ -1,6 +1,10 @@
 {
   "_nota": "Datos de contacto de balé en un solo lugar. Lo que diga POR CONFIRMAR no se muestra como dato real.",
   "nombre": "balé",
+  "sitio": {
+    "url": "https://balestudiord.com",
+    "_nota": "Dirección pública de la página (sin / al final). La usan construir.mjs (canonical, og, JSON-LD, sitemap, robots, js/dominio.js) y los enlaces de los .ics. Los avisos del sistema usan el ajuste url_publica del área del estudio: cámbialos juntos."
+  },
   "whatsapp": "18496386337",
   "whatsapp_texto": "+1 849-638-6337",
   "correo_reservas": "Mariapimentel1609@gmail.com",

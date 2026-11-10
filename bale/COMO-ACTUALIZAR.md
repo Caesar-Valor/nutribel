@@ -20,7 +20,7 @@ Las direcciones viejas de la página larga siguen funcionando: `bale/#horario` l
 
 ## El panel del negocio
 
-Entra escribiendo su dirección, https://caesar-valor.github.io/nutribel/bale/panel.html (en local, http://localhost:3000/bale/panel.html). Ahí se cambian los datos de contacto, el aviso para las clientas, las clases canceladas, los cupos, los lugares fijos de las miembros, los precios y los próximos eventos. Lo que guardas en el panel se ve **solo en ese navegador** y solo en la página Reservar (cupos, sala, lugares fijos y canceladas): los precios, los textos y la comunidad van compilados. Para que lo vea todo el mundo: pulsa **Descargar archivos para publicar**, copia los 4 archivos que se descargan (`config.json`, `precios.json`, `comunidad.json` y `bale.json`) a `bale/data/` reemplazando los que hay, **compila** (`node bale/_fuente/construir.mjs`) y publica (último apartado). Después pulsa «Restaurar los datos publicados» en el panel.
+Entra escribiendo su dirección, https://balestudiord.com/panel.html (en local, http://localhost:3000/bale/panel.html). Ahí se cambian los datos de contacto, el aviso para las clientas, las clases canceladas, los cupos, los lugares fijos de las miembros, los precios y los próximos eventos. Lo que guardas en el panel se ve **solo en ese navegador** y solo en la página Reservar (cupos, sala, lugares fijos y canceladas): los precios, los textos y la comunidad van compilados. Para que lo vea todo el mundo: pulsa **Descargar archivos para publicar**, copia los 4 archivos que se descargan (`config.json`, `precios.json`, `comunidad.json` y `bale.json`) a `bale/data/` reemplazando los que hay, **compila** (`node bale/_fuente/construir.mjs`) y publica (último apartado). Después pulsa «Restaurar los datos publicados» en el panel.
 
 También se puede editar a mano. Los JSON son archivos de texto: ábrelos con VS Code, cambia solo lo que está entre comillas y guarda. Ojo con las comas: cada línea de una lista termina en coma menos la última. Si falta o sobra una coma, el compilado avisa en qué archivo.
 
@@ -179,5 +179,6 @@ Archivo: `bale/data/config.json`. Cuando la dueña mande los datos bancarios, re
 
 1. Guarda los archivos, compila (`node bale/_fuente/construir.mjs`) y revisa en local (ver arriba).
 2. En VS Code, panel de Git: escribe un mensaje corto (por ejemplo "balé: horario de noviembre") y pulsa **Commit**, luego **Sync / Push**.
-3. GitHub Pages publica solo en uno o dos minutos: https://caesar-valor.github.io/nutribel/bale/
+3. Cloudflare Pages publica solo en uno o dos minutos: https://balestudiord.com/ (la dirección vieja, caesar-valor.github.io/nutribel/bale/, lleva sola al dominio nuevo).
+   La dirección del sitio está en un solo lugar, `bale/data/config.json` → `sitio.url`; si algún día cambia, cámbiala ahí, compila, y cambia también «Dirección pública de la página» en Ajustes del área del estudio (los enlaces de los correos y WhatsApp).
 4. Si no ves el cambio, recarga con Ctrl + Shift + R.

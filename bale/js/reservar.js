@@ -58,7 +58,11 @@ function readStore(){
   return {reservas:Array.isArray(s.reservas)?s.reservas:[], espera:Array.isArray(s.espera)?s.espera:[], aprobados:Array.isArray(s.aprobados)?s.aprobados:[]};
 }
 let store=readStore();
-function save(){ try{ localStorage.setItem(KEY,JSON.stringify(store)); }catch(e){} }
+// En el navegador nunca van el nombre ni el WhatsApp (CLAUDE.md, seguridad 10/11/2026): solo una huella del
+// número, para avisar de una reserva repetida. Lo que quedó guardado de antes se limpia al volver a guardar.
+function huellaWa(w){ let h=2166136261; for(const ch of String(w||"").replace(/\D/g,"")){ h^=ch.charCodeAt(0); h=Math.imul(h,16777619); } return (h>>>0).toString(36); }
+const sinDatos = r=>{ const {nombre, wa, ...o}=r; if(!o.waH&&wa) o.waH=huellaWa(wa); return o; };
+function save(){ try{ localStorage.setItem(KEY,JSON.stringify({reservas:store.reservas.map(sinDatos), espera:store.espera.map(sinDatos), aprobados:store.aprobados})); }catch(e){} }
 const uid = ()=>Date.now().toString(36)+Math.random().toString(36).slice(2,6);
 // Cambios del panel del negocio (solo en este navegador): cupos, sala, lugares fijos, canceladas y aviso
 function applyPanel(){
@@ -453,7 +457,7 @@ function renderMias(){
   box.hidden=!a.length;
   $("#miasList").innerHTML=a.map(x=>`<li><a href="mi-reserva.html#t=${esc(x.t)}"><b>${esc(x.clase)}</b><span>${esc(x.fl)} · ${esc(x.hora)}</span></a></li>`).join("");
 }
-const enlaceMia = t=>new URL(`mi-reserva.html#t=${t}`,location.href).href;
+const enlaceMia = t=>NB.sitioUrl(`mi-reserva.html#t=${t}`);   // en el dominio de balé (config.json → sitio.url)
 
 /* ---------- La base de datos no responde: la página sigue como siempre ---------- */
 let caidoUI=false;
@@ -479,7 +483,7 @@ function submitLocal(win){
   const base={id:uid(), occ:occKey(c,bk.fecha), claseId:c.id, fecha:bk.fecha,
     nombre:$("#fName").value.trim(), wa:fmtWa($("#fWa").value.trim()), nina:"", creada:new Date().toISOString()};
   const no=()=>{ if(win) win.close(); };
-  if(store.reservas.some(r=>r.occ===base.occ&&digits(r.wa)===digits(base.wa)&&(r.nina||"")===base.nina)){ no(); NB.toast("Ya hay una reserva con ese WhatsApp en esta clase."); return; }
+  if(store.reservas.some(r=>r.occ===base.occ&&(r.waH||huellaWa(r.wa))===huellaWa(base.wa)&&(r.nina||"")===base.nina)){ no(); NB.toast("Ya hay una reserva con ese WhatsApp en esta clase."); return; }
   if(bk.wait){
     if(free(c,bk.fecha)>0){ no(); NB.toast("¡Se liberó un lugar! Ya puedes reservarlo."); dlg.close(); renderWeek(); return; }
     store.espera.push(base); save();

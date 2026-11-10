@@ -1,0 +1,21 @@
+# Generado por bale/_fuente/construir.mjs: no editar a mano.
+# Redirecciones de Cloudflare Pages (bale/ es la raíz de https://balestudiord.com). GitHub Pages no publica este archivo.
+#
+# www → sin www: Pages no redirige entre dominios desde aquí (solo rutas); va como regla de Cloudflare
+# (Reglas → Redirect Rules). Las direcciones viejas de js/anclas.js (/#horario, /#precios…, ?vista=estudio)
+# tampoco: el # no llega al servidor y Pages no distingue el ?…; siguen en el navegador (js/anclas.js).
+
+# La ruta de GitHub Pages pegada al dominio nuevo (…/nutribel/bale/clases.html → /clases.html)
+/nutribel/bale                     /              301
+/nutribel/bale/*                   /:splat        301
+/bale                              /              301
+/bale/*                            /:splat        301
+
+# No se publica: responde 404
+/_fuente                           /no-publicado  200
+/_fuente/*                         /no-publicado  200
+/img/fuente/*                      /no-publicado  200
+/COMO-ACTUALIZAR.md                /no-publicado  200
+/GUIA-AREA-DEL-ESTUDIO.md          /no-publicado  200
+/PROMPT-BALE-PULIR-DISENO.md       /no-publicado  200
+/PRUEBA-RESERVA.md                 /no-publicado  200

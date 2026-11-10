@@ -79,6 +79,12 @@ function mergeCfg(c){
 /* ---------- WhatsApp de balé ---------- */
 let cfg=null;
 const ready=load("config").then(c=>(cfg=mergeCfg(c)));
+// Enlace absoluto a una página de balé en su dominio (config.json → sitio.url), para lo que sale de la
+// página: los .ics y lo que se comparte. Sin sitio.url, relativo a donde se está.
+function sitioUrl(rel){
+  const base=String((cfg&&cfg.sitio&&cfg.sitio.url)||"").replace(/\/+$/,"");
+  try{ return new URL(rel, base?base+"/":location.href).href; }catch(e){ return rel; }
+}
 function waLink(text){
   const num=((cfg&&cfg.whatsapp)||"").replace(/\D/g,"");
   return num?`https://wa.me/${num}${text?`?text=${encodeURIComponent(text)}`:""}`:"";
@@ -119,5 +125,5 @@ const mb=$("#modeBtn"); if(mb) mb.addEventListener("click",toggleMode);
 addEventListener("storage",e=>{ if(e.key===MODE_KEY) applyMode(e.newValue||(sistemaOscuro.matches?"dark":"light")); });
 document.body.insertAdjacentHTML("beforeend",`<div class="toast" id="toast" role="status" aria-live="polite"></div>`);
 
-window.BALE = {$, esc, money, toast, load, ready, srcset, fmtH, whatsapp:openWA, waLink, cfg:()=>cfg, panel, mergeCfg, fmtPhone, igUser, PANEL_KEY};
+window.BALE = {$, esc, money, toast, load, ready, srcset, fmtH, whatsapp:openWA, waLink, sitioUrl, cfg:()=>cfg, panel, mergeCfg, fmtPhone, igUser, PANEL_KEY};
 })();

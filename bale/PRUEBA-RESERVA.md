@@ -11,7 +11,7 @@ Marifer quiere reservar ella misma y ver cómo le llega por correo (y por WhatsA
 
 ## La prueba con ella
 
-1. En su teléfono, que abra https://caesar-valor.github.io/nutribel/bale/ y elija una clase de barra (que no sea hoy, para probar también cancelar sin cargo).
+1. En su teléfono, que abra https://balestudiord.com/ y elija una clase de barra (que no sea hoy, para probar también cancelar sin cargo).
 2. Que elija un lugar, pulse **Continuar** y escriba su nombre, su WhatsApp y **su correo**. Si quiere, que marque "Quiero recibir la confirmación y los recordatorios por WhatsApp". Que acepte el aviso de privacidad y la política de cancelación y pulse **Confirmar reserva**.
 3. Sale **¡Reserva confirmada!** con el resumen, el pago y **Ver mi reserva**. (Si `abrir_whatsapp_al_reservar` sigue en `true`, también se abre WhatsApp con la reserva, como antes.)
 4. Revisar juntos:
