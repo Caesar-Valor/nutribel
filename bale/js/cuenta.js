@@ -10,7 +10,7 @@
 const NB = window.BALE, C = window.BALE_CUENTA;
 const {$, esc} = NB;
 const q = new URLSearchParams(location.search);
-const volver = /^[a-z0-9-]+\.html(#p\d+)?$/.test(q.get("volver")||"") ? q.get("volver") : null;
+const volver = /^[a-z0-9-]+\.html(#p\d+|#foro)?$/.test(q.get("volver")||"") ? q.get("volver") : null;
 let correo = "", ESP = null;
 
 const pasos = ["cuEntrar","cuFicha","cuMio"];

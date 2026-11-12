@@ -1,12 +1,12 @@
 // =========================================================
 // balé — compilado del sitio (sin dependencias). Uso, desde la carpeta nutribel:
-//   node bale/_fuente/construir.mjs              arma bale/*.html desde _fuente/ y los JSON de bale/data/
-//   node bale/_fuente/construir.mjs --comprobar  no escribe nada; falla si alguna página no está al día
-// Las páginas salen de _fuente/paginas/*.html (cabecera <!--@ {...} @--> con el título y lo demás) y de los
-// parciales de _fuente/parciales/. Lo que viene de los JSON (clases, precios, equipo, preguntas, comunidad
+//   node bale-fuente/construir.mjs              arma bale/*.html desde bale-fuente/ y los JSON de bale/data/
+//   node bale-fuente/construir.mjs --comprobar  no escribe nada; falla si alguna página no está al día
+// Las páginas salen de bale-fuente/paginas/*.html (cabecera <!--@ {...} @--> con el título y lo demás) y de los
+// parciales de bale-fuente/parciales/. Lo que viene de los JSON (clases, precios, equipo, preguntas, comunidad
 // de respaldo) se escribe en HTML estático: lo leen los buscadores y la página no parpadea.
-// GitHub Pages no publica _fuente/ (Jekyll ignora las carpetas que empiezan por «_»); en Cloudflare Pages
-// la tapa bale/_redirects. Además de las páginas genera sitemap.xml, robots.txt, _headers, js/dominio.js y js/sala-datos.js.
+// La fuente vive fuera de bale/ (12/11/2026): Cloudflare Pages publica bale/ tal cual y servía
+// bale/_fuente/construir.mjs aunque _redirects dijera 404. Además de las páginas genera sitemap.xml, robots.txt, _headers, js/dominio.js y js/sala-datos.js.
 // =========================================================
 import { readFileSync, writeFileSync, readdirSync, existsSync } from 'node:fs';
 import { join, dirname } from 'node:path';
@@ -14,8 +14,8 @@ import { createHash } from 'node:crypto';
 import { fileURLToPath } from 'node:url';
 
 const FUENTE = dirname(fileURLToPath(import.meta.url));
-const BALE = join(FUENTE, '..');
-const RAIZ = join(BALE, '..');
+const RAIZ = join(FUENTE, '..');
+const BALE = join(RAIZ, 'bale');
 const COMPROBAR = process.argv.includes('--comprobar');
 
 const leer = (r) => readFileSync(join(BALE, 'data', r), 'utf8');
@@ -310,6 +310,8 @@ ${S ? `<article class="socks" id="medias" aria-labelledby="t-medias" data-reveal
   'instagram-url': () => esc(CFG.instagram),
   'instagram-usuario': () => esc(CFG.instagram_usuario),
   'correo': () => esc(CFG.correo_reservas),
+  // Contacto del aviso de privacidad (Ley 172-13): config.json → contacto_privacidad (12/11/2026)
+  'correo-privacidad': () => esc(CFG.contacto_privacidad || CFG.correo_reservas),
   'cancelacion': () => esc(CFG.cancelacion.texto),
   'frase': () => esc(B.frase),
   // Reservar: con el sistema encendido se compila su texto (así no cambia al cargar y el horario no salta)
@@ -340,7 +342,9 @@ const enlaces = (actual) => MENU.map(([id, href, txt]) => `<a href="${href}"${id
 function rellenar(t, vars) { return t.replace(/\{\{([a-z_-]+)\}\}/g, (m, k) => (k in vars ? vars[k] : bloques[k] ? bloques[k]() : m)); }
 
 function head(meta) {
-  const titulo = meta.titulo === 'balé' ? 'balé · Barre, Ballet & Pilates en La Vega' : `${meta.titulo} · balé`;
+  // titulo_seo (12/11/2026): el título para Google dice qué y dónde; como mucho 60 caracteres
+  const titulo = meta.titulo === 'balé' ? 'balé · Barre, Ballet & Pilates en La Vega' : `${meta.titulo_seo || meta.titulo} · balé`;
+  if (titulo.length > 60) throw new Error(`${meta.ruta}: el título tiene ${titulo.length} caracteres (máximo 60)`);
   const url = urlDe(meta.ruta);
   const ld = (meta.jsonld || []).map((k) => jsonld[k] && jsonld[k]()).filter(Boolean).flat();
   return rellenar(parcial('head'), {
@@ -368,6 +372,8 @@ function head(meta) {
   });
 }
 
+// base_raiz (404.html): Cloudflare Pages sirve la 404 en cualquier ruta (/a/b/c); con <base> en la raíz del sitio,
+// sus CSS, JS, fotos y enlaces relativos no se pierden. Solo vale en el dominio (en GitHub Pages la 404 es la de NutriBEL).
 function pagina(nombre, fuente) {
   const m = fuente.match(/^<!--@([\s\S]*?)@-->\s*/);
   if (!m) throw new Error(`${nombre}: falta la cabecera <!--@ {...} @-->`);
@@ -375,10 +381,10 @@ function pagina(nombre, fuente) {
   const cuerpo = rellenar(fuente.slice(m[0].length), {});
   const vars = { menu: enlaces(meta.actual), actual: meta.actual || '' };
   return `<!DOCTYPE html>
-<!-- Generado por bale/_fuente/construir.mjs desde _fuente/paginas/${nombre}: no lo edites aquí (ver bale/COMO-ACTUALIZAR.md) -->
+<!-- Generado por bale-fuente/construir.mjs desde bale-fuente/paginas/${nombre}: no lo edites aquí (ver bale/COMO-ACTUALIZAR.md) -->
 <html lang="es">
 <head>
-${head(meta)}
+${meta.base_raiz ? head(meta).replace('<meta charset="utf-8">\n', `<meta charset="utf-8">\n<base href="${new URL(URL_BASE).pathname}">\n`) : head(meta)}
 </head>
 <body class="sitio${meta.sin_barra ? '' : ' con-barra'}" data-page="${esc(meta.actual || nombre.replace('.html', ''))}">
 <a class="saltar" href="#contenido">Ir al contenido</a>
@@ -407,11 +413,11 @@ function generado(rel, contenido, { soloSi = null } = {}) {
 // La sala (data/sala.json → js/sala-datos.js): el selector la necesita al momento, sin esperar un fetch
 {
   const S = json('sala.json');
-  generado('js/sala-datos.js', `/* Generado por _fuente/construir.mjs desde data/sala.json: no editar a mano. */\nwindow.BALE_SALA_DATOS = ${JSON.stringify({ imagen: S.imagen, zonas: S.zonas, lugares: S.lugares })};\n`);
+  generado('js/sala-datos.js', `/* Generado por bale-fuente/construir.mjs desde data/sala.json: no editar a mano. */\nwindow.BALE_SALA_DATOS = ${JSON.stringify({ imagen: S.imagen, zonas: S.zonas, lugares: S.lugares })};\n`);
 }
 // La dirección vieja (GitHub Pages) lleva a la misma página en el dominio nuevo, con su ?… y su #… (el #t= de
 // mi-reserva). Archivo aparte (la CSP no deja scripts en línea). No hace nada en localhost ni en el dominio nuevo.
-generado('js/dominio.js', `/* Generado por _fuente/construir.mjs desde data/config.json (sitio.url): no editar a mano.
+generado('js/dominio.js', `/* Generado por bale-fuente/construir.mjs desde data/config.json (sitio.url): no editar a mano.
    balé tiene su dominio propio: quien entre por caesar-valor.github.io/nutribel/bale/… va a la misma página en
    ${SITIO}, con su ?… y su #… Solo en github.io: nunca en localhost ni en el dominio nuevo. */
 (function(){
@@ -455,7 +461,7 @@ for (const n of ['estudio.html', 'panel.html']) {
 
 // ---------- sitemap.xml y robots.txt (en bale/: Cloudflare Pages publica bale/ como raíz del dominio) ----------
 // Fuera del sitemap: lo marcado noindex (cuenta, mi-reserva), 404 y las que se editan a mano (estudio, panel).
-const PRIVADAS = ['estudio', 'panel', 'cuenta', 'mi-reserva'];
+const PRIVADAS = ['estudio', 'panel', 'cuenta', 'mi-reserva', 'resena'];
 {
   const ruta = join(BALE, 'sitemap.xml'), viejo = existsSync(ruta) ? readFileSync(ruta, 'utf8') : '';
   const hoy = new Date().toISOString().slice(0, 10);
@@ -466,10 +472,10 @@ const PRIVADAS = ['estudio', 'panel', 'cuenta', 'mi-reserva'];
     return `  <url><loc>${loc}</loc><lastmod>${lastmod}</lastmod><priority>${p.nombre === 'index.html' ? '1.0' : '0.7'}</priority></url>`;
   });
   const locs = (s) => (s.match(/<loc>[^<]+<\/loc>/g) || []).join();
-  generado('sitemap.xml', `<?xml version="1.0" encoding="UTF-8"?>\n<!-- Generado por bale/_fuente/construir.mjs: no editar a mano. -->\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n${urls.join('\n')}\n</urlset>\n`, { soloSi: (a, b) => locs(a) !== locs(b) });
+  generado('sitemap.xml', `<?xml version="1.0" encoding="UTF-8"?>\n<!-- Generado por bale-fuente/construir.mjs: no editar a mano. -->\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n${urls.join('\n')}\n</urlset>\n`, { soloSi: (a, b) => locs(a) !== locs(b) });
 }
 // robots: «Disallow: /estudio» cubre /estudio y /estudio.html (Pages sirve las dos)
-generado('robots.txt', `# Generado por bale/_fuente/construir.mjs: no editar a mano.
+generado('robots.txt', `# Generado por bale-fuente/construir.mjs: no editar a mano.
 User-agent: *
 Allow: /
 ${PRIVADAS.map((p) => `Disallow: /${p}`).join('\n')}
@@ -478,12 +484,12 @@ Sitemap: ${URL_BASE}sitemap.xml
 `);
 
 // ---------- _redirects (Cloudflare Pages) ----------
-// Lo que no se publica (la fuente del compilado, img/fuente y cada .md de bale/) se reescribe (200) a una ruta
+// Lo que no se publica (img/fuente y cada .md de bale/; la fuente del compilado ya no está en bale/) se reescribe (200) a una ruta
 // que no existe: Pages responde con 404.html y estado 404, y la dirección no cambia.
 {
   const docs = readdirSync(BALE).filter((f) => /\.md$/i.test(f)).sort();
   const fila = (de, a, st) => `${de.padEnd(34)} ${a.padEnd(14)} ${st}`;
-  generado('_redirects', `# Generado por bale/_fuente/construir.mjs: no editar a mano.
+  generado('_redirects', `# Generado por bale-fuente/construir.mjs: no editar a mano.
 # Redirecciones de Cloudflare Pages (bale/ es la raíz de ${SITIO}). GitHub Pages no publica este archivo.
 #
 # www → sin www: Pages no redirige entre dominios desde aquí (solo rutas); va como regla de Cloudflare
@@ -497,7 +503,7 @@ ${fila('/bale', '/', 301)}
 ${fila('/bale/*', '/:splat', 301)}
 
 # No se publica: responde 404
-${['/_fuente', '/_fuente/*', '/img/fuente/*', ...docs.map((d) => '/' + d)].map((r) => fila(r, '/no-publicado', 200)).join('\n')}
+${['/img/fuente/*', ...docs.map((d) => '/' + d)].map((r) => fila(r, '/no-publicado', 200)).join('\n')}
 `);
 }
 
@@ -516,7 +522,7 @@ ${['/_fuente', '/_fuente/*', '/img/fuente/*', ...docs.map((d) => '/' + d)].map((
   const regla = (rutas, lineas) => rutas.map((r) => `${r}\n${lineas.map((l) => `  ${l}`).join('\n')}`).join('\n\n');
   const quitar = (nombres) => nombres.map((n) => `! ${n}`);
   const noIndex = 'X-Robots-Tag: noindex, nofollow';
-  generado('_headers', `# Generado por bale/_fuente/construir.mjs: no editar a mano (la CSP sale de la constante CSP).
+  generado('_headers', `# Generado por bale-fuente/construir.mjs: no editar a mano (la CSP sale de la constante CSP).
 # Cabeceras de Cloudflare Pages. GitHub Pages no lo publica (Jekyll ignora lo que empieza por «_»).
 
 # Todas las respuestas: seguridad, y el HTML siempre se vuelve a preguntar (caché corta)
@@ -535,11 +541,11 @@ ${regla(['/data/*'], [...quitar(['Cache-Control']), 'Cache-Control: public, max-
 ${regla(['/estudio', '/estudio.html'], [...quitar(['Content-Security-Policy', 'Referrer-Policy']), `Content-Security-Policy: ${CSP_ESTUDIO}; frame-ancestors 'none'`, 'Referrer-Policy: no-referrer', noIndex])}
 
 # Páginas privadas: fuera de los buscadores (llevan datos de la reserva o la cuenta en el #)
-${regla(['/panel', '/panel.html', '/cuenta', '/cuenta.html', '/mi-reserva', '/mi-reserva.html'], [noIndex])}
+${regla(['/panel', '/panel.html', '/cuenta', '/cuenta.html', '/mi-reserva', '/mi-reserva.html', '/resena', '/resena.html'], [noIndex])}
 `);
 }
 
 if (COMPROBAR) {
-  if (distintas) { console.error(`\n${distintas} archivo(s) sin compilar: ejecuta  node bale/_fuente/construir.mjs`); process.exit(1); }
+  if (distintas) { console.error(`\n${distintas} archivo(s) sin compilar: ejecuta  node bale-fuente/construir.mjs`); process.exit(1); }
   console.log(`Al día: ${nombres.length} páginas, sitemap.xml, robots.txt, _redirects, _headers y js/dominio.js.`);
 } else console.log(`Listo: ${nombres.length} páginas, sitemap.xml, robots.txt, _redirects, _headers y js/dominio.js (${distintas} cambiaron).`);

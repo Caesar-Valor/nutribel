@@ -8,18 +8,18 @@
 <meta name="robots" content="noindex, nofollow">
 <meta name="referrer" content="no-referrer">
 <meta name="theme-color" content="#F3E4D8">
-<script src="js/dominio.js?v=29511ca3"></script>
+<script src="js/dominio.js?v=43c874c8"></script>
 <script src="js/modo-temprano.js?v=9ed47566"></script>
 <link rel="icon" href="img/bale-favicon.png">
 <link rel="preload" href="fonts/montserrat-latin.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="stylesheet" href="css/base.css?v=3c66c5f9">
 <link rel="stylesheet" href="css/bale.css?v=bb33d517">
-<link rel="stylesheet" href="css/estudio.css?v=174a2c34">
+<link rel="stylesheet" href="css/estudio.css?v=11e2aeeb">
 <script src="js/vendor/supabase.js?v=bb37eb70" defer></script>
 <script src="js/core.js?v=75e2696e" defer></script>
 <script src="js/calendario.js?v=eee2f388" defer></script>
 <script src="js/hojas.js?v=b96436bb" defer></script>
-<script src="js/estudio.js?v=658522a4" defer></script>
+<script src="js/estudio.js?v=6d729dac" defer></script>
 </head>
 <body data-page="bale-estudio">
 <header class="btop">
@@ -97,7 +97,10 @@
       <h2 class="vh2">Enlaces por enviar (tarjeta)</h2>
       <p class="privacy">Crea el cobro en CardNET con el monto y el WhatsApp de la clienta: CardNET se lo envía a nombre de NUTRIBEL NUTRICION PERSONALIZADA Y BIENESTAR. Luego marca «Enlace enviado» y, cuando pague, «Pagada (tarjeta)».</p>
       <ul class="pays" id="cobEnlaces"></ul>
-      <h2 class="vh2">Clases sin pagar</h2>
+      <h2 class="vh2">Para revisar: membresía</h2>
+      <p class="privacy">Clientas con membresía cuya membresía no cubre esa clase (vencida, sin clases de ese tipo o de otro tipo). A ellas no les sale ningún cobro. Si renovaste o registraste la membresía, la clase pasa sola a «Membresía».</p>
+      <ul class="pays" id="cobRevisar"></ul>
+      <h2 class="vh2">Clases sin pagar (clase suelta)</h2>
       <ul class="pays" id="cobClases"></ul>
       <h2 class="vh2">Membresías por pagar</h2>
       <ul class="pays" id="cobMem"></ul>
@@ -122,6 +125,18 @@
       <ul class="pays" id="comLista"></ul>
       <h2 class="vh2">Comentarios por revisar</h2>
       <ul class="pays" id="comComent"></ul>
+    </section>
+
+    <section role="tabpanel" id="p-foro" aria-labelledby="t-foro" hidden>
+      <div id="foroEst"></div>
+    </section>
+
+    <section role="tabpanel" id="p-resenas" aria-labelledby="t-resenas" hidden>
+      <div id="resenas"></div>
+    </section>
+
+    <section role="tabpanel" id="p-ninas" aria-labelledby="t-ninas" hidden>
+      <div id="ninas"></div>
     </section>
 
     <section role="tabpanel" id="p-ajustes" aria-labelledby="t-ajustes" hidden>

@@ -4,23 +4,23 @@
 
 Desde el rediseño, balé tiene varias páginas: `index.html` (inicio), `clases.html`, `reservar.html`, `precios.html`, `nosotras.html` (El estudio), `comunidad.html`, `cuenta.html` (Mi cuenta), `preguntas.html`, `mi-reserva.html`, `privacidad.html` y `404.html`. **No se editan a mano**: salen de
 
-- `bale/_fuente/paginas/*.html` (el texto de cada página, con una cabecera `<!--@ {…} @-->` con su título y descripción),
-- `bale/_fuente/parciales/` (lo que se repite: `<head>`, encabezado con el menú, pie y la barra «Reservar» del teléfono),
+- `bale-fuente/paginas/*.html` (el texto de cada página, con una cabecera `<!--@ {…} @-->` con su título y descripción),
+- `bale-fuente/parciales/` (lo que se repite: `<head>`, encabezado con el menú, pie y la barra «Reservar» del teléfono),
 - y los JSON de `bale/data/` (clases, precios, equipo, preguntas, comunidad).
 
 Después de cambiar cualquiera de ellos, en la carpeta del proyecto (`nutribel`):
 
 ```
-node bale/_fuente/construir.mjs
+node bale-fuente/construir.mjs
 ```
 
-Escribe las páginas de `bale/` y actualiza `sitemap.xml`. No necesita instalar nada (solo Node). Para comprobar que nada quedó sin compilar: `node bale/_fuente/construir.mjs --comprobar` (lo corren también las pruebas de la web). Las páginas compiladas sí van en git; la carpeta `_fuente/` no se publica (GitHub Pages ignora las carpetas que empiezan por «_»).
+Escribe las páginas de `bale/` y actualiza `sitemap.xml`. No necesita instalar nada (solo Node). Para comprobar que nada quedó sin compilar: `node bale-fuente/construir.mjs --comprobar` (lo corren también las pruebas de la web). Las páginas compiladas sí van en git. La fuente vive en `bale-fuente/`, en la raíz del repo y fuera de `bale/`, así que Cloudflare Pages no la publica (12/11/2026).
 
 Las direcciones viejas de la página larga siguen funcionando: `bale/#horario` lleva a `reservar.html`, `#precios` a `precios.html`, `#reformer` a `clases.html#pilates-reformer`, `#equipo` y `#ubicacion` a `nosotras.html`, `#faq` a `preguntas.html` y `?vista=estudio` a `estudio.html` (`js/anclas.js`).
 
 ## El panel del negocio
 
-Entra escribiendo su dirección, https://balestudiord.com/panel.html (en local, http://localhost:3000/bale/panel.html). Ahí se cambian los datos de contacto, el aviso para las clientas, las clases canceladas, los cupos, los lugares fijos de las miembros, los precios y los próximos eventos. Lo que guardas en el panel se ve **solo en ese navegador** y solo en la página Reservar (cupos, sala, lugares fijos y canceladas): los precios, los textos y la comunidad van compilados. Para que lo vea todo el mundo: pulsa **Descargar archivos para publicar**, copia los 4 archivos que se descargan (`config.json`, `precios.json`, `comunidad.json` y `bale.json`) a `bale/data/` reemplazando los que hay, **compila** (`node bale/_fuente/construir.mjs`) y publica (último apartado). Después pulsa «Restaurar los datos publicados» en el panel.
+Entra escribiendo su dirección, https://balestudiord.com/panel.html (en local, http://localhost:3000/bale/panel.html). Ahí se cambian los datos de contacto, el aviso para las clientas, las clases canceladas, los cupos, los lugares fijos de las miembros, los precios y los próximos eventos. Lo que guardas en el panel se ve **solo en ese navegador** y solo en la página Reservar (cupos, sala, lugares fijos y canceladas): los precios, los textos y la comunidad van compilados. Para que lo vea todo el mundo: pulsa **Descargar archivos para publicar**, copia los 4 archivos que se descargan (`config.json`, `precios.json`, `comunidad.json` y `bale.json`) a `bale/data/` reemplazando los que hay, **compila** (`node bale-fuente/construir.mjs`) y publica (último apartado). Después pulsa «Restaurar los datos publicados» en el panel.
 
 También se puede editar a mano. Los JSON son archivos de texto: ábrelos con VS Code, cambia solo lo que está entre comillas y guarda. Ojo con las comas: cada línea de una lista termina en coma menos la última. Si falta o sobra una coma, el compilado avisa en qué archivo.
 
@@ -177,7 +177,7 @@ Archivo: `bale/data/config.json`. Cuando la dueña mande los datos bancarios, re
 
 ## Publicar los cambios
 
-1. Guarda los archivos, compila (`node bale/_fuente/construir.mjs`) y revisa en local (ver arriba).
+1. Guarda los archivos, compila (`node bale-fuente/construir.mjs`) y revisa en local (ver arriba).
 2. En VS Code, panel de Git: escribe un mensaje corto (por ejemplo "balé: horario de noviembre") y pulsa **Commit**, luego **Sync / Push**.
 3. Cloudflare Pages publica solo en uno o dos minutos: https://balestudiord.com/ (la dirección vieja, caesar-valor.github.io/nutribel/bale/, lleva sola al dominio nuevo).
    La dirección del sitio está en un solo lugar, `bale/data/config.json` → `sitio.url`; si algún día cambia, cámbiala ahí, compila, y cambia también «Dirección pública de la página» en Ajustes del área del estudio (los enlaces de los correos y WhatsApp).

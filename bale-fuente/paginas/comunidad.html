@@ -1,9 +1,10 @@
 <!--@ {
   "titulo": "Comunidad",
+  "titulo_seo": "Comunidad y eventos de Barre en La Vega",
   "descripcion": "La comunidad de balé en La Vega: actividades, clases temáticas, celebraciones y momentos del estudio.",
   "actual": "comunidad",
   "jsonld": ["eventos"],
-  "scripts": ["js/cuenta-sesion.js", "js/comunidad.js"],
+  "scripts": ["js/cuenta-sesion.js", "js/comunidad.js", "js/foro.js"],
   "main": "pagina com-entra"
 } @-->
 <header class="phead con-foto">
@@ -18,6 +19,12 @@
 <div id="comunidad" data-fuente="json">
 {{comunidad-respaldo}}
 </div>
+<!-- Conversación de alumnas (13/11/2026): la pinta js/foro.js solo si el estudio la encendió (ajuste comunidad_foro) -->
+<section class="csec foro" id="foro" aria-labelledby="t-foro" hidden>
+  <h2 id="t-foro">Conversación de alumnas</h2>
+  <p class="foro-intro">Un espacio para las alumnas de balé: solo texto y todo se borra a los 10 días.</p>
+  <div id="foroCuerpo" aria-live="polite"></div>
+</section>
 <div class="ig-zona">{{instagram-posts}}</div>
 <section class="sec suave" id="comSolo" aria-labelledby="t-solo" hidden>
   <div class="cont centro">

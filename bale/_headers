@@ -1,4 +1,4 @@
-# Generado por bale/_fuente/construir.mjs: no editar a mano (la CSP sale de la constante CSP).
+# Generado por bale-fuente/construir.mjs: no editar a mano (la CSP sale de la constante CSP).
 # Cabeceras de Cloudflare Pages. GitHub Pages no lo publica (Jekyll ignora lo que empieza por «_»).
 
 # Todas las respuestas: seguridad, y el HTML siempre se vuelve a preguntar (caché corta)
@@ -70,4 +70,10 @@
   X-Robots-Tag: noindex, nofollow
 
 /mi-reserva.html
+  X-Robots-Tag: noindex, nofollow
+
+/resena
+  X-Robots-Tag: noindex, nofollow
+
+/resena.html
   X-Robots-Tag: noindex, nofollow

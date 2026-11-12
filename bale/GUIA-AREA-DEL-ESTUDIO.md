@@ -179,3 +179,11 @@ Pestaña **Comunidad**: lo que publiques sale en la página Comunidad del sitio.
 - **Avisar a la comunidad**: manda un correo con la actividad a las clientas que marcaron en su cuenta que quieren saber de las actividades. Primero ves el texto y a cuántas les llega; para probar, escribe tu correo en «enviar solo a este correo». Está **apagado** hasta que Marifer lo encienda en **Ajustes → Instructoras y dirección pública**. Cada actividad se avisa una sola vez.
 
 Las clientas se apuntan desde la página con su cuenta (entran con un código que les llega al correo, sin contraseña). Tú no tienes que hacer nada para eso.
+
+## Funciones nuevas (apagadas hasta que se enciendan)
+
+Se encienden en **Ajustes → Reseñas y Ballet niñas**. Las pestañas aparecen al volver a entrar.
+
+- **Reseñas** (solo la dueña): al día siguiente de una clase, a quien marcaste «Asistió» le llega un correo «¿Cómo te fue?». Ella responde con estrellas y un comentario, sin entrar a ninguna cuenta. Como mucho una vez por semana a cada clienta. En la pestaña ves las respuestas con su nombre y el promedio por clase y por instructora. Si pones el enlace de Google, el correo de agradecimiento lo ofrece a todas las que respondieron.
+- **Ballet niñas** (la dueña y la instructora que elijas): la libreta de asistencia. Solo el nombre de la niña y el de su representante. Se marca el día de la clase (Asistió, Faltó o Clase cancelada) y cierra a las 23:59; después solo la dueña corrige, con el motivo. «Resumen del mes» → «Imprimir o guardar en PDF».
+- **Conversación** (la dueña y la asistente): la conversación de alumnas en Comunidad. Revisa los reportes, borra lo que no siga las reglas, fija avisos del estudio y suspende a quien no las respete. Todo se borra solo a los 10 días, salvo lo fijado.

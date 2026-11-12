@@ -15,7 +15,11 @@ const NB = window.BALE;
 const {$, esc} = NB;
 const TZ = "America/Santo_Domingo";
 const DIAS = ["Lunes","Martes","Miércoles","Jueves","Viernes","Sábado","Domingo"];
-const PAGO = {pendiente:"Por pagar", pagado:"Pagada", membresia:"Membresía", cortesia:"Cortesía"};
+const PAGO = {pendiente:"Por pagar", pagado:"Pagada", membresia:"Membresía", cortesia:"Cortesía", revisar:"Revisar membresía"};
+// Estado del pago de una reserva para el estudio: «revisar» si la clienta tiene membresía que no cubre la clase
+const pagoDe = a=>a.pago_estado==="pendiente"&&a.revisar&&/membres/i.test(a.revisar)?"revisar":a.pago_estado;
+// Las 4 opciones de pago al reservar o al cambiarlo (separadas: membresía no es «por pagar»)
+const PAGO_OPC = [["membresia","Membresía (incluida, sin cobro)"],["pendiente","Por pagar (clase suelta)"],["pagado","Ya pagó"],["cortesia","Cortesía"]];
 const METODO = {transferencia:"Transferencia", tarjeta:"Tarjeta", efectivo:"Efectivo"};
 let sb=null, YO=null, CAT=null, CFG=null;
 
@@ -291,8 +295,11 @@ async function seguridad(){
    ========================================================= */
 let TAB="";
 function montarTabs(){
-  const t=YO.rol==="instructora" ? [["clases","Mis clases"]]
-    : [["clases","Clases"],["clientas","Clientas"],["cobros","Cobros"],["avisos","Avisos"]].concat(conComunidad()?[["comunidad","Comunidad"]]:[]).concat(esDuena()?[["ingresos","Ingresos"],["ajustes","Ajustes"],["exportar","Exportar"]]:[]);
+  // 13/11/2026: «Reseñas» (solo la dueña) y «Ballet niñas» (la dueña y la instructora asignada), si están encendidas
+  const t=YO.rol==="instructora" ? [["clases","Mis clases"]].concat(YO.ninas?[["ninas","Ballet niñas"]]:[])
+    : [["clases","Clases"],["clientas","Clientas"],["cobros","Cobros"],["avisos","Avisos"]].concat(conComunidad()?[["comunidad","Comunidad"]]:[])
+      .concat(YO.foro?[["foro","Conversación"]]:[]).concat(YO.resenas?[["resenas","Reseñas"]]:[]).concat(YO.ninas?[["ninas","Ballet niñas"]]:[])
+      .concat(esDuena()?[["ingresos","Ingresos"],["ajustes","Ajustes"],["exportar","Exportar"]]:[]);
   $("#tabs").innerHTML=t.map(([id,n],i)=>`<button role="tab" type="button" id="t-${id}" aria-controls="p-${id}" aria-selected="${i===0}" tabindex="${i?-1:0}">${n}${id==="cobros"?' <span class="tcnt" id="cntEnlaces" hidden></span>':""}</button>`).join("");
   $("#tabs").hidden=t.length<2;
   PANELES.forEach(id=>{ $("#p-"+id).hidden=true; });
@@ -302,7 +309,7 @@ function montarTabs(){
   abrirTab(t[0][0]);
 }
 // Contador de Cobros: enlaces de tarjeta por enviar + transferencias por confirmar
-const PANELES = ["clases","clientas","cobros","avisos","comunidad","ingresos","ajustes","exportar"];
+const PANELES = ["clases","clientas","cobros","avisos","comunidad","foro","resenas","ninas","ingresos","ajustes","exportar"];
 let CNT={enlaces:0,transf:0};
 function pintarContador(){
   const b=$("#cntEnlaces"); if(!b) return;
@@ -323,7 +330,7 @@ function abrirTab(id){
   TAB=id;
   document.querySelectorAll('#tabs [role="tab"]').forEach(b=>{ const on=b.id==="t-"+id; b.setAttribute("aria-selected",on); b.tabIndex=on?0:-1; });
   PANELES.forEach(x=>{ $("#p-"+x).hidden=x!==id; });
-  ({clases:cargarSemana, clientas:abrirClientas, cobros:cargarCobros, avisos:cargarAvisos, comunidad:cargarComunidad, ingresos:cargarIngresos, ajustes:cargarAjustes, exportar:()=>{}})[id]();
+  ({clases:cargarSemana, clientas:abrirClientas, cobros:cargarCobros, avisos:cargarAvisos, comunidad:cargarComunidad, foro:cargarForo, resenas:cargarResenas, ninas:cargarNinas, ingresos:cargarIngresos, ajustes:cargarAjustes, exportar:()=>{}})[id]();
   if(id!=="cobros"&&YO&&YO.rol!=="instructora"){ contarEnlaces(); contarTransf(); }
 }
 
@@ -373,7 +380,7 @@ function pintarClase(){
   const cancelada=s.estado==="cancelada", insc=s.modo==="inscripcion";
   const tags=a=>[a.origen==="fijo"?`<span class="tagx web">Miembro</span>`:"", a.primera_vez?`<span class="tagx prim">Primera vez</span>`:"",
     a.origen==="estudio"?`<span class="tagx">Por el estudio</span>`:"",
-    admin&&a.pago_estado?`<span class="tagx ${a.pago_estado==="pendiente"?"pend":""}">${esc(PAGO[a.pago_estado]||a.pago_estado)}${a.pago_estado==="pendiente"&&a.monto!=null?` ${esc(dinero(a.monto))}`:""}</span>`:""].join("");
+    admin&&a.pago_estado?(p=>`<span class="tagx ${p==="pendiente"||p==="revisar"?"pend":""}">${esc(PAGO[p]||p)}${p==="pendiente"&&a.monto!=null?` ${esc(dinero(a.monto))}`:""}</span>`)(pagoDe(a)):""].join("");
   box.innerHTML=`<h2>${esc(s.clase)}${s.etiqueta||s.edad?` <small>${esc(s.etiqueta||s.edad)}</small>`:""}</h2>
     <p class="meta">${esc(s.fecha_larga)} · ${esc(s.hora)} – ${esc(s.hora_fin)} · ${esc(s.instructora)}${insc?"":` · <b>${alumnas.length} de ${s.capacidad}</b>`}</p>
     ${cancelada?`<p class="note">Clase cancelada${s.motivo_cancelacion?`: ${esc(s.motivo_cancelacion)}`:""}.</p>`:""}
@@ -392,7 +399,9 @@ function pintarClase(){
         <button type="button" class="abtn" data-asis="asistio" data-r="${a.reserva_id}" aria-pressed="${a.asistencia==="asistio"}" ${puedeAsis?"":"disabled"}>Asistió</button>
         <button type="button" class="abtn" data-asis="falto" data-r="${a.reserva_id}" aria-pressed="${a.asistencia==="falto"}" ${puedeAsis?"":"disabled"}>Faltó</button>
       </span>
-      ${admin?`<button class="linkbtn" type="button" data-cancel="${a.reserva_id}" data-nombre="${esc(a.nombre)}">Cancelar</button>`:""}
+      ${admin?`<span class="racc"><button class="linkbtn" type="button" data-editar="${a.reserva_id}">Editar</button>
+        <button class="linkbtn" type="button" data-pago="${a.reserva_id}">Pago</button>
+        <button class="linkbtn" type="button" data-cancel="${a.reserva_id}" data-nombre="${esc(a.nombre)}">Cancelar</button></span>`:""}
     </li>`).join("")||`<li class="vacio">Sin reservas.</li>`}</ol>
     <h3>Lista de espera</h3>
     ${espera.length?`<ol class="roster">${espera.map((e,i)=>`<li><span class="seatno">${i+1}</span><span class="nm">${esc(e.nombre)}${e.telefono?`<small>${esc(e.telefono)}</small>`:""}</span><span class="tagx">${e.estado==="avisada"?"Avisada":"Esperando"}</span></li>`).join("")}</ol>`:`<p class="privacy">Nadie en espera.</p>`}`;
@@ -414,6 +423,58 @@ async function cancelarReserva(id,nombre){
       <label class="check"><input type="checkbox" name="avisar" checked> Avisar a la clienta</label>`,
     accion:async f=>{ const r=await hacer("estudio_cancelar_reserva",{p_reserva_id:id,p_cargo:f.querySelector('[name="cargo"]:checked').value,p_avisar:v(f,"avisar")},{dlg:true});
       if(!r) return null; if(r.ok===false) return r.mensaje; listo(r.tardia?`Reserva cancelada con cargo de ${dinero(r.cargo)}`:"Reserva cancelada"); return true; }});
+  if(ok) recargarClase();
+}
+// Pago de una reserva, con las 4 opciones separadas
+async function cambiarPago(id){
+  const a=CLASE.alumnas.find(x=>x.reserva_id===id); if(!a) return;
+  const actual=pagoDe(a);
+  const ok=await pedir({titulo:`Pago de ${a.nombre}`, ok:"Guardar",
+    html:`<p>Ahora: <b>${esc(PAGO[actual]||actual)}</b>${a.revisar?` · ${esc(a.revisar)}`:""}</p>
+      <fieldset class="opts"><legend>¿Cómo queda esta clase?</legend>
+        ${PAGO_OPC.map(([k,n])=>`<label class="radio"><input type="radio" name="p" value="${k}" ${k===(actual==="revisar"?"membresia":actual)?"checked":""}> ${esc(n)}</label>`).join("")}</fieldset>
+      <label class="fld" data-met>¿Cómo pagó?<select name="m">${Object.entries(METODO).map(([k,n])=>opt(k,n)).join("")}</select></label>
+      <p class="privacy">«Membresía» solo se guarda si su membresía cubre esta clase (fechas, tipo y clases que le quedan). Ningún cambio le manda mensaje a la clienta.</p>`,
+    alAbrir:f=>{ const met=f.querySelector("[data-met]"), upd=()=>{ const c=f.querySelector('[name="p"]:checked'); met.hidden=!c||c.value!=="pagado"; };
+      f.addEventListener("change",upd); upd(); },
+    accion:async f=>{ const c=f.querySelector('[name="p"]:checked'); if(!c) return "Elige cómo queda la clase."; const p=c.value;
+      const r=await hacer("estudio_pago",{p_reserva_id:id,p_pago_estado:p,p_metodo:p==="pagado"?v(f,"m"):null},{dlg:true});
+      if(!r) return null; return r.ok===false?r.mensaje:true; }});
+  if(ok){ listo("Pago guardado"); recargarClase(); }
+}
+// Corregir la reserva sin cancelarla: nombre, correo (y la ficha), lugar u otra clase
+async function editarReserva(id){
+  const s=CLASE.sesion, a=CLASE.alumnas.find(x=>x.reserva_id===id); if(!a) return;
+  const barra=s.modo==="lugares", ocup=(s.lugares_ocupados||[]).filter(n=>n!==a.lugar);
+  const otras=SEM.filter(x=>x.id!==s.id&&x.modo!=="inscripcion"&&x.estado!=="cancelada"&&msLV(x.fecha,x.inicio)>Date.now());
+  const ok=await pedir({titulo:`Editar la reserva de ${a.nombre}`, ok:"Guardar cambios",
+    html:`<label class="fld">Nombre en la reserva<input name="nombre" value="${esc(a.nombre_reserva||a.nombre)}" maxlength="80"></label>
+      <label class="fld">Correo<input name="correo" type="email" inputmode="email" value="${esc(a.correo||"")}"></label>
+      <label class="fld">WhatsApp (de la ficha)<input name="tel" type="tel" inputmode="tel" value="${esc(a.telefono||"")}"></label>
+      <label class="check"><input type="checkbox" name="ficha"> Corregir también la ficha de la clienta (nombre, correo y WhatsApp)</label>
+      <label class="check" data-reenv hidden><input type="checkbox" name="reenviar"> ¿Reenviar la confirmación al correo nuevo?</label>
+      <label class="fld">Clase<select name="ses">${opt(String(s.id),`Esta: ${s.clase}, ${s.fecha_larga} ${s.hora}`,true)}${otras.map(x=>opt(String(x.id),`${x.clase}, ${fmtCorta(x.fecha)} ${h12(x.inicio)} · ${x.instructora}`)).join("")}</select></label>
+      ${barra?`<div data-sala><p class="steph">Lugar (ahora el ${a.lugar||"—"})</p>${seatsHTML(ocup)}</div>`:""}
+      <p class="privacy">Cambiar de clase o de lugar sigue las reglas de reservar. Su lugar de ahora no se suelta hasta guardar.</p>`,
+    alAbrir:f=>{
+      if(barra) activarSeats(f);
+      const cor=f.querySelector('[name="correo"]'), re=f.querySelector("[data-reenv]");
+      cor.addEventListener("input",()=>{ re.hidden=cor.value.trim().toLowerCase()===(a.correo||"").toLowerCase(); });
+      const ses=f.querySelector('[name="ses"]'), sala=f.querySelector("[data-sala]");
+      ses.addEventListener("change",()=>{ if(sala) sala.hidden=ses.value!==String(s.id); });
+    },
+    accion:async f=>{
+      const args={p_reserva_id:id, p_corregir_ficha:v(f,"ficha"), p_reenviar:v(f,"reenviar")};
+      const nom=v(f,"nombre").trim(), cor=v(f,"correo").trim(), tel=v(f,"tel").trim();
+      if(nom&&nom!==(a.nombre_reserva||a.nombre)) args.p_nombre=nom;
+      if(cor&&cor.toLowerCase()!==(a.correo||"").toLowerCase()) args.p_correo=cor;
+      if(tel&&soloDigitos(tel)!==soloDigitos(a.telefono)){ if(!args.p_corregir_ficha) return "El WhatsApp está en la ficha: marca «Corregir también la ficha»."; args.p_telefono=tel; }
+      const ses=+v(f,"ses"); if(ses!==s.id) args.p_sesion_id=ses;
+      if(barra&&ses===s.id){ const l=+v(f,"lugar"); if(l&&l!==a.lugar) args.p_lugar=l; }
+      if(Object.keys(args).length===3) return "No cambiaste nada.";
+      const r=await hacer("estudio_editar_reserva",args,{dlg:true}); if(!r) return null; if(r.ok===false) return r.mensaje;
+      listo(r.sin_cambios?"Sin cambios":`Reserva corregida${r.reenviada?" · confirmación reenviada":""}`); return true;
+    }});
   if(ok) recargarClase();
 }
 function recargarClase(){ cargarSemanaSinMover(); }
@@ -457,7 +518,8 @@ async function reservarPara(){
         <label class="check"><input type="checkbox" name="wa"> Acepta avisos por WhatsApp</label>
       </details>
       ${barra?`<p class="steph">Lugar</p>${seatsHTML(s.lugares_ocupados)}`:""}
-      <label class="fld">Pago<select name="pago">${opt("","Por pagar (o membresía)")}${opt("pagado","Ya pagó")}${opt("cortesia","Cortesía")}</select></label>
+      <label class="fld">Pago<select name="pago">${PAGO_OPC.map(([k,n])=>opt(k,n,k==="pendiente")).join("")}</select></label>
+      <p class="privacy" data-pago-nota hidden></p>
       <label class="check"><input type="checkbox" name="avisar" checked> Enviar la confirmación a la clienta</label>`,
     alAbrir:f=>{
       activarSeats(f);
@@ -465,9 +527,12 @@ async function reservarPara(){
       q.addEventListener("input",()=>{ clearTimeout(t); t=setTimeout(async()=>{
         const txt=q.value.trim(); if(txt.length<2){ ul.innerHTML=""; return; }
         const r=await hacer("estudio_clientas",{p_buscar:txt,p_limite:8}); if(!r) return;
-        ul.innerHTML=r.clientas.map(c=>`<li><label class="radio"><input type="radio" name="cli" value="${c.id}"> ${esc(c.nombre)} <small>${esc(c.telefono)}${c.membresia?` · ${esc(c.membresia)}`:""}</small></label></li>`).join("")||`<li class="privacy">Sin resultados: usa «O una clienta nueva».</li>`;
+        ul.innerHTML=r.clientas.map(c=>`<li><label class="radio"><input type="radio" name="cli" value="${c.id}" data-mem="${c.membresia?1:""}"> ${esc(c.nombre)} <small>${esc(c.telefono)}${c.membresia?` · ${esc(c.membresia)}`:""}</small></label></li>`).join("")||`<li class="privacy">Sin resultados: usa «O una clienta nueva».</li>`;
       },300); });
-      ul.addEventListener("change",e=>{ elegida=+e.target.value; });
+      // con membresía, «Membresía» de entrada; si no la cubre, la base la deja en «Revisar membresía» (sin cobro)
+      ul.addEventListener("change",e=>{ elegida=+e.target.value; const sel=f.querySelector('[name="pago"]'), nota=f.querySelector("[data-pago-nota]");
+        const mem=!!e.target.dataset.mem; sel.value=mem?"membresia":"pendiente";
+        nota.hidden=!mem; nota.textContent=mem?"Tiene membresía: si esta clase no la cubre, queda en «Revisar membresía», sin cobro para ella.":""; });
     },
     accion:async f=>{
       const args={p_sesion_id:s.id, p_avisar:v(f,"avisar"), p_pago_estado:v(f,"pago")||null};
@@ -476,7 +541,7 @@ async function reservarPara(){
       else{ if(!v(f,"nombre")||!v(f,"tel")) return "Elige una clienta de la lista o escribe el nombre y el WhatsApp de una nueva.";
         Object.assign(args,{p_nombre:v(f,"nombre"),p_telefono:v(f,"tel"),p_correo:v(f,"correo")||null,p_acepta_whatsapp:v(f,"wa")}); }
       const r=await hacer("estudio_reservar",args,{dlg:true}); if(!r) return null; if(r.ok===false) return r.mensaje;
-      listo(`Reservado: ${r.reserva.nombre}, ${r.reserva.lugar_texto}`); return true;
+      listo(r.revisar?`Reservado: ${r.reserva.nombre}. Revisar membresía: ${r.revisar}`:`Reservado: ${r.reserva.nombre}, ${r.reserva.lugar_texto}`); return true;
     }});
   if(ok) recargarClase();
 }
@@ -790,12 +855,27 @@ async function cargarCobros(){
       :`<button class="bbtn solid sm" type="button" data-enlace="pagado" data-id="${x.id}" data-q="${esc(x.nombre)}">Pagada (tarjeta)</button>`}
       <button class="bbtn line sm" type="button" data-enlace="anulado" data-id="${x.id}" data-q="${esc(x.nombre)}">Quitar</button></div></li>`).join("")
     ||`<li class="empty-state">No hay cobros con tarjeta pendientes.</li>`;
+  const RV=$("#cobRevisar");
+  if(RV) RV.innerHTML=(r.revisar||[]).map(x=>`<li><div><b>${esc(x.nombre)}</b><small>${esc(x.clase)} · ${esc(fmtCorta(x.fecha))} · ${esc(x.hora)}</small><small>${esc(x.revisar||"")}</small><small>${esc(x.telefono)}</small></div>
+    <div class="eacc"><button class="bbtn solid sm" type="button" data-rev="membresia" data-id="${x.reserva_id}" data-q="${esc(x.nombre)}">Incluir en su membresía</button>
+      <button class="bbtn line sm" type="button" data-rev="pendiente" data-id="${x.reserva_id}" data-q="${esc(x.nombre)}">Es clase suelta (por pagar)</button>
+      <button class="bbtn line sm" type="button" data-rev="cortesia" data-id="${x.reserva_id}" data-q="${esc(x.nombre)}">Cortesía</button></div></li>`).join("")
+    ||`<li class="empty-state">Nada para revisar.</li>`;
   $("#cobClases").innerHTML=(r.clases||[]).map(x=>`<li><div><b>${esc(x.nombre)}</b><small>${esc(x.clase)} · ${esc(fmtCorta(x.fecha))} · ${esc(x.hora)} · ${esc(dinero(x.monto))}</small><small>${esc(x.telefono)}</small></div>
     <div class="eacc"><button class="bbtn solid sm" type="button" data-pagar="${x.reserva_id}" data-q="${esc(x.nombre)}">Marcar pagada</button><button class="bbtn line sm" type="button" data-cobro-reserva="${x.reserva_id}">Cobrar con tarjeta</button><button class="bbtn line sm" type="button" data-cortesia="${x.reserva_id}" data-q="${esc(x.nombre)}">Cortesía</button></div></li>`).join("")
     ||`<li class="empty-state">No hay clases sin pagar.</li>`;
   $("#cobCargos").innerHTML=(r.cargos||[]).map(x=>`<li><div><b>${esc(x.nombre)} · ${esc(dinero(x.cargo))}</b><small>${esc(x.clase)} · ${esc(fmtCorta(x.fecha))} · ${esc(x.hora)}</small><small>${esc(x.telefono)}</small></div>
     <div class="eacc"><button class="bbtn solid sm" type="button" data-cargo="cobrado" data-r="${x.reserva_id}" data-q="${esc(x.nombre)}">Cobrado</button><button class="bbtn line sm" type="button" data-cargo="perdonado" data-r="${x.reserva_id}" data-q="${esc(x.nombre)}">Perdonado</button></div></li>`).join("")
     ||`<li class="empty-state">No hay cargos pendientes.</li>`;
+}
+// «Para revisar: membresía»: incluirla en la membresía, cobrarla como clase suelta o dejarla de cortesía (sin mensajes)
+async function revisarPago(id,estado,nombre){
+  const txt={membresia:"Queda incluida en su membresía (si la membresía cubre esa clase).",
+    pendiente:"Queda como clase suelta, por pagar. Desde ahí la clienta ve el monto en su reserva (no se le manda ningún mensaje ahora).",
+    cortesia:"Queda como cortesía del estudio, sin cobro."}[estado];
+  const ok=await pedir({titulo:nombre, ok:"Guardar", html:`<p>${esc(txt)}</p>`,
+    accion:async()=>{ const r=await hacer("estudio_pago",{p_reserva_id:id,p_pago_estado:estado,p_metodo:null},{dlg:true}); if(!r) return null; return r.ok===false?r.mensaje:true; }});
+  if(ok){ listo("Guardado"); cargarCobros(); }
 }
 async function pagar(id,nombre,cortesia){
   const ok=await pedir({titulo:cortesia?`Cortesía para ${nombre}`:`Pago de ${nombre}`, ok:cortesia?"Marcar cortesía":"Marcar pagada",
@@ -923,12 +1003,17 @@ const EJEMPLO = {nombre:"Laura", clase:"Hot Barre", fecha_larga:"lunes 2 de novi
 const PLANT_NOMBRE = {reserva_confirmada:"Reserva confirmada", recordatorio_dia_antes:"Recordatorio del día antes", recordatorio_horas_antes:"Recordatorio horas antes",
   reserva_cancelada:"Reserva cancelada", clase_cancelada:"Clase cancelada", lugar_liberado:"Se liberó un lugar", estudio_nueva_reserva:"Al estudio: nueva reserva", estudio_cancelacion:"Al estudio: cancelación",
   membresia_por_vencer:"Membresía por vencer", transferencia_confirmada:"Transferencia confirmada", transferencia_rechazada:"Transferencia rechazada",
-  membresia_confirmada:"Membresía nueva", membresia_renovada:"Membresía renovada"};
+  membresia_confirmada:"Membresía nueva", membresia_renovada:"Membresía renovada",
+  resena_pedido:"Reseña: «¿Cómo te fue?»", resena_gracias:"Reseña: gracias", cambio_de_hora:"Cambio de hora de la clase"};
 const VAR_MEM = ["plan","membresia","clases_texto","desde_larga","hasta_larga","fijos_texto","pago_linea","enlace_membresia","monto","pago_texto","enlace_pago","concepto","motivo"];
 Object.assign(EJEMPLO,{plan:"Barre · 8 clases al mes", desde_larga:"lunes 2 de noviembre", hasta_larga:"martes 1 de diciembre", monto:"RD$6,800",
   enlace_pago:"https://…/mi-reserva.html#m=…", concepto:"tu membresía", membresia:"Barre", clases_texto:"8 clases al mes",
   fijos_texto:"Tu horario fijo:\n- Lunes 5:30 pm, Hot Barre con Marifer (Lugar 7, fila 1)", pago_linea:"Te esperamos para completar el pago en el estudio. Si te queda más cómodo, también puedes transferir o pagar con tarjeta desde el enlace de tu membresía.",
-  enlace_membresia:"https://…/mi-reserva.html#m=…"});
+  enlace_membresia:"https://…/mi-reserva.html#m=…",
+  enlace_resena:"https://…/resena.html#r=…", google_texto:"Si te provoca, también puedes contar tu experiencia en Google. Nos ayuda a que más personas conozcan balé:\nhttps://g.page/…"});
+const VAR_RES = ["enlace_resena","google_texto"];
+const VAR_HORA = ["sigue_texto","hora_anterior"];
+Object.assign(EJEMPLO,{sigue_texto:"Tu lugar sigue igual.", hora_anterior:"5:45 pm"});
 const render = (t,d)=>String(t||"").replace(/\{\{([a-z_]+)\}\}/g,(m,k)=>d[k]||"").replace(/[ \t]+\n/g,"\n").replace(/\n{3,}/g,"\n\n").trim();
 
 async function cargarAjustes(){
@@ -961,11 +1046,26 @@ async function cargarAjustes(){
     sec("otros","Instructoras y dirección pública",`<label class="check"><input type="checkbox" name="tel" ${aj("instructoras_ven_telefono",false)?"checked":""}> Las instructoras ven el WhatsApp de sus alumnas</label>
       <label class="fld">Dirección pública de la página (base de los enlaces de los avisos)<input name="url" type="url" value="${esc(aj("url_publica",""))}"></label>
       ${conComunidad()?`<label class="check"><input type="checkbox" name="comAv" ${aj("comunidad_avisos",false)?"checked":""}> Se puede avisar por correo a la comunidad de una actividad (solo a quienes lo aceptaron en su cuenta)</label>`:""}`)+
+    // 13/11/2026 (DECISIONES §43): funciones nuevas, apagadas hasta que se enciendan aquí
+    ("resenas_activas" in AJ?sec("nuevas","Reseñas y Ballet niñas",`<h3>Reseña después de la clase</h3>
+      <label class="check"><input type="checkbox" name="res" ${aj("resenas_activas",false)?"checked":""}> Pedir por correo, al día siguiente, la opinión de quien asistió (como mucho una vez por semana a cada clienta)</label>
+      <label class="check"><input type="checkbox" name="resWa" ${aj("resenas_whatsapp",false)?"checked":""}> Además, un WhatsApp corto «¿Te gustó tu clase? Responde 1 o 2» (solo a quien dio permiso de WhatsApp)</label>
+      <label class="fld">Enlace para dejar una reseña en Google (opcional)<input name="google" type="url" value="${esc(aj("enlace_resena_google",""))}" placeholder="https://g.page/r/…/review"></label>
+      <h3>Asistencia de Ballet niñas</h3>
+      <label class="check"><input type="checkbox" name="nin" ${aj("asistencia_ninas_activa",false)?"checked":""}> Llevar la lista de asistencia de Ballet niñas en el área</label>
+      <label class="fld">Instructora que la marca<select name="ninInst">${opt("","Solo la dueña",!aj("instructora_ballet_ninas",""))}${(CAT.instructoras||[]).map(i=>opt(i.id,i.nombre,aj("instructora_ballet_ninas","")===i.id)).join("")}</select></label>
+      <fieldset class="checks"><legend>Campos opcionales</legend>
+        <label class="check"><input type="checkbox" name="ninLle" ${(aj("asistencia_ninas_campos",{})||{}).llegada?"checked":""}> Hora de llegada</label>
+        <label class="check"><input type="checkbox" name="ninSal" ${(aj("asistencia_ninas_campos",{})||{}).salida?"checked":""}> Hora de salida</label>
+        <label class="check"><input type="checkbox" name="ninRec" ${(aj("asistencia_ninas_campos",{})||{}).recoge?"checked":""}> Quién la recoge</label></fieldset>
+      ${"comunidad_foro" in AJ?`<h3>Conversación de alumnas</h3>
+      <label class="check"><input type="checkbox" name="foro" ${aj("comunidad_foro",false)?"checked":""}> Abrir la conversación de alumnas en Comunidad (solo texto, se borra a los 10 días; la moderan la dueña y la asistente)</label>`:""}`,
+      "La reseña no es anónima y solo la ves tú, en la pestaña «Reseñas». Si pones el enlace de Google, el correo de agradecimiento lo ofrece a todas las que respondieron (Google no permite pedírsela solo a las contentas). La lista de Ballet niñas guarda solo el nombre de la niña y el de su representante; la ven tú y la instructora que elijas."):"")+
     `<form class="ebox form" data-aj="plantilla" novalidate><h2>Textos de los avisos</h2>
       <label class="fld">Aviso<select name="id">${PLANT.map(t=>{ const [k,c]=t.id.split("."); return opt(t.id,`${PLANT_NOMBRE[k]||k} · ${c==="correo"?"correo":"WhatsApp"}`); }).join("")}</select></label>
       <label class="fld" data-asunto>Asunto<input name="asunto" maxlength="200"></label>
       <label class="fld">Texto<textarea name="cuerpo" rows="10" maxlength="4000"></textarea></label>
-      <p class="privacy">Variables: ${VARIABLES.map(x=>`<code>{{${x}}}</code>`).join(" ")}. Solo en los avisos al estudio: ${VAR_ESTUDIO.map(x=>`<code>{{${x}}}</code>`).join(" ")}. En los de membresía y transferencia: ${VAR_MEM.map(x=>`<code>{{${x}}}</code>`).join(" ")}.</p>
+      <p class="privacy">Variables: ${VARIABLES.map(x=>`<code>{{${x}}}</code>`).join(" ")}. Solo en los avisos al estudio: ${VAR_ESTUDIO.map(x=>`<code>{{${x}}}</code>`).join(" ")}. En los de membresía y transferencia: ${VAR_MEM.map(x=>`<code>{{${x}}}</code>`).join(" ")}. En los de reseña: ${VAR_RES.map(x=>`<code>{{${x}}}</code>`).join(" ")}. En el de cambio de hora: ${VAR_HORA.map(x=>`<code>{{${x}}}</code>`).join(" ")}.</p>
       <p class="steph">Vista previa</p><pre class="previa" data-previa></pre>
       <div class="eacc"><button class="bbtn solid sm" type="submit">Guardar texto</button></div></form>`+
     `<div class="ebox"><h2>Horario semanal</h2><p class="privacy">Cambia o quita una clase desde una fecha. Las fechas que ya tienen reservas no se tocan: se muestran para que decidas.</p>
@@ -1026,6 +1126,18 @@ async function guardarAjustes(f){
     const url=v(f,"url"); if(url&&!/^https:\/\/\S+$/i.test(url)){ aviso("La dirección pública debe empezar por https://","mal"); return; }
     ok=!!await ajuste("instructoras_ven_telefono",v(f,"tel"))&&(!url||!!await ajuste("url_publica",url));
     if(ok&&conComunidad()) ok=!!await ajuste("comunidad_avisos",v(f,"comAv"));
+  }else if(id==="nuevas"){
+    const g=v(f,"google"); if(g&&!/^https:\/\/\S+$/i.test(g)){ aviso("El enlace de Google debe empezar por https://","mal"); return; }
+    const campos={llegada:v(f,"ninLle"),salida:v(f,"ninSal"),recoge:v(f,"ninRec")};
+    if(v(f,"res")&&!aj("resenas_activas",false)){ const c=await pedir({titulo:"Encender las reseñas",ok:"Encender",
+      html:`<p>Desde mañana, a cada clienta marcada como «Asistió» le llega al día siguiente, a las 10 am, un correo con «¿Cómo te fue en tu clase?». Revisa antes el texto en «Textos de los avisos» → «Reseña».</p>`}); if(!c) return; }
+    ok=!!await ajuste("resenas_activas",v(f,"res"))&&!!await ajuste("resenas_whatsapp",v(f,"resWa"))&&!!await ajuste("enlace_resena_google",g)
+      &&!!await ajuste("asistencia_ninas_activa",v(f,"nin"))&&!!await ajuste("instructora_ballet_ninas",v(f,"ninInst"))&&!!await ajuste("asistencia_ninas_campos",campos)
+      &&(!("comunidad_foro" in AJ)||!!await ajuste("comunidad_foro",v(f,"foro")));
+    if(ok&&"comunidad_foro" in AJ) AJ.comunidad_foro={valor:v(f,"foro")};
+    if(ok){ Object.assign(AJ,{resenas_activas:{valor:v(f,"res")},resenas_whatsapp:{valor:v(f,"resWa")},enlace_resena_google:{valor:g},
+      asistencia_ninas_activa:{valor:v(f,"nin")},instructora_ballet_ninas:{valor:v(f,"ninInst")},asistencia_ninas_campos:{valor:campos}});
+      listo("Guardado. Las pestañas nuevas aparecen al volver a entrar."); return; }
   }else if(id==="plantilla"){
     const r=await hacer("estudio_guardar_plantilla",{p_id:v(f,"id"),p_asunto:v(f,"asunto"),p_cuerpo:f.querySelector('[name="cuerpo"]').value});
     if(r){ const t=PLANT.find(x=>x.id===v(f,"id")); if(t){ t.asunto=v(f,"asunto"); t.cuerpo=f.querySelector('[name="cuerpo"]').value; } listo("Texto guardado"); }
@@ -1053,20 +1165,26 @@ async function editarHorario(id){
       <label class="fld">Instructora<select name="inst">${CAT.instructoras.map(i=>opt(i.id,i.nombre,i.id===inst)).join("")}</select></label></div>
       <div class="two"><label class="fld">Etiqueta<select name="et">${opt("","Ninguna")}${opt("avanzado","Solo nivel avanzado",h&&h.etiqueta==="avanzado")}${opt("miembros","Exclusiva para miembros",h&&h.etiqueta==="miembros")}${opt("primera","Sesión de primera clase",h&&h.etiqueta==="primera")}</select></label>
       <label class="fld">Edad (solo ballet niñas)<input name="edad" value="${esc(h&&h.edad||"")}"></label></div>
-      ${h?`<label class="check"><input type="checkbox" name="quitar"> Quitar esta clase del horario desde esa fecha</label>`:""}
+      ${h?`<label class="check"><input type="checkbox" name="mover"> Mover también las fechas que ya tienen reservas (cada alumna conserva su reserva y su lugar)</label>
+      <label class="check"><input type="checkbox" name="avisar"> Avisar a esas alumnas de la hora nueva (correo, y WhatsApp si lo aceptaron)</label>
+      <label class="check"><input type="checkbox" name="quitar"> Quitar esta clase del horario desde esa fecha</label>`:""}
       <p class="privacy">Recuerda cambiar también <code>horario.json</code> (los textos de la página sin sistema).</p>`,
     accion:async f=>{
       const cid=h?h.id:v(f,"id");
       if(!/^[a-z0-9-]{3,20}$/.test(cid||"")) return "El código solo puede tener minúsculas, números y guiones (ej. mar-1900).";
       if(!v(f,"ini")||!v(f,"fin")||v(f,"fin")<=v(f,"ini")) return "La hora de terminar debe ser después de la de empezar.";
+      const mover=h&&v(f,"mover")&&!v(f,"quitar"), avisar=mover&&v(f,"avisar");
+      if(h&&v(f,"avisar")&&!mover) return "Para avisar a las alumnas, marca también «Mover también las fechas que ya tienen reservas».";
       const r=await hacer("estudio_guardar_horario",{p_id:cid,p_dia_semana:+v(f,"dia"),p_inicio:v(f,"ini"),p_fin:v(f,"fin"),p_tipo_id:v(f,"tipo"),p_instructora_id:v(f,"inst"),
-        p_etiqueta:v(f,"et")||null,p_edad:v(f,"edad")||null,p_activo:!v(f,"quitar"),p_desde:v(f,"desde")||null},{dlg:true});
+        p_etiqueta:v(f,"et")||null,p_edad:v(f,"edad")||null,p_activo:!v(f,"quitar"),p_desde:v(f,"desde")||null,
+        ...(mover?{p_mover_reservadas:true,p_avisar:!!avisar}:{})},{dlg:true});
       if(!r) return null; if(r.ok===false) return r.mensaje; res=r; return true; }});
   if(ok){
-    listo(`Horario guardado (${res.sesiones_actualizadas} fechas actualizadas)`);
+    const mv=res.movidas||[];
+    listo(`Horario guardado (${res.sesiones_actualizadas} fechas actualizadas${mv.length?`, ${mv.length} con reservas movidas`:""}${res.avisos?`, ${res.avisos} avisos a las alumnas`:""})`);
     const c=res.con_reservas||[];
     if(c.length) setTimeout(()=>pedir({titulo:"Fechas con reservas", ok:"Entendido", no:"",
-      html:`<p>Estas fechas ya tenían reservas y se quedaron como estaban. Decide en <b>Clases</b> si las cancelas (avisando a las alumnas) o las mantienes:</p><ul class="lista">${c.map(x=>`<li>${esc(fmtDay(x.fecha))}: ${x.reservas} ${x.reservas===1?"reserva":"reservas"}</li>`).join("")}</ul>`}),50);
+      html:`<p>Estas fechas ya tenían reservas y se quedaron como estaban${mv.length?" (cambió el día o el tipo de clase, o la clase ya empezó)":""}. Decide en <b>Clases</b> si las cancelas (avisando a las alumnas) o las mantienes:</p><ul class="lista">${c.map(x=>`<li>${esc(fmtDay(x.fecha))}: ${x.reservas} ${x.reservas===1?"reserva":"reservas"}</li>`).join("")}</ul>`}),50);
     cargarAjustes();
   }
 }
@@ -1170,6 +1288,8 @@ function eventos(){
   $("#cDet").addEventListener("click",e=>{
     const a=e.target.closest("[data-asis]"); if(a&&!a.disabled){ marcarAsistencia(a); return; }
     const c=e.target.closest("[data-cancel]"); if(c){ cancelarReserva(+c.dataset.cancel,c.dataset.nombre); return; }
+    const ed=e.target.closest("[data-editar]"); if(ed){ editarReserva(+ed.dataset.editar); return; }
+    const pg=e.target.closest("[data-pago]"); if(pg){ cambiarPago(+pg.dataset.pago); return; }
     const x=e.target.closest("[data-a]"); if(x) accionClase(x.dataset.a);
   });
   $("#icsSemana").addEventListener("click",icsSemana);
@@ -1195,6 +1315,7 @@ function eventos(){
   $("#p-clientas").addEventListener("submit",e=>{ if(e.target.id==="fCli"){ e.preventDefault(); guardarCli(e.target); } });
   // Cobros
   $("#p-cobros").addEventListener("click",e=>{
+    const rv=e.target.closest("[data-rev]"); if(rv){ revisarPago(+rv.dataset.id,rv.dataset.rev,rv.dataset.q); return; }
     const p=e.target.closest("[data-pagar]"); if(p){ pagar(p.dataset.pagar,p.dataset.q,false); return; }
     const c=e.target.closest("[data-cortesia]"); if(c){ pagar(c.dataset.cortesia,c.dataset.q,true); return; }
     const g=e.target.closest("[data-cargo]"); if(g){ cargo(g.dataset.r,g.dataset.cargo,g.dataset.q); return; }
@@ -1218,6 +1339,8 @@ function eventos(){
   $("#xDesde").value=sumar(hoy(),-30); $("#xHasta").value=sumar(hoy(),30);
   $("#fExp").addEventListener("submit",exportar);
   eventosComunidad();
+  eventosNinas();
+  eventosForo();
 }
 
 /* =========================================================
@@ -1377,6 +1500,222 @@ function eventosComunidad(){
     if(b.dataset.pubAvisar){ avisarComunidad(+b.dataset.pubAvisar); return; }
     if(b.dataset.com){ const r=await hacer("estudio_moderar_comentario",{p_id:+b.dataset.id,p_estado:b.dataset.com}); if(r){ listo(b.dataset.com==="aprobado"?"Comentario aprobado":"Comentario rechazado"); cargarComunidad(); } }
   });
+}
+
+/* =========================================================
+   CONVERSACIÓN DE ALUMNAS: moderar (dueña y asistente; 13/11/2026, DECISIONES §44)
+   ========================================================= */
+let FORO=null;
+const cuandoForo = iso=>new Date(iso).toLocaleString("es-DO",{timeZone:TZ,day:"numeric",month:"short",hour:"numeric",minute:"2-digit"});
+async function cargarForo(){
+  const r=await hacer("estudio_foro",{}); if(!r) return;
+  FORO=r;
+  const item=(tipo,x)=>`<div><b>${esc(x.autor)}</b>${x.fijado?" · fijado":""}${x.reportes?` · <span class="rev">${x.reportes} ${x.reportes===1?"reporte":"reportes"}</span>`:""}
+      <small>${esc(cuandoForo(x.creado))}${x.borra_en_dias!=null?` · se borra en ${x.borra_en_dias} días`:""}${x.clienta_id?` · clienta ${x.clienta_id}`:""}</small><p class="rescom">${esc(x.texto)}</p></div>
+    <div class="eacc">${tipo==="post"?`<button class="bbtn line sm" type="button" data-foro-mod="${x.fijado?"desfijar":"fijar"}" data-tipo="post" data-id="${x.id}">${x.fijado?"Quitar fijado":"Fijar"}</button>`:""}
+      <button class="bbtn line sm peligro" type="button" data-foro-mod="borrar" data-tipo="${tipo}" data-id="${x.id}">Borrar</button>
+      ${x.clienta_id?`<button class="bbtn line sm" type="button" data-foro-susp="${x.clienta_id}" data-nombre="${esc(x.autor)}">Suspender</button>`:""}</div>`;
+  $("#foroEst").innerHTML=`<div class="ebox"><h2>Conversación de alumnas</h2>
+      <p class="privacy">${r.activo?"Está abierta en la página Comunidad.":"Está cerrada (Ajustes → Reseñas y Ballet niñas)."} Solo texto; todo se borra a los 10 días, salvo lo fijado. Lo que borres o suspendas queda en la auditoría.</p>
+      <form class="form" id="foroEstNuevo" novalidate><label class="fld">Publicar como el estudio<textarea name="t" rows="3" maxlength="500"></textarea></label>
+        <label class="check"><input type="checkbox" name="fijo"> Fijarlo arriba (no se borra)</label>
+        <div class="eacc"><button class="bbtn solid sm" type="submit">Publicar</button></div></form></div>
+    <h2 class="vh2">Reportes por revisar</h2>
+    <ul class="pays">${(r.reportes||[]).map(x=>`<li><div><b>${esc(x.autor)}</b> <small>${x.tipo==="post"?"Publicación":"Comentario"} · ${esc(cuandoForo(x.creado))}${x.motivo?` · «${esc(x.motivo)}»`:""}</small><p class="rescom">${esc(x.texto||"")}</p></div>
+      <div class="eacc"><button class="bbtn line sm peligro" type="button" data-foro-mod="borrar" data-tipo="${x.tipo}" data-id="${x.objeto_id}">Borrar</button>
+        <button class="bbtn line sm" type="button" data-foro-mod="resolver" data-tipo="reporte" data-id="${x.id}">Está bien, dejarlo</button>
+        ${x.autora_id?`<button class="bbtn line sm" type="button" data-foro-susp="${x.autora_id}" data-nombre="${esc(x.autor)}">Suspender</button>`:""}</div></li>`).join("")||`<li class="empty-state">No hay reportes.</li>`}</ul>
+    <h2 class="vh2">Publicaciones</h2>
+    <ul class="pays">${(r.posts||[]).map(p=>`<li>${item("post",p)}</li>${(p.comentarios||[]).map(k=>`<li class="foro-com-est">${item("comentario",k)}</li>`).join("")}`).join("")||`<li class="empty-state">Todavía no hay publicaciones.</li>`}</ul>
+    <h2 class="vh2">Suspendidas</h2>
+    <ul class="pays">${(r.suspendidas||[]).map(s=>`<li><div><b>${esc(s.nombre)}</b><small>Desde ${esc(cuandoForo(s.desde))}${s.motivo?` · ${esc(s.motivo)}`:""}</small></div>
+      <div class="eacc"><button class="bbtn line sm" type="button" data-foro-react="${s.clienta_id}">Volver a dejarla participar</button></div></li>`).join("")||`<li class="empty-state">Nadie suspendida.</li>`}</ul>`;
+}
+function eventosForo(){
+  $("#p-foro").addEventListener("submit",async e=>{
+    if(e.target.id!=="foroEstNuevo") return; e.preventDefault();
+    const f=e.target, t=f.querySelector('[name="t"]').value.trim();
+    if(t.length<2){ aviso("Escribe de 2 a 500 caracteres.","mal"); return; }
+    const r=await hacer("estudio_foro_publicar",{p_texto:t,p_fijado:v(f,"fijo")}); if(r){ listo("Publicado"); cargarForo(); }
+  });
+  $("#p-foro").addEventListener("click",async e=>{
+    const b=e.target.closest("button"); if(!b) return;
+    if(b.dataset.foroMod){
+      const acc=b.dataset.foroMod;
+      if(acc==="borrar"){ const ok=await pedir({titulo:"Borrar",ok:"Borrar",peligro:true,html:`<p>Se borra para todas (con sus comentarios y «me gusta»). Queda en la auditoría.</p>`}); if(!ok) return; }
+      const r=await hacer("estudio_foro_moderar",{p_tipo:b.dataset.tipo,p_id:+b.dataset.id,p_accion:acc});
+      if(r){ listo({borrar:"Borrado",fijar:"Fijado",desfijar:"Ya no está fijado",resolver:"Reporte cerrado"}[acc]); cargarForo(); } return;
+    }
+    if(b.dataset.foroSusp){
+      const ok=await pedir({titulo:`Suspender a ${b.dataset.nombre}`,ok:"Suspender",peligro:true,
+        html:`<p>Podrá leer la conversación, pero no publicar, comentar ni dar «me gusta». Puedes volver a dejarla participar cuando quieras.</p><label class="fld">Motivo (solo lo ve el estudio)<input name="m" maxlength="200"></label>`,
+        accion:async f=>{ const r=await hacer("estudio_foro_suspender",{p_clienta_id:+b.dataset.foroSusp,p_suspender:true,p_motivo:v(f,"m")||null},{dlg:true}); if(!r) return null; return r.ok===false?(r.mensaje||"No se pudo."):true; }});
+      if(ok){ listo("Suspendida"); cargarForo(); } return;
+    }
+    if(b.dataset.foroReact){ const r=await hacer("estudio_foro_suspender",{p_clienta_id:+b.dataset.foroReact,p_suspender:false}); if(r){ listo("Puede volver a participar"); cargarForo(); } }
+  });
+}
+
+/* =========================================================
+   RESEÑAS (solo la dueña; 13/11/2026, DECISIONES §43)
+   No es anónima: cada respuesta con su clienta y su clase.
+   ========================================================= */
+const estrellas = n=>`<span class="stars" aria-label="${n} de 5 estrellas">${"★".repeat(n)}<span aria-hidden="true">${"★".repeat(5-n)}</span></span>`;
+let RES_F={desde:"",hasta:"",instructora:"",clase:"",estrellas:""};
+async function cargarResenas(){
+  if(!RES_F.desde){ RES_F.desde=sumar(hoy(),-90); RES_F.hasta=hoy(); }
+  const r=await hacer("estudio_resenas",{p_desde:RES_F.desde,p_hasta:RES_F.hasta,p_instructora:RES_F.instructora||null,p_clase:RES_F.clase||null,p_estrellas:RES_F.estrellas?+RES_F.estrellas:null});
+  if(!r) return;
+  const T=r.totales||{}, prom=x=>x==null?"—":String(x).replace(".",",");
+  const tabla=(tit,filas,col)=>filas.length?`<div class="tablewrap"><table class="vtable"><caption class="sr-only">${esc(tit)}</caption><thead><tr><th scope="col">${esc(col)}</th><th scope="col">Respuestas</th><th scope="col">Promedio</th></tr></thead><tbody>
+    ${filas.map(x=>`<tr><td>${esc(x.clase||x.instructora)}</td><td class="num">${x.respuestas}</td><td class="num">${prom(x.promedio)}</td></tr>`).join("")}</tbody></table></div>`:`<p class="privacy">Todavía sin respuestas.</p>`;
+  $("#resenas").innerHTML=`<div class="ebox"><h2>Reseñas</h2>
+      ${r.activas?"":`<p class="privacy">Los pedidos de reseña están apagados (Ajustes → Reseñas y Ballet niñas). Aquí siguen las respuestas que ya llegaron.</p>`}
+      <form class="filtros" id="resF" novalidate>
+        <label class="fld">Desde<input type="date" name="desde" value="${esc(RES_F.desde)}"></label>
+        <label class="fld">Hasta<input type="date" name="hasta" value="${esc(RES_F.hasta)}"></label>
+        <label class="fld">Instructora<select name="instructora">${opt("","Todas")}${(CAT.instructoras||[]).map(i=>opt(i.nombre,i.nombre,RES_F.instructora===i.nombre)).join("")}</select></label>
+        <label class="fld">Clase<select name="clase">${opt("","Todas")}${(r.clases||[]).map(c=>opt(c,c,RES_F.clase===c)).join("")}</select></label>
+        <label class="fld">Estrellas<select name="estrellas">${opt("","Todas")}${[5,4,3,2,1].map(n=>opt(String(n),`${n} ${n===1?"estrella":"estrellas"}`,RES_F.estrellas===String(n))).join("")}</select></label>
+      </form>
+      <ul class="kpis"><li><b>${T.pedidas||0}</b><span>pedidas</span></li><li><b>${T.respondidas||0}</b><span>respondidas</span></li><li><b>${prom(T.promedio)}</b><span>promedio de 5</span></li></ul>
+    </div>
+    <div class="ebox"><h3>Por clase</h3>${tabla("Promedio por clase",r.por_clase||[],"Clase")}<h3>Por instructora</h3>${tabla("Promedio por instructora",r.por_instructora||[],"Instructora")}</div>
+    <h2 class="vh2">Respuestas</h2>
+    <ul class="pays">${(r.resenas||[]).map(x=>`<li><div>${estrellas(x.estrellas)} <b>${esc(x.nombre)}</b>
+      <small>${esc(x.clase)} con ${esc(x.instructora)} · ${esc(x.fecha_corta||fmtCorta(x.fecha))} ${esc(x.hora||"")} · reserva ${x.reserva_id}</small>
+      ${x.comentario?`<p class="rescom">${esc(x.comentario)}</p>`:""}</div></li>`).join("")||`<li class="empty-state">Sin respuestas con estos filtros.</li>`}</ul>`;
+}
+
+/* =========================================================
+   BALLET NIÑAS: la libreta de asistencia (13/11/2026, DECISIONES §43)
+   Solo la dueña y la instructora asignada (lo decide la base de datos).
+   Solo nombre de la niña y del representante. Sin exportar a CSV ni Excel.
+   ========================================================= */
+let NIN=null, NIN_G=null, NIN_F="", NIN_DIA=null;
+const EST_NIN = {asistio:"Asistió", falto:"Faltó", cancelada:"Clase cancelada"};
+async function cargarNinas(){
+  const r=await hacer("estudio_ninas",{}); if(!r) return;
+  NIN=r;
+  if(!NIN_G||!r.grupos.some(g=>g.id===NIN_G)) NIN_G=(r.grupos.find(g=>g.activo)||r.grupos[0]||{}).id||null;
+  const g=r.grupos.find(x=>x.id===NIN_G);
+  if(!NIN_F) NIN_F=r.hoy;
+  const fechas=g?g.fechas.filter(f=>f.fecha<=r.hoy):[];
+  if(g&&!fechas.some(f=>f.fecha===NIN_F)&&NIN_F!==r.hoy&&!r.puede_corregir) NIN_F=r.hoy;
+  $("#ninas").innerHTML=`<div class="ebox"><h2>Ballet niñas: asistencia</h2>
+      <p class="privacy">La lista se marca el día de la clase y cierra a las 23:59. Después solo la dueña corrige, con el motivo. Solo se guarda el nombre de la niña y el de su representante.</p>
+      <div class="filtros">
+        <label class="fld">Grupo<select id="ninG">${r.grupos.map(x=>opt(String(x.id),`${x.nombre}${x.activo?"":" (inactivo)"}`,x.id===NIN_G)).join("")}</select></label>
+        <label class="fld">Fecha de la clase<select id="ninFs">${opt(r.hoy,`Hoy, ${fmtCorta(r.hoy)}`,NIN_F===r.hoy)}${fechas.filter(f=>f.fecha!==r.hoy).reverse().map(f=>opt(f.fecha,`${fmtCorta(f.fecha)} ${f.hora}${f.cancelada?" (cancelada)":""}`,NIN_F===f.fecha)).join("")}</select></label>
+        ${r.puede_corregir?`<label class="fld">Otra fecha<input type="date" id="ninF" max="${esc(r.hoy)}" value="${esc(NIN_F)}"></label>`:""}
+      </div>
+      <div id="ninDia"></div>
+    </div>
+    <div class="ebox"><h2>Alumnas del grupo</h2>
+      <ul class="lista">${g?g.alumnas.map(a=>`<li><span><b>${esc(a.nombre)}</b>${a.activa?"":" · de baja"}<small>Representante: ${esc(a.representante)}${a.baja_en?` · baja el ${esc(fmtCorta(a.baja_en))}`:""}</small></span>
+        <span class="racc"><button class="linkbtn" type="button" data-nin-editar="${a.id}">Editar</button>
+        <button class="linkbtn" type="button" data-nin-baja="${a.id}" data-baja="${a.activa}">${a.activa?"Dar de baja":"Volver a dar de alta"}</button></span></li>`).join("")||`<li class="vacio">Todavía no hay alumnas en este grupo.</li>`:""}</ul>
+      <div class="eacc"><button class="bbtn solid sm" type="button" data-nin-editar="nueva">Agregar alumna</button>
+        <button class="bbtn line sm" type="button" data-nin-grupo="${g?g.id:""}">Editar grupo</button>
+        <button class="bbtn line sm" type="button" data-nin-grupo="nuevo">Nuevo grupo</button></div>
+    </div>
+    <div class="ebox"><h2>Resumen del mes</h2>
+      <p class="privacy">Fechas, presentes y ausentes, y quién marcó. Para guardarlo en PDF, en la ventana de imprimir elige «Guardar como PDF».</p>
+      <div class="filtros"><label class="fld">Mes<input type="month" id="ninMes" value="${esc(r.hoy.slice(0,7))}" max="${esc(r.hoy.slice(0,7))}"></label></div>
+      <div class="eacc"><button class="bbtn line sm" type="button" id="ninResumen">Ver el resumen</button><button class="bbtn solid sm" type="button" id="ninImprimir">Imprimir o guardar en PDF</button></div>
+      <div id="ninRes" class="nin-res"></div>
+    </div>`;
+  if(g) cargarDiaNinas();
+}
+async function cargarDiaNinas(){
+  const r=await hacer("estudio_ninas_dia",{p_grupo_id:NIN_G,p_fecha:NIN_F}); if(!r) return;
+  NIN_DIA=r;
+  const C=NIN.campos||{}, ed=r.puede_marcar;
+  $("#ninDia").innerHTML=`<h3>${esc(r.fecha_larga)}</h3>
+    ${r.futura?`<p class="privacy">Todavía no es el día de esta clase: la lista se marca ese día.</p>`:""}
+    ${r.cerrada?`<p class="privacy">${ed?"Este día ya cerró: lo que cambies queda como corrección, con el motivo, lo de antes y quién lo cambió.":"Este día ya cerró (23:59). Solo la dueña puede corregirlo."}</p>`:""}
+    <form id="ninForm" novalidate>
+    <ol class="roster est nin">${r.alumnas.map(a=>`<li data-nin="${a.id}">
+      <span class="nm">${esc(a.nombre)}<small>${esc(a.representante)}${a.marcada_por?` · marcó ${esc(a.marcada_por)}${a.marcada_en?`, ${esc(new Date(a.marcada_en).toLocaleTimeString("es-DO",{timeZone:TZ,hour:"numeric",minute:"2-digit"}))}`:""}`:""}${a.corregida?" · corregida":""}</small></span>
+      <span class="asis" role="group" aria-label="Asistencia de ${esc(a.nombre)}">${["asistio","falto","cancelada"].map(e=>`<button type="button" class="abtn" data-nin-est="${e}" aria-pressed="${a.estado===e}" ${ed?"":"disabled"}>${EST_NIN[e]}</button>`).join("")}</span>
+      ${C.llegada||C.salida||C.recoge?`<span class="nin-ext">${C.llegada?`<label class="fld">Llegó<input type="time" name="lle" value="${esc(a.llegada||"")}" ${ed?"":"disabled"}></label>`:""}${C.salida?`<label class="fld">Salió<input type="time" name="sal" value="${esc(a.salida||"")}" ${ed?"":"disabled"}></label>`:""}${C.recoge?`<label class="fld">La recoge<input name="rec" maxlength="80" value="${esc(a.recoge||"")}" ${ed?"":"disabled"}></label>`:""}</span>`:""}
+    </li>`).join("")||`<li class="vacio">No hay alumnas activas en este grupo.</li>`}</ol>
+    ${ed&&r.alumnas.length?`${r.cerrada?`<label class="fld">Motivo de la corrección (obligatorio)<input name="motivo" maxlength="300" required></label>`:""}
+      <div class="eacc"><button class="bbtn solid sm" type="submit">Guardar la asistencia</button><button class="bbtn line sm" type="button" data-nin-todas="cancelada">Marcar: clase cancelada</button></div>`:""}
+    </form>`;
+}
+async function guardarDiaNinas(f){
+  const marcas=[...f.querySelectorAll("[data-nin]")].map(li=>{
+    const p=li.querySelector('[data-nin-est][aria-pressed="true"]'), q=n=>{ const x=li.querySelector(`[name="${n}"]`); return x?x.value.trim():""; };
+    return p?{alumna_id:+li.dataset.nin,estado:p.dataset.ninEst,llegada:q("lle"),salida:q("sal"),recoge:q("rec")}:null; }).filter(Boolean);
+  if(!marcas.length){ aviso("Marca al menos a una alumna.","mal"); return; }
+  const motivo=v(f,"motivo");
+  if(NIN_DIA.cerrada&&motivo.length<5){ aviso("Para corregir un día cerrado, escribe el motivo.","mal"); const m=f.querySelector('[name="motivo"]'); if(m) m.focus(); return; }
+  const r=await hacer("estudio_ninas_marcar",{p_grupo_id:NIN_G,p_fecha:NIN_F,p_marcas:marcas,p_motivo:motivo||null}); if(!r) return;
+  aviso(""); listo(r.correcciones?`Corrección guardada (${r.correcciones})`:"Asistencia guardada"); cargarDiaNinas();
+}
+async function editarAlumna(id){
+  const g=NIN.grupos.find(x=>x.id===NIN_G), a=id?NIN.grupos.flatMap(x=>x.alumnas.map(y=>Object.assign({grupo_id:x.id},y))).find(x=>x.id===id):null;
+  const ok=await pedir({titulo:a?"Editar alumna":"Agregar alumna", ok:"Guardar",
+    html:`<p class="privacy">Solo el nombre de la niña y el de su representante. Nada más: ni teléfonos, ni fecha de nacimiento, ni salud.</p>
+      <label class="fld">Nombre de la niña<input name="n" maxlength="80" value="${esc(a?a.nombre:"")}" autocomplete="off"></label>
+      <label class="fld">Nombre del representante<input name="r" maxlength="80" value="${esc(a?a.representante:"")}" autocomplete="off"></label>
+      <label class="fld">Grupo<select name="g">${NIN.grupos.map(x=>opt(String(x.id),x.nombre,x.id===(a?a.grupo_id:g&&g.id))).join("")}</select></label>`,
+    accion:async f=>{ const r=await hacer("estudio_ninas_guardar_alumna",{p_id:a?a.id:null,p_grupo_id:+v(f,"g"),p_nombre:v(f,"n"),p_representante:v(f,"r")},{dlg:true});
+      if(!r) return null; if(r.ok===false) return r.mensaje||"Revisa los nombres."; return true; }});
+  if(ok){ listo("Alumna guardada"); cargarNinas(); }
+}
+async function editarGrupo(id){
+  const g=id?NIN.grupos.find(x=>x.id===id):null;
+  const ok=await pedir({titulo:g?"Editar grupo":"Nuevo grupo", ok:"Guardar",
+    html:`<label class="fld">Nombre<input name="n" maxlength="60" value="${esc(g?g.nombre:"Ballet niñas ")}"></label>
+      <label class="fld">Edad<select name="e">${["3 a 5 años","6 a 11 años"].map(e=>opt(e,e,g&&g.edad===e)).join("")}</select></label>
+      ${g?`<label class="check"><input type="checkbox" name="a" ${g.activo?"checked":""}> Grupo activo</label>`:""}`,
+    accion:async f=>{ const r=await hacer("estudio_ninas_guardar_grupo",{p_id:g?g.id:null,p_nombre:v(f,"n"),p_edad:v(f,"e"),p_activo:g?v(f,"a"):true},{dlg:true});
+      if(!r) return null; if(r.ok===false) return r.mensaje||"Revisa el nombre."; if(!g) NIN_G=r.id; return true; }});
+  if(ok){ listo("Grupo guardado"); cargarNinas(); }
+}
+async function resumenNinas(imprimir){
+  const mes=($("#ninMes")||{}).value||NIN.hoy.slice(0,7);
+  const r=await hacer("estudio_ninas_resumen",{p_grupo_id:NIN_G,p_mes:mes+"-01"}); if(!r) return;
+  const F=r.fechas||[], letra={asistio:"P",falto:"A",cancelada:"C"}, nombreDe=id=>((r.alumnas||[]).find(a=>a.id===id)||{}).nombre||"";
+  const mesTxt=fromIso(r.desde).toLocaleDateString("es-DO",{month:"long",year:"numeric"});
+  $("#ninRes").innerHTML=`<div class="nin-print"><h3>${esc(r.grupo)} · ${esc(mesTxt)}</h3>
+    <p class="privacy">P = presente · A = ausente · C = clase cancelada · — = sin marcar. Impreso el ${esc(fmtDay(hoy()))}.</p>
+    ${F.length?`<div class="tablewrap"><table class="vtable ctrl"><caption class="sr-only">Asistencia de ${esc(r.grupo)}, ${esc(mesTxt)}</caption>
+      <thead><tr><th scope="col">Alumna</th>${F.map(f=>`<th scope="col" class="nw">${esc(f.fecha_corta)}</th>`).join("")}<th scope="col">Presente</th><th scope="col">Ausente</th></tr></thead><tbody>
+      ${(r.alumnas||[]).map(a=>{ const m=a.marcas||{}, p=F.filter(f=>m[f.fecha]==="asistio").length, au=F.filter(f=>m[f.fecha]==="falto").length;
+        return `<tr><th scope="row">${esc(a.nombre)}${a.activa?"":" (baja)"}<small class="nin-rep">${esc(a.representante)}</small></th>${F.map(f=>`<td class="num">${letra[m[f.fecha]]||"—"}</td>`).join("")}<td class="num">${p}</td><td class="num">${au}</td></tr>`; }).join("")}
+      <tr><th scope="row">Presentes / ausentes</th>${F.map(f=>`<td class="num nw">${f.cancelada?"C":`${f.presentes}/${f.ausentes}`}</td>`).join("")}<td></td><td></td></tr>
+      <tr><th scope="row">Marcó</th>${F.map(f=>`<td class="nw">${esc((f.marcaron||[]).join(", "))}</td>`).join("")}<td></td><td></td></tr>
+      </tbody></table></div>`:`<p class="privacy">Sin asistencia marcada este mes.</p>`}
+    ${(r.correcciones||[]).length?`<h4>Correcciones</h4><ul class="lista">${r.correcciones.map(k=>`<li><span>${esc(fmtCorta(k.fecha))} · ${esc(nombreDe(k.alumna_id))}: ${esc(EST_NIN[k.antes]||"sin marcar")} → <b>${esc(EST_NIN[k.despues]||k.despues)}</b><small>${esc(k.quien||"")} · ${esc(k.motivo)}</small></span></li>`).join("")}</ul>`:""}
+  </div>`;
+  if(imprimir){ document.body.classList.add("imprimir-ninas"); setTimeout(()=>{ window.print(); },60); }
+}
+function eventosNinas(){
+  window.addEventListener("afterprint",()=>document.body.classList.remove("imprimir-ninas"));
+  $("#p-ninas").addEventListener("change",e=>{
+    if(e.target.id==="ninG"){ NIN_G=+e.target.value; NIN_F=NIN.hoy; $("#ninRes").innerHTML=""; cargarNinas(); }
+    else if(e.target.id==="ninFs"||e.target.id==="ninF"){ if(!e.target.value) return; NIN_F=e.target.value; const o=$(e.target.id==="ninFs"?"#ninF":"#ninFs"); if(o&&o.tagName==="INPUT") o.value=NIN_F; cargarDiaNinas(); }
+  });
+  $("#p-ninas").addEventListener("click",e=>{
+    const b=e.target.closest("button"); if(!b||b.disabled) return;
+    if(b.dataset.ninEst){ const g=b.closest(".asis"); g.querySelectorAll("[data-nin-est]").forEach(x=>x.setAttribute("aria-pressed",String(x===b))); return; }
+    if(b.dataset.ninTodas){ document.querySelectorAll(`#ninForm [data-nin-est="${b.dataset.ninTodas}"]`).forEach(x=>{ x.closest(".asis").querySelectorAll("[data-nin-est]").forEach(y=>y.setAttribute("aria-pressed",String(y===x))); }); return; }
+    if(b.dataset.ninEditar){ editarAlumna(b.dataset.ninEditar==="nueva"?null:+b.dataset.ninEditar); return; }
+    if(b.dataset.ninGrupo){ editarGrupo(b.dataset.ninGrupo==="nuevo"?null:+b.dataset.ninGrupo); return; }
+    if(b.dataset.ninBaja){ const baja=b.dataset.baja==="true";
+      pedir({titulo:baja?"Dar de baja":"Volver a dar de alta",ok:baja?"Dar de baja":"Dar de alta",html:`<p>${baja?"Deja de salir en la lista. Su historial de asistencia no se borra.":"Vuelve a salir en la lista del grupo."}</p>`})
+        .then(async ok=>{ if(!ok) return; const r=await hacer("estudio_ninas_baja",{p_id:+b.dataset.ninBaja,p_baja:baja}); if(r){ listo(baja?"Dada de baja":"Dada de alta"); cargarNinas(); } });
+      return; }
+    if(b.id==="ninResumen"){ resumenNinas(false); return; }
+    if(b.id==="ninImprimir"){ resumenNinas(true); }
+  });
+  $("#p-ninas").addEventListener("submit",e=>{ if(e.target.id==="ninForm"){ e.preventDefault(); guardarDiaNinas(e.target); } });
+  $("#p-resenas").addEventListener("change",e=>{ const f=e.target.closest("#resF"); if(!f) return;
+    RES_F={desde:v(f,"desde")||RES_F.desde,hasta:v(f,"hasta")||RES_F.hasta,instructora:v(f,"instructora"),clase:v(f,"clase"),estrellas:v(f,"estrellas")};
+    const id=e.target.name; cargarResenas().then(()=>{ const n=$(`#resF [name="${id}"]`); if(n) n.focus(); }); });
 }
 
 NB.ready.then(async cfg=>{

@@ -1,11 +1,11 @@
 <!DOCTYPE html>
-<!-- Generado por bale/_fuente/construir.mjs desde _fuente/paginas/comunidad.html: no lo edites aquí (ver bale/COMO-ACTUALIZAR.md) -->
+<!-- Generado por bale-fuente/construir.mjs desde bale-fuente/paginas/comunidad.html: no lo edites aquí (ver bale/COMO-ACTUALIZAR.md) -->
 <html lang="es">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; font-src 'self'; img-src 'self' data: blob: https://*.supabase.co; connect-src 'self' https://*.supabase.co wss://*.supabase.co; frame-src https://www.google.com https://www.instagram.com; base-uri 'self'; form-action 'self'; object-src 'none'">
-<title>Comunidad · balé</title>
+<title>Comunidad y eventos de Barre en La Vega · balé</title>
 <meta name="description" content="La comunidad de balé en La Vega: actividades, clases temáticas, celebraciones y momentos del estudio.">
 <link rel="canonical" href="https://balestudiord.com/comunidad">
 <meta name="theme-color" content="#F3E4D8">
@@ -13,7 +13,7 @@
 <meta property="og:type" content="website">
 <meta property="og:locale" content="es_DO">
 <meta property="og:site_name" content="balé">
-<meta property="og:title" content="Comunidad · balé">
+<meta property="og:title" content="Comunidad y eventos de Barre en La Vega · balé">
 <meta property="og:description" content="La comunidad de balé en La Vega: actividades, clases temáticas, celebraciones y momentos del estudio.">
 <meta property="og:url" content="https://balestudiord.com/comunidad">
 <meta property="og:image" content="https://balestudiord.com/img/bale-og.jpg">
@@ -21,16 +21,17 @@
 <meta property="og:image:height" content="630">
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:image" content="https://balestudiord.com/img/bale-og.jpg">
-<script src="js/dominio.js?v=29511ca3"></script>
+<script src="js/dominio.js?v=43c874c8"></script>
 <script src="js/modo-temprano.js?v=9ed47566"></script>
 <link rel="icon" href="img/bale-favicon.png">
 <link rel="preload" href="fonts/montserrat-latin.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="stylesheet" href="css/base.css?v=3c66c5f9">
-<link rel="stylesheet" href="css/sitio.css?v=7a297a16">
+<link rel="stylesheet" href="css/sitio.css?v=95af455c">
 <script src="js/core.js?v=75e2696e" defer></script>
 <script src="js/sitio.js?v=14ba01c2" defer></script>
 <script src="js/cuenta-sesion.js?v=1d0aafd7" defer></script>
 <script src="js/comunidad.js?v=694a3bd5" defer></script>
+<script src="js/foro.js?v=6d0d2906" defer></script>
 </head>
 <body class="sitio con-barra" data-page="comunidad">
 <a class="saltar" href="#contenido">Ir al contenido</a>
@@ -83,6 +84,12 @@
   
 </li></ul></section>
 </div>
+<!-- Conversación de alumnas (13/11/2026): la pinta js/foro.js solo si el estudio la encendió (ajuste comunidad_foro) -->
+<section class="csec foro" id="foro" aria-labelledby="t-foro" hidden>
+  <h2 id="t-foro">Conversación de alumnas</h2>
+  <p class="foro-intro">Un espacio para las alumnas de balé: solo texto y todo se borra a los 10 días.</p>
+  <div id="foroCuerpo" aria-live="polite"></div>
+</section>
 <div class="ig-zona"></div>
 <section class="sec suave" id="comSolo" aria-labelledby="t-solo" hidden>
   <div class="cont centro">

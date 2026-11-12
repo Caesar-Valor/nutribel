@@ -1,0 +1,37 @@
+<!--@ {
+  "titulo": "Tu opinión",
+  "descripcion": "Cuéntale a balé cómo te fue en tu clase.",
+  "actual": "",
+  "noindex": true,
+  "sin_barra": true,
+  "scripts": ["js/sistema.js", "js/resena.js"],
+  "main": "pagina estrecha mres resena"
+} @-->
+<header class="phead">
+  <span class="kick">balé · tu opinión</span>
+  <h1 id="reTitulo">¿Cómo te fue en tu clase?</h1>
+  <span class="cinta" aria-hidden="true"></span>
+</header>
+<div id="reEstado" role="status" aria-live="polite"><p class="mrcarga">Buscando tu clase…</p></div>
+<form class="form re-form" id="reForm" novalidate hidden>
+  <fieldset class="re-estrellas">
+    <legend>Tu calificación, de 1 a 5 estrellas</legend>
+    <div class="re-filas">
+      <input type="radio" name="estrellas" id="re5" value="5"><label for="re5"><span class="re-st" style="--n:5" aria-hidden="true"></span><span class="re-tx">5 · Me encantó</span></label>
+      <input type="radio" name="estrellas" id="re4" value="4"><label for="re4"><span class="re-st" style="--n:4" aria-hidden="true"></span><span class="re-tx">4 · Muy bien</span></label>
+      <input type="radio" name="estrellas" id="re3" value="3"><label for="re3"><span class="re-st" style="--n:3" aria-hidden="true"></span><span class="re-tx">3 · Bien</span></label>
+      <input type="radio" name="estrellas" id="re2" value="2"><label for="re2"><span class="re-st" style="--n:2" aria-hidden="true"></span><span class="re-tx">2 · Regular</span></label>
+      <input type="radio" name="estrellas" id="re1" value="1"><label for="re1"><span class="re-st" style="--n:1" aria-hidden="true"></span><span class="re-tx">1 · No me gustó</span></label>
+    </div>
+  </fieldset>
+  <div class="campo">
+    <label for="reCom">Comentario (opcional)</label>
+    <textarea id="reCom" rows="4" maxlength="1000"></textarea>
+    <p class="ayuda">Lo lee solo el estudio. No es anónimo: queda con tu nombre y tu clase.</p>
+  </div>
+  <p class="error" id="reErr" role="alert" hidden></p>
+  <div class="bkbtns">
+    <button class="btn" type="submit" id="reEnviar">Enviar mi opinión</button>
+  </div>
+</form>
+<p class="re-no" id="reNo" hidden><button class="btn texto" type="button" id="reNoBtn">No quiero recibir más estos correos</button></p>

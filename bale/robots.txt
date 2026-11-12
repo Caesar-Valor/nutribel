@@ -1,9 +1,10 @@
-# Generado por bale/_fuente/construir.mjs: no editar a mano.
+# Generado por bale-fuente/construir.mjs: no editar a mano.
 User-agent: *
 Allow: /
 Disallow: /estudio
 Disallow: /panel
 Disallow: /cuenta
 Disallow: /mi-reserva
+Disallow: /resena
 
 Sitemap: https://balestudiord.com/sitemap.xml

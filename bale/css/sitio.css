@@ -954,3 +954,38 @@ body:has(dialog[open]) .barra-movil{display:none}
 @media (prefers-reduced-motion:reduce){
   .sec-anima :is(.a-titulo,.a-sube,.a-arco),.js .pagina .phead-foto,.js .pagina .phead h1,.js .pagina .phead .cinta,.js .pagina .phead .lead,.js .com-entra #comunidad .csec h2,.js .com-entra #comunidad .vacio-com,.js .com-entra #comunidad li{animation:none!important;clip-path:none!important;opacity:1!important;transform:none!important}
 }
+
+/* ---------- Reseña después de la clase (resena.html, 13/11/2026) ---------- */
+.re-estrellas{border:0;margin:0;padding:0;min-width:0}
+.re-estrellas legend{font-size:14px;font-weight:600;color:var(--b-ink);margin-bottom:10px;padding:0}
+.re-filas{display:grid;gap:8px}
+.re-filas input{position:absolute;opacity:0;width:1px;height:1px}
+.re-filas label{display:flex;align-items:center;gap:14px;min-height:48px;padding:10px 16px;border:1.5px solid var(--line);border-radius:12px;background:var(--paper);cursor:pointer;color:var(--b-ink)}
+.re-filas input:checked + label{border-color:var(--brown);box-shadow:inset 0 0 0 1.5px var(--brown)}
+.re-filas input:focus-visible + label{outline:3px solid var(--ring);outline-offset:2px}
+.re-st{flex:none;width:calc(var(--n) * 20px);height:18px;background:var(--brown);
+  -webkit-mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 18'%3E%3Cpath d='M9 1l2.3 4.9 5.2.6-3.9 3.6 1.1 5.2L9 12.6l-4.7 2.7 1.1-5.2L1.5 6.5l5.2-.6z'/%3E%3C/svg%3E") left center/20px 18px repeat-x;
+          mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 18'%3E%3Cpath d='M9 1l2.3 4.9 5.2.6-3.9 3.6 1.1 5.2L9 12.6l-4.7 2.7 1.1-5.2L1.5 6.5l5.2-.6z'/%3E%3C/svg%3E") left center/20px 18px repeat-x}
+.re-tx{font-size:15px}
+.campo textarea{min-height:110px;resize:vertical}
+.campo textarea:focus-visible{outline:3px solid var(--ring);outline-offset:2px}
+.re-no{margin-top:28px}
+
+/* ---------- Conversación de alumnas (comunidad.html, 13/11/2026; apagada por ajuste) ---------- */
+.foro{max-width:760px}
+.foro-intro{color:var(--muted);margin-top:0}
+.foro-reglas{border:1.5px solid var(--line);border-radius:16px;padding:20px;background:var(--paper)}
+.foro-reglas h3{margin-top:0}
+.foro-reglas ol{padding-left:20px;display:grid;gap:8px;margin:0 0 16px}
+.foro-nuevo{margin-bottom:24px}
+.foro-lista{list-style:none;margin:0;padding:0;display:grid;gap:16px}
+.foro-post{border:1.5px solid var(--line);border-radius:16px;padding:16px 18px;background:var(--paper)}
+.foro-post.fijado{border-color:var(--brown)}
+.foro-autor{margin:0 0 6px;display:flex;flex-wrap:wrap;gap:4px 8px;align-items:baseline}
+.foro-autor .cmeta{font-size:13px;color:var(--muted)}
+.foro-texto{margin:0 0 8px;white-space:pre-line;overflow-wrap:anywhere}
+.foro-post .acciones{display:flex;flex-wrap:wrap;gap:4px 14px;align-items:center}
+.foro-coms{list-style:none;margin:12px 0 0;padding:12px 0 0;border-top:1px solid var(--line);display:grid;gap:10px}
+.foro-coms p{margin:0;font-size:15px;overflow-wrap:anywhere}
+.foro-com{margin-top:12px}
+.foro .cmeta{color:var(--muted);font-size:13px}
