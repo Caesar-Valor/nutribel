@@ -927,8 +927,7 @@ const PLANT_NOMBRE = {reserva_confirmada:"Reserva confirmada", recordatorio_dia_
 const VAR_MEM = ["plan","membresia","clases_texto","desde_larga","hasta_larga","fijos_texto","pago_linea","enlace_membresia","monto","pago_texto","enlace_pago","concepto","motivo"];
 Object.assign(EJEMPLO,{plan:"Barre · 8 clases al mes", desde_larga:"lunes 2 de noviembre", hasta_larga:"martes 1 de diciembre", monto:"RD$6,800",
   enlace_pago:"https://…/mi-reserva.html#m=…", concepto:"tu membresía", membresia:"Barre", clases_texto:"8 clases al mes",
-  fijos_texto:"Tu horario fijo:
-- Lunes 5:30 pm, Hot Barre con Marifer (Lugar 7, fila 1)", pago_linea:"Te esperamos para completar el pago en el estudio. Si te queda más cómodo, también puedes transferir o pagar con tarjeta desde el enlace de tu membresía.",
+  fijos_texto:"Tu horario fijo:\n- Lunes 5:30 pm, Hot Barre con Marifer (Lugar 7, fila 1)", pago_linea:"Te esperamos para completar el pago en el estudio. Si te queda más cómodo, también puedes transferir o pagar con tarjeta desde el enlace de tu membresía.",
   enlace_membresia:"https://…/mi-reserva.html#m=…"});
 const render = (t,d)=>String(t||"").replace(/\{\{([a-z_]+)\}\}/g,(m,k)=>d[k]||"").replace(/[ \t]+\n/g,"\n").replace(/\n{3,}/g,"\n\n").trim();
 
