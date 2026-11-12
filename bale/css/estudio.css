@@ -36,6 +36,9 @@
 .vcls.cli .n{letter-spacing:0;text-transform:none;font-size:14.5px}
 .est .vdetail{padding:16px}
 .est .vdetail:empty{display:none}
+/* Las columnas de lista y ficha no crecen más que la pantalla: sin esto, la tabla del historial de la ficha
+   empujaba toda la página de lado en el teléfono (12/11/2026). Las tablas siguen con su propio scroll. */
+.est .vres>*{min-width:0}
 .roster.est li{gap:8px 10px;padding:10px 0}
 .roster .tgs{display:flex;flex-wrap:wrap;gap:4px}
 .roster .rev{color:var(--brown)!important;font-weight:600!important}

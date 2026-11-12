@@ -32,6 +32,8 @@ Desde **una hora antes** de la clase, toca **Asistió** o **Faltó** en cada alu
 
 En la clase, **Reservar para una clienta** → busca por nombre o WhatsApp (o abre **O una clienta nueva**), elige el lugar en la sala, el pago (**Por pagar**, **Ya pagó** o **Cortesía**) y si le mandas la confirmación. Si la clienta tiene membresía, la base de datos la cuenta sola.
 
+**¿No tienes su WhatsApp?** Para una clienta nueva basta el nombre: el WhatsApp y el correo son opcionales. El lugar queda apartado igual (nadie más lo puede tomar y la instructora lo ve ocupado). Con su correo, la confirmación y los recordatorios le llegan por correo; sin correo ni WhatsApp no le llega ningún aviso. En la lista de la clase sale **Falta su WhatsApp**: cuando te lo dé, ponlo en su **Ficha** (con «Acepta avisos por WhatsApp») y sus recordatorios pendientes salen también por WhatsApp. Si usas el mismo correo otra vez, se usa la misma ficha.
+
 ## Cancelar una reserva
 
 En la lista de alumnas, **Cancelar** → elige el cargo: **Automático** (si es el mismo día de la clase, RD$300), **Sí** o **No**, y si la avisas. El lugar queda libre y, si hay lista de espera, se avisa a la primera.
@@ -40,7 +42,9 @@ En la lista de alumnas, **Cancelar** → elige el cargo: **Automático** (si es 
 
 1. **Clientas** → arriba, **Vencen esta semana**: pulsa **Renovar** en cada miembro. Crea la membresía del mes siguiente con el mismo plan **y los mismos lugares fijos**. Pon el pago si ya lo tienes.
 2. Miembro nueva: busca su ficha (o **Nueva clienta**) → **Nueva membresía** → plan, fechas, precio y pago → en la membresía, **Agregar lugar fijo** → elige la clase y su lugar en la sala.
-3. Si en alguna fecha ese lugar ya estaba reservado por otra persona, te sale la lista para que decidas (cambiar la reserva o reservarle a mano).
+4. Si en alguna fecha ese lugar ya estaba reservado por otra persona, te sale la lista para que decidas (cambiar la reserva o reservarle a mano).
+
+3. Más rápido, desde la clase: en **Clases**, abre la clase donde ya la agendaste y, en su fila, pulsa **Dejar fijo**. Queda fija en esa clase y ese lugar mientras dure su membresía. Si todavía no tiene membresía, te lo dice y te lleva a su ficha (**Ficha**, en la misma fila) para registrarla primero.
 
 El lugar fijo se reserva solo cada semana mientras dure la membresía.
 

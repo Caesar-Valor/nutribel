@@ -393,7 +393,7 @@ function pintarClase(){
     ${!puedeAsis&&alumnas.length?`<p class="privacy">La asistencia se marca desde una hora antes de la clase.</p>`:""}
     <ol class="roster est">${alumnas.map((a,i)=>`<li>
       <span class="seatno" title="${s.modo==="lugares"?"Lugar":"Orden"}"><span class="sr-only">${s.modo==="lugares"?"Lugar":"Número"} </span>${a.lugar||i+1}</span>
-      <span class="nm">${esc(a.nombre)}${a.nombre_reserva?`<small>Reservó como ${esc(a.nombre_reserva)}</small>`:""}${a.telefono?`<small>${esc(a.telefono)}</small>`:""}${a.revisar?`<small class="rev">${esc(a.revisar)}</small>`:""}</span>
+      <span class="nm">${esc(a.nombre)}${a.nombre_reserva?`<small>Reservó como ${esc(a.nombre_reserva)}</small>`:""}${a.telefono?`<small>${esc(a.telefono)}</small>`:admin&&a.clienta_id?`<small class="rev">Falta su WhatsApp</small>`:""}${a.revisar?`<small class="rev">${esc(a.revisar)}</small>`:""}</span>
       <span class="tgs">${tags(a)}</span>
       <span class="asis" role="group" aria-label="Asistencia de ${esc(a.nombre)}">
         <button type="button" class="abtn" data-asis="asistio" data-r="${a.reserva_id}" aria-pressed="${a.asistencia==="asistio"}" ${puedeAsis?"":"disabled"}>Asistió</button>
@@ -401,6 +401,8 @@ function pintarClase(){
       </span>
       ${admin?`<span class="racc"><button class="linkbtn" type="button" data-editar="${a.reserva_id}">Editar</button>
         <button class="linkbtn" type="button" data-pago="${a.reserva_id}">Pago</button>
+        ${a.origen!=="fijo"&&a.clienta_id&&s.horario_id&&!cancelada?`<button class="linkbtn" type="button" data-fijar="${a.reserva_id}">Dejar fijo</button>`:""}
+        ${a.clienta_id?`<button class="linkbtn" type="button" data-ver-ficha="${a.clienta_id}">Ficha</button>`:""}
         <button class="linkbtn" type="button" data-cancel="${a.reserva_id}" data-nombre="${esc(a.nombre)}">Cancelar</button></span>`:""}
     </li>`).join("")||`<li class="vacio">Sin reservas.</li>`}</ol>
     <h3>Lista de espera</h3>
@@ -513,9 +515,10 @@ async function reservarPara(){
       <ul class="pick-cli" data-res></ul>
       <details class="nueva"><summary>O una clienta nueva</summary>
         <label class="fld">Nombre<input name="nombre" autocomplete="off"></label>
-        <label class="fld">WhatsApp<input name="tel" type="tel" inputmode="tel" placeholder="809-000-0000"></label>
+        <label class="fld">WhatsApp (opcional)<input name="tel" type="tel" inputmode="tel" placeholder="809-000-0000"></label>
         <label class="fld">Correo (opcional)<input name="correo" type="email" inputmode="email"></label>
         <label class="check"><input type="checkbox" name="wa"> Acepta avisos por WhatsApp</label>
+        <p class="privacy">¿No tienes su WhatsApp? Déjalo vacío: el lugar queda apartado igual y, con su correo, le llega la confirmación. Cuando te lo dé, ponlo en su ficha.</p>
       </details>
       ${barra?`<p class="steph">Lugar</p>${seatsHTML(s.lugares_ocupados)}`:""}
       <label class="fld">Pago<select name="pago">${PAGO_OPC.map(([k,n])=>opt(k,n,k==="pendiente")).join("")}</select></label>
@@ -527,7 +530,7 @@ async function reservarPara(){
       q.addEventListener("input",()=>{ clearTimeout(t); t=setTimeout(async()=>{
         const txt=q.value.trim(); if(txt.length<2){ ul.innerHTML=""; return; }
         const r=await hacer("estudio_clientas",{p_buscar:txt,p_limite:8}); if(!r) return;
-        ul.innerHTML=r.clientas.map(c=>`<li><label class="radio"><input type="radio" name="cli" value="${c.id}" data-mem="${c.membresia?1:""}"> ${esc(c.nombre)} <small>${esc(c.telefono)}${c.membresia?` · ${esc(c.membresia)}`:""}</small></label></li>`).join("")||`<li class="privacy">Sin resultados: usa «O una clienta nueva».</li>`;
+        ul.innerHTML=r.clientas.map(c=>`<li><label class="radio"><input type="radio" name="cli" value="${c.id}" data-mem="${c.membresia?1:""}"> ${esc(c.nombre)} <small>${esc(c.telefono||c.correo||"Sin WhatsApp")}${c.membresia?` · ${esc(c.membresia)}`:""}</small></label></li>`).join("")||`<li class="privacy">Sin resultados: usa «O una clienta nueva».</li>`;
       },300); });
       // con membresía, «Membresía» de entrada; si no la cubre, la base la deja en «Revisar membresía» (sin cobro)
       ul.addEventListener("change",e=>{ elegida=+e.target.value; const sel=f.querySelector('[name="pago"]'), nota=f.querySelector("[data-pago-nota]");
@@ -538,10 +541,11 @@ async function reservarPara(){
       const args={p_sesion_id:s.id, p_avisar:v(f,"avisar"), p_pago_estado:v(f,"pago")||null};
       if(barra){ const l=+v(f,"lugar"); if(!l) return "Elige el lugar en la sala."; args.p_lugar=l; }
       if(elegida) args.p_clienta_id=elegida;
-      else{ if(!v(f,"nombre")||!v(f,"tel")) return "Elige una clienta de la lista o escribe el nombre y el WhatsApp de una nueva.";
+      else{ if(!v(f,"nombre")) return "Elige una clienta de la lista o escribe el nombre de una nueva.";
         Object.assign(args,{p_nombre:v(f,"nombre"),p_telefono:v(f,"tel"),p_correo:v(f,"correo")||null,p_acepta_whatsapp:v(f,"wa")}); }
       const r=await hacer("estudio_reservar",args,{dlg:true}); if(!r) return null; if(r.ok===false) return r.mensaje;
-      listo(r.revisar?`Reservado: ${r.reserva.nombre}. Revisar membresía: ${r.revisar}`:`Reservado: ${r.reserva.nombre}, ${r.reserva.lugar_texto}`); return true;
+      const falta=r.sin_whatsapp&&r.sin_correo?" Sin WhatsApp ni correo: no le llega ningún aviso.":r.sin_whatsapp?" Sin WhatsApp: los avisos le llegan por correo.":"";
+      listo((r.revisar?`Reservado: ${r.reserva.nombre}. Revisar membresía: ${r.revisar}`:`Reservado: ${r.reserva.nombre}, ${r.reserva.lugar_texto}`)+falta); return true;
     }});
   if(ok) recargarClase();
 }
@@ -676,18 +680,48 @@ async function renovarTodas(){
 async function buscarClientas(){
   const r=await hacer("estudio_clientas",{p_buscar:$("#qCli").value.trim()||null,p_limite:60}); if(!r) return;
   $("#cliList").innerHTML=r.clientas.map(c=>`<li><button type="button" class="vcls cli" data-ficha="${c.id}" aria-pressed="${CLI&&CLI.clienta.id===c.id}">
-    <span class="n">${esc(c.nombre)}<small>${esc(c.telefono)}${c.correo?` · ${esc(c.correo)}`:""}</small></span>
+    <span class="n">${esc(c.nombre)}<small>${[c.telefono||"Sin WhatsApp",c.correo].filter(Boolean).map(esc).join(" · ")}</small></span>
     <span class="c">${c.membresia?esc(c.membresia):`${c.reservas} ${c.reservas===1?"reserva":"reservas"}`}</span></button></li>`).join("")||`<li class="empty-state">No hay clientas con esa búsqueda.</li>`;
 }
 async function abrirFicha(id){
   const r=await hacer("estudio_clienta",{p_clienta_id:id}); if(!r) return;
   CLI=r; pintarFicha(); buscarClientas();
-  if(matchMedia("(max-width:899px)").matches) $("#cliDet").scrollIntoView({block:"start"});
+  // La ficha se pinta abajo (debajo de «Control de membresías» y «Vencen esta semana»): siempre se baja hasta
+  // ella y se le da el foco. Antes solo se bajaba en el teléfono y en la computadora parecía que no abría (12/11/2026).
+  const d=$("#cliDet"), h=d.querySelector("h2");
+  d.scrollIntoView({block:"start"});
+  if(h){ h.tabIndex=-1; h.focus({preventScroll:true}); }
+}
+// Desde la lista de una clase: deja fijo el lugar de esa alumna en esa clase, cada semana, mientras dure su membresía
+async function dejarFijo(reservaId){
+  const s=CLASE.sesion, a=CLASE.alumnas.find(x=>x.reserva_id===reservaId); if(!a) return;
+  const r=await hacer("estudio_clienta",{p_clienta_id:a.clienta_id}); if(!r) return;
+  const m=(r.membresias||[]).filter(x=>x.estado==="activa"&&x.desde<=s.fecha&&x.hasta>=s.fecha).sort((x,y)=>y.hasta.localeCompare(x.hasta))[0];
+  const cuando=`${DIAS[(fromIso(s.fecha).getDay()+6)%7]} ${s.hora}`;
+  if(!m){
+    const ir=await pedir({titulo:"Primero, su membresía", ok:"Abrir su ficha",
+      html:`<p><b>${esc(a.nombre)}</b> no tiene una membresía activa que incluya el ${esc(fmtDay(s.fecha))}.</p><p>Abre su ficha, registra su membresía con <b>Nueva membresía</b> y vuelve aquí para dejar fijo su lugar.</p>`});
+    if(ir){ abrirTab("clientas"); abrirFicha(a.clienta_id); }
+    return;
+  }
+  const lugar=s.modo==="lugares"?a.lugar:null;
+  if(s.modo==="lugares"&&!lugar){ aviso("Esa reserva no tiene lugar: elige uno con «Editar» y vuelve a intentarlo.","mal"); return; }
+  let res=null;
+  const ok=await pedir({titulo:"Dejar fijo su lugar", ok:"Dejar fijo",
+    html:`<p><b>${esc(a.nombre)}</b> queda fija en <b>${esc(s.clase)}</b>, los <b>${esc(cuando)}</b>${lugar?`, <b>lugar ${lugar}</b>`:""}.</p>
+      <p>Se le reserva sola cada semana hasta el ${esc(fmtDay(m.hasta))} (fin de su membresía: ${esc(m.plan)}). Al renovar la membresía, el lugar fijo se copia.</p>`,
+    accion:async()=>{ const x=await hacer("estudio_guardar_fijo",{p_membresia_id:m.id,p_horario_id:s.horario_id,p_lugar:lugar},{dlg:true});
+      if(!x) return null; if(x.ok===false) return x.mensaje; res=x; return true; }});
+  if(!ok) return;
+  listo(`Lugar fijo guardado: ${a.nombre}, ${cuando}${lugar?`, lugar ${lugar}`:""}`);
+  // Las fechas en que ya tenía su reserva (como la de esta clase) se quedan como están: no es un problema
+  const fj=res&&res.fijos; if(fj) conflictos({...fj,conflictos:(fj.conflictos||[]).filter(c=>c.motivo!=="ya_tiene_reserva")});
+  cargarClase(s.id);
 }
 function pintarFicha(){
   const c=CLI.clienta, M=CLI.membresias||[], R=CLI.reservas||[], cargos=R.filter(x=>x.cancelacion_tardia);
   $("#cliDet").innerHTML=`<h2>${esc(c.nombre)}</h2>
-    <p class="meta">${esc(c.telefono)}${c.correo?` · ${esc(c.correo)}`:""} · ${c.acepta_whatsapp?"acepta avisos por WhatsApp":"sin avisos por WhatsApp"}</p>
+    <p class="meta">${c.telefono?esc(c.telefono):"Sin WhatsApp"}${c.correo?` · ${esc(c.correo)}`:""} · ${c.acepta_whatsapp?"acepta avisos por WhatsApp":"sin avisos por WhatsApp"}</p>
     ${c.anonimizada?`<p class="note">Datos personales borrados. Solo queda el historial anónimo.</p>`:`
     <form class="form efich" id="fCli" novalidate>
       <div class="two"><label class="fld">Nombre<input name="nombre" value="${esc(c.nombre)}"></label>
@@ -727,7 +761,7 @@ async function nuevaClienta(){
   let id=null;
   const ok=await pedir({titulo:"Nueva clienta", ok:"Crear",
     html:`<label class="fld">Nombre<input name="nombre" autocomplete="off"></label>
-      <label class="fld">WhatsApp<input name="tel" type="tel" inputmode="tel" placeholder="809-000-0000"></label>
+      <label class="fld">WhatsApp (opcional)<input name="tel" type="tel" inputmode="tel" placeholder="809-000-0000"></label>
       <label class="fld">Correo (opcional)<input name="correo" type="email" inputmode="email"></label>
       <label class="check"><input type="checkbox" name="wa"> Acepta avisos por WhatsApp</label>
       <label class="fld">Notas (solo para el estudio; nada de salud)<textarea name="notas" rows="2" maxlength="500"></textarea></label>`,
@@ -1290,6 +1324,8 @@ function eventos(){
     const c=e.target.closest("[data-cancel]"); if(c){ cancelarReserva(+c.dataset.cancel,c.dataset.nombre); return; }
     const ed=e.target.closest("[data-editar]"); if(ed){ editarReserva(+ed.dataset.editar); return; }
     const pg=e.target.closest("[data-pago]"); if(pg){ cambiarPago(+pg.dataset.pago); return; }
+    const fj=e.target.closest("[data-fijar]"); if(fj){ dejarFijo(+fj.dataset.fijar); return; }
+    const vf=e.target.closest("[data-ver-ficha]"); if(vf){ abrirTab("clientas"); abrirFicha(+vf.dataset.verFicha); return; }
     const x=e.target.closest("[data-a]"); if(x) accionClase(x.dataset.a);
   });
   $("#icsSemana").addEventListener("click",icsSemana);
