@@ -914,18 +914,22 @@ async function interruptor(el){
    ========================================================= */
 let AJ={}, PLANT=[];
 const aj = (k,d)=>AJ[k]?AJ[k].valor:d;
-const VARIABLES = ["nombre","clase","fecha_larga","fecha_corta","hora","hora_fin","instructora","lugar_texto","pago_texto","cancelacion_texto","cargo_texto","enlace_reserva","enlace_horario","direccion","whatsapp_estudio","motivo"];
+const VARIABLES = ["nombre","cuando","clase","fecha_larga","fecha_corta","hora","hora_fin","instructora","lugar_texto","pago_texto","cancelacion_texto","cargo_texto","enlace_reserva","enlace_horario","direccion","whatsapp_estudio","motivo"];
 const VAR_ESTUDIO = ["nombre_completo","telefono","correo","primera_vez","revisar"];
 const EJEMPLO = {nombre:"Laura", clase:"Hot Barre", fecha_larga:"lunes 2 de noviembre", fecha_corta:"lun 2 nov", hora:"5:30 pm", hora_fin:"6:30 pm", instructora:"Marifer",
   lugar_texto:"Lugar 7, fila 1", pago_texto:"RD$900. Pago por transferencia: te enviamos los datos por WhatsApp.", cancelacion_texto:"Si cancelas el mismo día de la clase, se aplica un cargo de RD$300 por cancelación tardía.",
-  cargo_texto:"", enlace_reserva:"https://…/mi-reserva.html#t=…", enlace_horario:"https://…/#horario", direccion:"C. José Horacio Rodríguez #30, La Vega", whatsapp_estudio:"+1 849-638-6337", motivo:"",
+  cuando:"hoy", cargo_texto:"", enlace_reserva:"https://…/mi-reserva.html#t=…", enlace_horario:"https://…/#horario", direccion:"C. José Horacio Rodríguez #30, La Vega", whatsapp_estudio:"+1 849-638-6337", motivo:"",
   nombre_completo:"Laura Pérez", telefono:"809-555-0101", correo:"laura@example.com", primera_vez:"Sí", revisar:""};
 const PLANT_NOMBRE = {reserva_confirmada:"Reserva confirmada", recordatorio_dia_antes:"Recordatorio del día antes", recordatorio_horas_antes:"Recordatorio horas antes",
   reserva_cancelada:"Reserva cancelada", clase_cancelada:"Clase cancelada", lugar_liberado:"Se liberó un lugar", estudio_nueva_reserva:"Al estudio: nueva reserva", estudio_cancelacion:"Al estudio: cancelación",
-  membresia_por_vencer:"Membresía por vencer", transferencia_confirmada:"Transferencia confirmada", transferencia_rechazada:"Transferencia rechazada"};
-const VAR_MEM = ["plan","desde_larga","hasta_larga","monto","pago_texto","enlace_pago","concepto","motivo"];
+  membresia_por_vencer:"Membresía por vencer", transferencia_confirmada:"Transferencia confirmada", transferencia_rechazada:"Transferencia rechazada",
+  membresia_confirmada:"Membresía nueva", membresia_renovada:"Membresía renovada"};
+const VAR_MEM = ["plan","membresia","clases_texto","desde_larga","hasta_larga","fijos_texto","pago_linea","enlace_membresia","monto","pago_texto","enlace_pago","concepto","motivo"];
 Object.assign(EJEMPLO,{plan:"Barre · 8 clases al mes", desde_larga:"lunes 2 de noviembre", hasta_larga:"martes 1 de diciembre", monto:"RD$6,800",
-  enlace_pago:"https://…/mi-reserva.html#m=…", concepto:"tu membresía"});
+  enlace_pago:"https://…/mi-reserva.html#m=…", concepto:"tu membresía", membresia:"Barre", clases_texto:"8 clases al mes",
+  fijos_texto:"Tu horario fijo:
+- Lunes 5:30 pm, Hot Barre con Marifer (Lugar 7, fila 1)", pago_linea:"Te esperamos para completar el pago en el estudio. Si te queda más cómodo, también puedes transferir o pagar con tarjeta desde el enlace de tu membresía.",
+  enlace_membresia:"https://…/mi-reserva.html#m=…"});
 const render = (t,d)=>String(t||"").replace(/\{\{([a-z_]+)\}\}/g,(m,k)=>d[k]||"").replace(/[ \t]+\n/g,"\n").replace(/\n{3,}/g,"\n\n").trim();
 
 async function cargarAjustes(){
@@ -946,8 +950,9 @@ async function cargarAjustes(){
       <label class="fld">Reservas sueltas pendientes por persona<input name="max" type="number" min="1" max="20" value="${esc(aj("max_reservas_futuras",3))}"></label></div>
       <label class="fld">Se puede reservar hasta (días adelante)<input name="dias" type="number" min="1" max="60" value="${esc(aj("dias_abiertos",28))}"></label>`)+
     sec("recordatorios","Recordatorios y horas de silencio",`<div class="two"><label class="fld">Recordatorio el día antes, a las<input name="dia" type="time" value="${esc(rec.dia_antes_hora||"18:00")}"></label>
-      <label class="fld">Y horas antes (0 = no)<input name="horas" type="number" min="0" max="12" value="${esc(rec.horas_antes??2)}"></label></div>
-      <div class="two"><label class="fld">Sin WhatsApp desde<input name="sd" type="time" value="${esc(sil.desde||"21:00")}"></label><label class="fld">hasta<input name="sh" type="time" value="${esc(sil.hasta||"07:00")}"></label></div>`)+
+      <label class="fld">Y horas antes (0 = no)<input name="horas" type="number" min="0" max="12" value="${esc(rec.horas_antes??6)}"></label></div>
+      <div class="two"><label class="fld">Sin WhatsApp desde<input name="sd" type="time" value="${esc(sil.desde||"21:00")}"></label><label class="fld">hasta<input name="sh" type="time" value="${esc(sil.hasta||"07:00")}"></label></div>`,
+      "El de horas antes sale por correo y WhatsApp. Si esa hora cae en el silencio, sale 30 minutos antes de que empiece (una clase de 6:45 am lo recibe a las 8:30 pm del día anterior). Reservas con menos anticipación no lo reciben. Al guardar, los pendientes se reprograman.")+
     sec("membresias","Membresías y aviso de renovación",`<label class="fld">«Renueva pronto» en el control: cuando falten (días)<input name="pronto" type="number" min="1" max="60" value="${esc(aj("renueva_pronto_dias",7))}"></label>
       <label class="check"><input type="checkbox" name="aviso" ${ren.activo?"checked":""}> Avisar a la clienta antes de que venza su membresía</label>
       <label class="fld">¿Cuántos días antes?<input name="dias" type="number" min="1" max="14" value="${esc(ren.dias||3)}"></label>`,
