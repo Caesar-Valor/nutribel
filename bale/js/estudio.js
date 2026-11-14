@@ -1098,10 +1098,9 @@ async function cargarAjustes(){
     sec("reservas","Reservas por la web",`<div class="two"><label class="fld">Cierran (minutos antes de la clase)<input name="cierre" type="number" min="0" max="1440" value="${esc(aj("cierre_reserva_min",30))}"></label>
       <label class="fld">Reservas sueltas pendientes por persona<input name="max" type="number" min="1" max="20" value="${esc(aj("max_reservas_futuras",3))}"></label></div>
       <label class="fld">Se puede reservar hasta (días adelante)<input name="dias" type="number" min="1" max="60" value="${esc(aj("dias_abiertos",28))}"></label>`)+
-    sec("recordatorios","Recordatorios y horas de silencio",`<div class="two"><label class="fld">Recordatorio el día antes, a las<input name="dia" type="time" value="${esc(rec.dia_antes_hora||"18:00")}"></label>
-      <label class="fld">Y horas antes (0 = no)<input name="horas" type="number" min="0" max="12" value="${esc(rec.horas_antes??6)}"></label></div>
+    sec("recordatorios","Recordatorios y horas de silencio",`<label class="fld">Recordatorio, horas antes de la clase (0 = no)<input name="horas" type="number" min="0" max="12" value="${esc(rec.horas_antes??6)}"></label>
       <div class="two"><label class="fld">Sin WhatsApp desde<input name="sd" type="time" value="${esc(sil.desde||"21:00")}"></label><label class="fld">hasta<input name="sh" type="time" value="${esc(sil.hasta||"07:00")}"></label></div>`,
-      "El de horas antes sale por correo y WhatsApp. Si esa hora cae en el silencio, sale 30 minutos antes de que empiece (una clase de 6:45 am lo recibe a las 8:30 pm del día anterior). Reservas con menos anticipación no lo reciben. Al guardar, los pendientes se reprograman.")+
+      "Es el único recordatorio: el del día antes ya no sale (DECISIONES §53). Sale por correo y WhatsApp. Si esa hora cae en el silencio, sale 30 minutos antes de que empiece (una clase de 6:45 am lo recibe a las 8:30 pm del día anterior). Reservas con menos anticipación no lo reciben. Al guardar, los pendientes se reprograman.")+
     sec("membresias","Membresías",`<label class="fld">«Renueva pronto» en el control: cuando falten (días)<input name="pronto" type="number" min="1" max="60" value="${esc(aj("renueva_pronto_dias",7))}"></label>`,
       "Desde el área no se avisa a la clienta: quien renueva pronto se ve aquí y en el control de membresías.")+
     sec("seguridad","Seguridad",`<label class="check"><input type="checkbox" name="exigir" ${aj("exigir_2fa",false)?"checked":""}> Exigir la verificación en dos pasos a la dueña y a la asistente</label>`,
@@ -1168,9 +1167,9 @@ async function guardarAjustes(f){
     const c=num("cierre",0,1440), m=num("max",1,20), d=num("dias",1,60);
     if(c==null||m==null||d==null){ aviso("Revisa los números de las reservas.","mal"); return; }
     ok=!!await ajuste("cierre_reserva_min",c)&&!!await ajuste("max_reservas_futuras",m)&&!!await ajuste("dias_abiertos",d);
-  }else if(id==="recordatorios"){
-    const h=num("horas",0,12); if(h==null||!v(f,"dia")||!v(f,"sd")||!v(f,"sh")){ aviso("Revisa las horas.","mal"); return; }
-    ok=!!await ajuste("recordatorios",{dia_antes_hora:v(f,"dia"),horas_antes:h})&&!!await ajuste("horas_silencio",{desde:v(f,"sd"),hasta:v(f,"sh")});
+  }else if(id==="recordatorios"){ const rec0=aj("recordatorios",{});
+    const h=num("horas",0,12); if(h==null||!v(f,"sd")||!v(f,"sh")){ aviso("Revisa las horas.","mal"); return; }
+    ok=!!await ajuste("recordatorios",{dia_antes_hora:rec0.dia_antes_hora||"18:00",horas_antes:h})&&!!await ajuste("horas_silencio",{desde:v(f,"sd"),hasta:v(f,"sh")});
   }else if(id==="membresias"){
     const p=num("pronto",1,60);
     if(p==null){ aviso("Revisa los días: «renueva pronto» de 1 a 60.","mal"); return; }
