@@ -415,16 +415,15 @@ async function marcarAsistencia(b){
   pintarClase(); const n=$(`#cDet [data-r="${b.dataset.r}"][data-asis="${b.dataset.asis}"]`); if(n) n.focus();
 }
 async function cancelarReserva(id,nombre){
-  const s=CLASE.sesion, fija=(CLASE.alumnas.find(x=>x.reserva_id===id)||{}).origen==="fijo";
+  const s=CLASE.sesion;
   const ok=await pedir({titulo:`Cancelar la reserva de ${nombre}`, ok:"Cancelar reserva", no:"Volver", peligro:true,
     html:`<p>${esc(s.clase)}, ${esc(s.fecha_larga)} a las ${esc(s.hora)}.</p>
       <fieldset class="opts"><legend>¿Se cobra el cargo de cancelación tardía?</legend>
         <label class="radio"><input type="radio" name="cargo" value="auto" checked> Automático (si es el mismo día de la clase, sí)</label>
         <label class="radio"><input type="radio" name="cargo" value="si"> Sí, cobrar el cargo</label>
         <label class="radio"><input type="radio" name="cargo" value="no"> No cobrar</label></fieldset>
-      <label class="check"><input type="checkbox" name="avisar" ${fija?"":"checked"}> Avisar a la clienta</label>
-      ${fija?`<p class="privacy">Es una reserva de su lugar fijo: si la cancelas porque estaba mal puesta, no hace falta avisarle.</p>`:""}`,
-    accion:async f=>{ const r=await hacer("estudio_cancelar_reserva",{p_reserva_id:id,p_cargo:f.querySelector('[name="cargo"]:checked').value,p_avisar:v(f,"avisar")},{dlg:true});
+      <p class="privacy">A la clienta no le llega ningún mensaje: si hace falta, avísale tú.</p>`,
+    accion:async f=>{ const r=await hacer("estudio_cancelar_reserva",{p_reserva_id:id,p_cargo:f.querySelector('[name="cargo"]:checked').value,p_avisar:false},{dlg:true});
       if(!r) return null; if(r.ok===false) return r.mensaje; listo(r.tardia?`Reserva cancelada con cargo de ${dinero(r.cargo)}`:"Reserva cancelada"); return true; }});
   if(ok) recargarClase();
 }
@@ -455,26 +454,23 @@ async function editarReserva(id){
       <label class="fld">Correo<input name="correo" type="email" inputmode="email" value="${esc(a.correo||"")}"></label>
       <label class="fld">WhatsApp (de la ficha)<input name="tel" type="tel" inputmode="tel" value="${esc(a.telefono||"")}"></label>
       <label class="check"><input type="checkbox" name="ficha"> Corregir también la ficha de la clienta (nombre, correo y WhatsApp)</label>
-      <label class="check" data-reenv hidden><input type="checkbox" name="reenviar"> ¿Reenviar la confirmación al correo nuevo?</label>
       <label class="fld">Clase<select name="ses">${opt(String(s.id),`Esta: ${s.clase}, ${s.fecha_larga} ${s.hora}`,true)}${otras.map(x=>opt(String(x.id),`${x.clase}, ${fmtCorta(x.fecha)} ${h12(x.inicio)} · ${x.instructora}`)).join("")}</select></label>
       ${barra?`<div data-sala><p class="steph">Lugar (ahora el ${a.lugar||"—"})</p>${seatsHTML(ocup)}</div>`:""}
       <p class="privacy">Cambiar de clase o de lugar sigue las reglas de reservar. Su lugar de ahora no se suelta hasta guardar.</p>`,
     alAbrir:f=>{
       if(barra) activarSeats(f);
-      const cor=f.querySelector('[name="correo"]'), re=f.querySelector("[data-reenv]");
-      cor.addEventListener("input",()=>{ re.hidden=cor.value.trim().toLowerCase()===(a.correo||"").toLowerCase(); });
       const ses=f.querySelector('[name="ses"]'), sala=f.querySelector("[data-sala]");
       ses.addEventListener("change",()=>{ if(sala) sala.hidden=ses.value!==String(s.id); });
     },
     accion:async f=>{
-      const args={p_reserva_id:id, p_corregir_ficha:v(f,"ficha"), p_reenviar:v(f,"reenviar")};
+      const args={p_reserva_id:id, p_corregir_ficha:v(f,"ficha")};
       const nom=v(f,"nombre").trim(), cor=v(f,"correo").trim(), tel=v(f,"tel").trim();
       if(nom&&nom!==(a.nombre_reserva||a.nombre)) args.p_nombre=nom;
       if(cor&&cor.toLowerCase()!==(a.correo||"").toLowerCase()) args.p_correo=cor;
       if(tel&&soloDigitos(tel)!==soloDigitos(a.telefono)){ if(!args.p_corregir_ficha) return "El WhatsApp está en la ficha: marca «Corregir también la ficha»."; args.p_telefono=tel; }
       const ses=+v(f,"ses"); if(ses!==s.id) args.p_sesion_id=ses;
       if(barra&&ses===s.id){ const l=+v(f,"lugar"); if(l&&l!==a.lugar) args.p_lugar=l; }
-      if(Object.keys(args).length===3) return "No cambiaste nada.";
+      if(Object.keys(args).length===2) return "No cambiaste nada.";
       const r=await hacer("estudio_editar_reserva",args,{dlg:true}); if(!r) return null; if(r.ok===false) return r.mensaje;
       listo(r.sin_cambios?"Sin cambios":`Reserva corregida${r.reenviada?" · confirmación reenviada":""}`); return true;
     }});
@@ -490,9 +486,9 @@ async function accionClase(a){
   if(a==="cancelar-clase"){
     const ok=await pedir({titulo:"Cancelar la clase", ok:"Cancelar la clase", no:"Volver", peligro:true,
       html:`<p><b>${esc(s.clase)}</b>, ${esc(s.fecha_larga)} a las ${esc(s.hora)}. Se cancelan sus ${CLASE.alumnas.length} reservas, sin cargo.</p>
-        <label class="fld">Motivo (sale en el aviso a las alumnas)<input name="motivo" maxlength="200" placeholder="Ej.: la instructora está enferma"></label>
-        <label class="check"><input type="checkbox" name="avisar" checked> Avisar a las alumnas</label>`,
-      accion:async f=>{ const r=await hacer("estudio_cancelar_clase",{p_sesion_id:s.id,p_motivo:v(f,"motivo")||null,p_avisar:v(f,"avisar")},{dlg:true});
+        <label class="fld">Motivo (queda anotado en la clase)<input name="motivo" maxlength="200" placeholder="Ej.: la instructora está enferma"></label>
+        <p class="privacy">A las alumnas no les llega ningún mensaje: avísales tú (por ejemplo, por el WhatsApp del estudio).</p>`,
+      accion:async f=>{ const r=await hacer("estudio_cancelar_clase",{p_sesion_id:s.id,p_motivo:v(f,"motivo")||null,p_avisar:false},{dlg:true});
         if(!r) return null; if(r.ok===false) return r.mensaje; listo(`Clase cancelada (${r.reservas_canceladas} reservas)`); return true; }});
     if(ok) recargarClase();
   }else if(a==="reabrir"){
@@ -519,12 +515,12 @@ async function reservarPara(){
         <label class="fld">WhatsApp (opcional)<input name="tel" type="tel" inputmode="tel" placeholder="809-000-0000"></label>
         <label class="fld">Correo (opcional)<input name="correo" type="email" inputmode="email"></label>
         <label class="check"><input type="checkbox" name="wa"> Acepta avisos por WhatsApp</label>
-        <p class="privacy">¿No tienes su WhatsApp? Déjalo vacío: el lugar queda apartado igual y, con su correo, le llega la confirmación. Cuando te lo dé, ponlo en su ficha.</p>
+        <p class="privacy">¿No tienes su WhatsApp? Déjalo vacío: el lugar queda apartado igual. Con su correo le llegan los recordatorios de la clase. Cuando te lo dé, ponlo en su ficha.</p>
       </details>
       ${barra?`<p class="steph">Lugar</p>${seatsHTML(s.lugares_ocupados)}`:""}
       <label class="fld">Pago<select name="pago">${PAGO_OPC.map(([k,n])=>opt(k,n,k==="pendiente")).join("")}</select></label>
       <p class="privacy" data-pago-nota hidden></p>
-      <label class="check"><input type="checkbox" name="avisar" checked> Enviar la confirmación a la clienta</label>`,
+      <p class="privacy">No le llega confirmación (desde el área no se avisa); sí los recordatorios de su clase.</p>`,
     alAbrir:f=>{
       activarSeats(f);
       const q=f.querySelector('[name="q"]'), ul=f.querySelector("[data-res]");
@@ -539,13 +535,13 @@ async function reservarPara(){
         nota.hidden=!mem; nota.textContent=mem?"Tiene membresía: si esta clase no la cubre, queda en «Revisar membresía», sin cobro para ella.":""; });
     },
     accion:async f=>{
-      const args={p_sesion_id:s.id, p_avisar:v(f,"avisar"), p_pago_estado:v(f,"pago")||null};
+      const args={p_sesion_id:s.id, p_pago_estado:v(f,"pago")||null};
       if(barra){ const l=+v(f,"lugar"); if(!l) return "Elige el lugar en la sala."; args.p_lugar=l; }
       if(elegida) args.p_clienta_id=elegida;
       else{ if(!v(f,"nombre")) return "Elige una clienta de la lista o escribe el nombre de una nueva.";
         Object.assign(args,{p_nombre:v(f,"nombre"),p_telefono:v(f,"tel"),p_correo:v(f,"correo")||null,p_acepta_whatsapp:v(f,"wa")}); }
       const r=await hacer("estudio_reservar",args,{dlg:true}); if(!r) return null; if(r.ok===false) return r.mensaje;
-      const falta=r.sin_whatsapp&&r.sin_correo?" Sin WhatsApp ni correo: no le llega ningún aviso.":r.sin_whatsapp?" Sin WhatsApp: los avisos le llegan por correo.":"";
+      const falta=r.sin_whatsapp&&r.sin_correo?" Sin WhatsApp ni correo: no le llegan los recordatorios.":r.sin_whatsapp?" Sin WhatsApp: los recordatorios le llegan por correo.":"";
       listo((r.revisar?`Reservado: ${r.reserva.nombre}. Revisar membresía: ${r.revisar}`:`Reservado: ${r.reserva.nombre}, ${r.reserva.lugar_texto}`)+falta); return true;
     }});
   if(ok) recargarClase();
@@ -979,11 +975,11 @@ function copiar(valor,que){
 async function revisarTransf(id,estado,nombre,monto){
   const conf=estado==="confirmada";
   const ok=await pedir({titulo:conf?`¿Llegó la transferencia de ${nombre}?`:`Rechazar la transferencia de ${nombre}`, ok:conf?"Sí, confirmar":"Rechazar", peligro:!conf,
-    html:conf?`<p>Mira primero en el banco que entraron <b>${esc(dinero(+monto))}</b>. Queda pagada por transferencia.</p><label class="check"><input type="checkbox" name="avisar" checked> Avisar a la clienta</label>`
-      :`<label class="fld">Motivo (le llega a la clienta)<textarea name="motivo" rows="2" maxlength="200" placeholder="Ej.: no vemos el depósito en la cuenta"></textarea></label><label class="check"><input type="checkbox" name="avisar" checked> Avisar a la clienta</label>`,
+    html:conf?`<p>Mira primero en el banco que entraron <b>${esc(dinero(+monto))}</b>. Queda pagada por transferencia. A la clienta no le llega ningún mensaje.</p>`
+      :`<label class="fld">Motivo (queda anotado; a la clienta no le llega ningún mensaje)<textarea name="motivo" rows="2" maxlength="200" placeholder="Ej.: no vemos el depósito en la cuenta"></textarea></label>`,
     accion:async f=>{
       if(!conf&&v(f,"motivo").length<3) return "Escribe el motivo del rechazo.";
-      const r=await hacer("estudio_transferencia",{p_id:+id,p_estado:estado,p_motivo:conf?null:v(f,"motivo"),p_avisar:v(f,"avisar")},{dlg:true});
+      const r=await hacer("estudio_transferencia",{p_id:+id,p_estado:estado,p_motivo:conf?null:v(f,"motivo"),p_avisar:false},{dlg:true});
       if(!r) return null; return r.ok===false?r.mensaje:true; }});
   if(ok){ listo(conf?"Transferencia confirmada":"Transferencia rechazada"); cargarCobros(); }
 }
@@ -1090,7 +1086,7 @@ async function cargarAjustes(){
   if(!a||!p||!per) return;
   CAT=await hacer("estudio_catalogos")||CAT;
   AJ=a.ajustes||{}; PLANT=p.plantillas||[];
-  const pago=aj("pago",{}), tr=pago.transferencia||{}, rec=aj("recordatorios",{}), sil=aj("horas_silencio",{}), ren=aj("aviso_renovacion",{activo:false,dias:3});
+  const pago=aj("pago",{}), tr=pago.transferencia||{}, rec=aj("recordatorios",{}), sil=aj("horas_silencio",{});
   const n2fa=await nivel2FA();
   const sinPC=x=>/por confirmar/i.test(x||"")?"":x||"";
   const sec=(id,titulo,cuerpo,nota="")=>`<form class="ebox form" data-aj="${id}" novalidate><h2>${titulo}</h2>${nota?`<p class="privacy">${nota}</p>`:""}${cuerpo}<div class="eacc"><button class="bbtn solid sm" type="submit">Guardar</button></div></form>`;
@@ -1106,15 +1102,13 @@ async function cargarAjustes(){
       <label class="fld">Y horas antes (0 = no)<input name="horas" type="number" min="0" max="12" value="${esc(rec.horas_antes??6)}"></label></div>
       <div class="two"><label class="fld">Sin WhatsApp desde<input name="sd" type="time" value="${esc(sil.desde||"21:00")}"></label><label class="fld">hasta<input name="sh" type="time" value="${esc(sil.hasta||"07:00")}"></label></div>`,
       "El de horas antes sale por correo y WhatsApp. Si esa hora cae en el silencio, sale 30 minutos antes de que empiece (una clase de 6:45 am lo recibe a las 8:30 pm del día anterior). Reservas con menos anticipación no lo reciben. Al guardar, los pendientes se reprograman.")+
-    sec("membresias","Membresías y aviso de renovación",`<label class="fld">«Renueva pronto» en el control: cuando falten (días)<input name="pronto" type="number" min="1" max="60" value="${esc(aj("renueva_pronto_dias",7))}"></label>
-      <label class="check"><input type="checkbox" name="aviso" ${ren.activo?"checked":""}> Avisar a la clienta antes de que venza su membresía</label>
-      <label class="fld">¿Cuántos días antes?<input name="dias" type="number" min="1" max="14" value="${esc(ren.dias||3)}"></label>`,
-      "Sale un correo (y un WhatsApp si el automático está encendido y ella lo aceptó) con el monto y cómo pagar: transferencia (con «Ya transferí») o con tarjeta. Una sola vez por membresía, entre las 9 am y las 8 pm. El texto se cambia abajo, en «Membresía por vencer».")+
+    sec("membresias","Membresías",`<label class="fld">«Renueva pronto» en el control: cuando falten (días)<input name="pronto" type="number" min="1" max="60" value="${esc(aj("renueva_pronto_dias",7))}"></label>`,
+      "Desde el área no se avisa a la clienta: quien renueva pronto se ve aquí y en el control de membresías.")+
     sec("seguridad","Seguridad",`<label class="check"><input type="checkbox" name="exigir" ${aj("exigir_2fa",false)?"checked":""}> Exigir la verificación en dos pasos a la dueña y a la asistente</label>`,
       `Primero actívala tú (botón «Seguridad», arriba) y entra con el código. Cuando la enciendas aquí, la asistente tendrá que activarla la próxima vez que entre. ${n2fa.currentLevel==="aal2"?"Ahora mismo entraste con el código.":"Ahora mismo entraste sin el código: todavía no puedes exigirla."}`)+
     sec("otros","Instructoras y dirección pública",`<label class="check"><input type="checkbox" name="tel" ${aj("instructoras_ven_telefono",false)?"checked":""}> Las instructoras ven el WhatsApp de sus alumnas</label>
       <label class="fld">Dirección pública de la página (base de los enlaces de los avisos)<input name="url" type="url" value="${esc(aj("url_publica",""))}"></label>
-      ${conComunidad()?`<label class="check"><input type="checkbox" name="comAv" ${aj("comunidad_avisos",false)?"checked":""}> Se puede avisar por correo a la comunidad de una actividad (solo a quienes lo aceptaron en su cuenta)</label>`:""}`)+
+`)+
     // 13/11/2026 (DECISIONES §43): funciones nuevas, apagadas hasta que se enciendan aquí
     ("resenas_activas" in AJ?sec("nuevas","Reseñas y Ballet niñas",`<h3>Reseña después de la clase</h3>
       <label class="check"><input type="checkbox" name="res" ${aj("resenas_activas",false)?"checked":""}> Pedir por correo, al día siguiente, la opinión de quien asistió (como mucho una vez por semana a cada clienta)</label>
@@ -1178,13 +1172,10 @@ async function guardarAjustes(f){
     const h=num("horas",0,12); if(h==null||!v(f,"dia")||!v(f,"sd")||!v(f,"sh")){ aviso("Revisa las horas.","mal"); return; }
     ok=!!await ajuste("recordatorios",{dia_antes_hora:v(f,"dia"),horas_antes:h})&&!!await ajuste("horas_silencio",{desde:v(f,"sd"),hasta:v(f,"sh")});
   }else if(id==="membresias"){
-    const p=num("pronto",1,60), d=num("dias",1,14);
-    if(p==null||d==null){ aviso("Revisa los días: «renueva pronto» de 1 a 60 y el aviso de 1 a 14.","mal"); return; }
-    const on=v(f,"aviso"), antes=aj("aviso_renovacion",{}).activo;
-    if(on&&!antes){ const c=await pedir({titulo:"Encender el aviso de renovación",ok:"Encender",
-      html:`<p>Desde hoy, cada miembro cuya membresía venza en ${d} días recibe un correo con el monto y cómo pagar${aj("whatsapp_automatico",false)?" (y un WhatsApp si lo aceptó)":""}. Revisa antes el texto en «Textos de los avisos» → «Membresía por vencer».</p>`}); if(!c) return; }
-    ok=!!await ajuste("renueva_pronto_dias",p)&&!!await ajuste("aviso_renovacion",{activo:on,dias:d});
-    if(ok){ AJ.aviso_renovacion={valor:{activo:on,dias:d}}; AJ.renueva_pronto_dias={valor:p}; }
+    const p=num("pronto",1,60);
+    if(p==null){ aviso("Revisa los días: «renueva pronto» de 1 a 60.","mal"); return; }
+    ok=!!await ajuste("renueva_pronto_dias",p);
+    if(ok) AJ.renueva_pronto_dias={valor:p};
   }else if(id==="seguridad"){
     const on=v(f,"exigir");
     if(on&&!aj("exigir_2fa",false)){ const c=await pedir({titulo:"Exigir la verificación en dos pasos",ok:"Exigir",
@@ -1194,7 +1185,6 @@ async function guardarAjustes(f){
   }else if(id==="otros"){
     const url=v(f,"url"); if(url&&!/^https:\/\/\S+$/i.test(url)){ aviso("La dirección pública debe empezar por https://","mal"); return; }
     ok=!!await ajuste("instructoras_ven_telefono",v(f,"tel"))&&(!url||!!await ajuste("url_publica",url));
-    if(ok&&conComunidad()) ok=!!await ajuste("comunidad_avisos",v(f,"comAv"));
   }else if(id==="nuevas"){
     const g=v(f,"google"); if(g&&!/^https:\/\/\S+$/i.test(g)){ aviso("El enlace de Google debe empezar por https://","mal"); return; }
     const campos={llegada:v(f,"ninLle"),salida:v(f,"ninSal"),recoge:v(f,"ninRec")};
@@ -1235,22 +1225,20 @@ async function editarHorario(id){
       <div class="two"><label class="fld">Etiqueta<select name="et">${opt("","Ninguna")}${opt("avanzado","Solo nivel avanzado",h&&h.etiqueta==="avanzado")}${opt("miembros","Exclusiva para miembros",h&&h.etiqueta==="miembros")}${opt("primera","Sesión de primera clase",h&&h.etiqueta==="primera")}</select></label>
       <label class="fld">Edad (solo ballet niñas)<input name="edad" value="${esc(h&&h.edad||"")}"></label></div>
       ${h?`<label class="check"><input type="checkbox" name="mover"> Mover también las fechas que ya tienen reservas (cada alumna conserva su reserva y su lugar)</label>
-      <label class="check"><input type="checkbox" name="avisar"> Avisar a esas alumnas de la hora nueva (correo, y WhatsApp si lo aceptaron)</label>
       <label class="check"><input type="checkbox" name="quitar"> Quitar esta clase del horario desde esa fecha</label>`:""}
       <p class="privacy">Recuerda cambiar también <code>horario.json</code> (los textos de la página sin sistema).</p>`,
     accion:async f=>{
       const cid=h?h.id:v(f,"id");
       if(!/^[a-z0-9-]{3,20}$/.test(cid||"")) return "El código solo puede tener minúsculas, números y guiones (ej. mar-1900).";
       if(!v(f,"ini")||!v(f,"fin")||v(f,"fin")<=v(f,"ini")) return "La hora de terminar debe ser después de la de empezar.";
-      const mover=h&&v(f,"mover")&&!v(f,"quitar"), avisar=mover&&v(f,"avisar");
-      if(h&&v(f,"avisar")&&!mover) return "Para avisar a las alumnas, marca también «Mover también las fechas que ya tienen reservas».";
+      const mover=h&&v(f,"mover")&&!v(f,"quitar");
       const r=await hacer("estudio_guardar_horario",{p_id:cid,p_dia_semana:+v(f,"dia"),p_inicio:v(f,"ini"),p_fin:v(f,"fin"),p_tipo_id:v(f,"tipo"),p_instructora_id:v(f,"inst"),
         p_etiqueta:v(f,"et")||null,p_edad:v(f,"edad")||null,p_activo:!v(f,"quitar"),p_desde:v(f,"desde")||null,
-        ...(mover?{p_mover_reservadas:true,p_avisar:!!avisar}:{})},{dlg:true});
+        ...(mover?{p_mover_reservadas:true}:{})},{dlg:true});
       if(!r) return null; if(r.ok===false) return r.mensaje; res=r; return true; }});
   if(ok){
     const mv=res.movidas||[];
-    listo(`Horario guardado (${res.sesiones_actualizadas} fechas actualizadas${mv.length?`, ${mv.length} con reservas movidas`:""}${res.avisos?`, ${res.avisos} avisos a las alumnas`:""})`);
+    listo(`Horario guardado (${res.sesiones_actualizadas} fechas actualizadas${mv.length?`, ${mv.length} con reservas movidas: avísales tú de la hora nueva`:""})`);
     const c=res.con_reservas||[];
     if(c.length) setTimeout(()=>pedir({titulo:"Fechas con reservas", ok:"Entendido", no:"",
       html:`<p>Estas fechas ya tenían reservas y se quedaron como estaban${mv.length?" (cambió el día o el tipo de clase, o la clase ya empezó)":""}. Decide en <b>Clases</b> si las cancelas (avisando a las alumnas) o las mantienes:</p><ul class="lista">${c.map(x=>`<li>${esc(fmtDay(x.fecha))}: ${x.reservas} ${x.reservas===1?"reserva":"reservas"}</li>`).join("")}</ul>`}),50);
@@ -1434,7 +1422,7 @@ function cuerpoHtml(t){
 async function cargarComunidad(){
   const r=await hacer("estudio_publicaciones",{}); if(!r) return;
   PUBS=r.publicaciones||[];
-  $("#comAvisosEst").textContent=r.avisos_activos?"Los avisos por correo a la comunidad están encendidos.":"Los avisos por correo a la comunidad están apagados (la dueña los enciende en Ajustes).";
+  $("#comAvisosEst").textContent="Las actividades se ven en la página de la comunidad; desde el área no se avisa por correo.";
   $("#comLista").innerHTML=PUBS.length?PUBS.map(p=>`<li>
       <div><b>${esc(p.titulo)}</b> <span class="note">${esc(TIPO_PUB[p.tipo])} · ${esc(EST_PUB[p.estado])}${p.visibilidad==="comunidad"?" · solo comunidad":""}</span>
         <small>${p.fecha?esc(p.fecha_larga)+(p.hora?` · ${esc(p.hora)}`:""):""}${p.tipo==="actividad"?` · ${p.apuntadas}${p.cupo?` de ${p.cupo}`:""} apuntadas${p.en_espera?` · ${p.en_espera} en espera`:""}`:""}${p.comentarios_pendientes?` · ${p.comentarios_pendientes} comentarios por revisar`:""}${p.avisada_en?" · ya avisada por correo":""}</small></div>
@@ -1443,7 +1431,7 @@ async function cargarComunidad(){
         ${p.estado!=="publicada"?`<button class="bbtn solid sm" type="button" data-pub-estado="publicada" data-id="${p.id}">Publicar</button>`:`<button class="bbtn line sm" type="button" data-pub-estado="archivada" data-id="${p.id}">Archivar</button>`}
         ${p.estado==="archivada"?`<button class="bbtn line sm" type="button" data-pub-estado="borrador" data-id="${p.id}">Volver a borrador</button>`:""}
         ${p.tipo==="actividad"?`<button class="bbtn line sm" type="button" data-pub-apuntadas="${p.id}">Quién se apuntó</button>`:""}
-        ${p.tipo==="actividad"&&p.estado==="publicada"?`<button class="bbtn line sm" type="button" data-pub-avisar="${p.id}">Avisar a la comunidad</button>`:""}
+
       </div></li>`).join(""):`<li class="empty-state">Todavía no hay publicaciones. Crea la primera con «Nueva publicación».</li>`;
   const c=await hacer("estudio_comentarios",{p_estado:"pendiente"});
   const cs=(c&&c.comentarios)||[];
@@ -1547,21 +1535,6 @@ async function verApuntadas(id){
     html:a.length?`<ul class="pays">${a.map(x=>`<li><div><b>${esc(x.nombre)}</b> <span class="note">${esc(E[x.estado]||x.estado)}</span><small>${esc(x.telefono||"")} · ${esc(x.correo||"")}</small></div></li>`).join("")}</ul>`:`<p class="privacy">Todavía nadie se apuntó.</p>`,
     accion:async()=>{ descargarCsv("apuntadas",a.map(x=>({...x,estado:E[x.estado]||x.estado})),`bale-apuntadas-${id}-${hoy()}.csv`); return true; }});
 }
-async function avisarComunidad(id){
-  const r=await hacer("estudio_avisar_comunidad",{p_id:id,p_aplicar:false}); if(!r) return;
-  const ok=await pedir({titulo:"Avisar a la comunidad por correo", ok:r.activos?"Enviar":"Cerrar", peligro:false,
-    html:`<p>${r.activos?`Se enviará a <b>${r.destinatarias}</b> ${r.destinatarias===1?"clienta":"clientas"} que aceptaron recibir las actividades.`:"Los avisos a la comunidad están <b>apagados</b>: la dueña los enciende en Ajustes. Mientras tanto puedes ver cómo quedaría."}${r.ya_avisada?" Esta actividad ya se avisó.":""}</p>
-      <div class="pv-pub"><p class="note">Asunto: ${esc(r.asunto)}</p><pre style="white-space:pre-wrap;font:inherit">${esc(r.cuerpo)}</pre></div>
-      ${r.activos?`<label class="fld">Para probar, enviar solo a este correo (vacío: a todas)<input type="email" name="solo"></label>`:""}`,
-    accion:async f=>{
-      if(!r.activos) return true;
-      const solo=(f.querySelector('[name="solo"]').value||"").trim();
-      const x=await hacer("estudio_avisar_comunidad",{p_id:id,p_aplicar:true,p_solo_a:solo||null},{dlg:true});
-      if(!x) return "No hay conexión con la base de datos."; if(x.ok===false) return x.mensaje;
-      listo(`Avisos en cola: ${x.correos}`); return true;
-    }});
-  if(ok) cargarComunidad();
-}
 function eventosComunidad(){
   $("#comNueva").addEventListener("click",()=>editarPublicacion(null));
   $("#p-comunidad").addEventListener("click",async e=>{
@@ -1569,7 +1542,6 @@ function eventosComunidad(){
     if(b.dataset.pubEditar){ editarPublicacion(PUBS.find(x=>x.id===+b.dataset.pubEditar)); return; }
     if(b.dataset.pubEstado){ const r=await hacer("estudio_publicacion_estado",{p_id:+b.dataset.id,p_estado:b.dataset.pubEstado}); if(r){ listo({publicada:"Publicada",archivada:"Archivada",borrador:"Pasó a borrador"}[b.dataset.pubEstado]); cargarComunidad(); } return; }
     if(b.dataset.pubApuntadas){ verApuntadas(+b.dataset.pubApuntadas); return; }
-    if(b.dataset.pubAvisar){ avisarComunidad(+b.dataset.pubAvisar); return; }
     if(b.dataset.com){ const r=await hacer("estudio_moderar_comentario",{p_id:+b.dataset.id,p_estado:b.dataset.com}); if(r){ listo(b.dataset.com==="aprobado"?"Comentario aprobado":"Comentario rechazado"); cargarComunidad(); } }
   });
 }
