@@ -48,6 +48,12 @@ En la lista de alumnas, **Cancelar** → elige el cargo: **Automático** (si es 
 
 El lugar fijo se reserva solo cada semana mientras dure la membresía.
 
+**Al agregar un lugar fijo, elige siempre la clase** (día y hora): la ventana empieza en «Elige la clase…». Con un plan de 4 clases al mes cabe un lugar fijo por semana (con 8, dos): si intentas otro, te dice cuál tiene ya.
+
+**Cambiar un lugar fijo** (cambió de día, de hora o de lugar): en su ficha, en la membresía, **Cambiar** junto al lugar fijo → elige la clase nueva y el lugar → **Guardar el cambio**. Sus reservas fijas que vienen pasan solas a la clase nueva, sin cargo y sin avisarle. Si el lugar ya está reservado alguna fecha, te dice cuál: elige otro lugar o mueve esa reserva primero.
+
+**Al cancelar una reserva de lugar fijo**, «Avisar a la clienta» viene desmarcado: márcalo solo si de verdad quieres avisarle.
+
 ![Ficha de una clienta](../referencia/capturas-sistema/despues/9-estudio-clientas-390.png)
 
 ## Cobros

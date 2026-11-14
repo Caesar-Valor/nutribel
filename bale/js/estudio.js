@@ -415,14 +415,15 @@ async function marcarAsistencia(b){
   pintarClase(); const n=$(`#cDet [data-r="${b.dataset.r}"][data-asis="${b.dataset.asis}"]`); if(n) n.focus();
 }
 async function cancelarReserva(id,nombre){
-  const s=CLASE.sesion;
+  const s=CLASE.sesion, fija=(CLASE.alumnas.find(x=>x.reserva_id===id)||{}).origen==="fijo";
   const ok=await pedir({titulo:`Cancelar la reserva de ${nombre}`, ok:"Cancelar reserva", no:"Volver", peligro:true,
     html:`<p>${esc(s.clase)}, ${esc(s.fecha_larga)} a las ${esc(s.hora)}.</p>
       <fieldset class="opts"><legend>¿Se cobra el cargo de cancelación tardía?</legend>
         <label class="radio"><input type="radio" name="cargo" value="auto" checked> Automático (si es el mismo día de la clase, sí)</label>
         <label class="radio"><input type="radio" name="cargo" value="si"> Sí, cobrar el cargo</label>
         <label class="radio"><input type="radio" name="cargo" value="no"> No cobrar</label></fieldset>
-      <label class="check"><input type="checkbox" name="avisar" checked> Avisar a la clienta</label>`,
+      <label class="check"><input type="checkbox" name="avisar" ${fija?"":"checked"}> Avisar a la clienta</label>
+      ${fija?`<p class="privacy">Es una reserva de su lugar fijo: si la cancelas porque estaba mal puesta, no hace falta avisarle.</p>`:""}`,
     accion:async f=>{ const r=await hacer("estudio_cancelar_reserva",{p_reserva_id:id,p_cargo:f.querySelector('[name="cargo"]:checked').value,p_avisar:v(f,"avisar")},{dlg:true});
       if(!r) return null; if(r.ok===false) return r.mensaje; listo(r.tardia?`Reserva cancelada con cargo de ${dinero(r.cargo)}`:"Reserva cancelada"); return true; }});
   if(ok) recargarClase();
@@ -736,7 +737,8 @@ function pintarFicha(){
       <p class="mt"><b>${esc(m.plan)}</b>${m.detalle?` · ${esc(m.detalle)}`:""}<small>${esc(fmtCorta(m.desde))} – ${esc(fmtCorta(m.hasta))} · ${esc(dinero(m.precio))} · ${esc(PAGO[m.pago_estado]||m.pago_estado)}${m.pago_metodo?` (${esc(METODO[m.pago_metodo])}${m.banco?`, ${esc(m.banco)}`:""})`:""}${m.pagado_en?` el ${esc(fmtCorta(m.pagado_en))}`:""}${m.estado!=="activa"?" · cancelada":""}</small>
         ${m.transferencia&&m.transferencia.estado==="por_confirmar"?`<small class="rev">Avisó una transferencia: confírmala en Cobros.</small>`:""}</p>
       <ul class="fijos">${(m.fijos||[]).map(f=>`<li><span>${esc(DIAS[f.dia_semana-1])} ${esc(h12(f.inicio))} · ${esc(f.clase)}${f.lugar?` · lugar ${f.lugar}`:""}<small>${esc(fmtCorta(f.desde))} – ${esc(fmtCorta(f.hasta))}</small></span>
-        ${m.estado==="activa"?`<button class="linkbtn" type="button" data-quitar-fijo="${f.id}">Quitar</button>`:""}</li>`).join("")||`<li class="privacy">Sin lugares fijos.</li>`}</ul>
+        ${m.estado==="activa"?`<span class="racc"><button class="linkbtn" type="button" data-editar-fijo="${f.id}">Cambiar</button>
+          <button class="linkbtn" type="button" data-quitar-fijo="${f.id}">Quitar</button></span>`:""}</li>`).join("")||`<li class="privacy">Sin lugares fijos.</li>`}</ul>
       ${m.estado==="activa"&&!c.anonimizada?`<div class="eacc"><button class="bbtn solid sm" type="button" data-fijo="${m.id}">Agregar lugar fijo</button>
         <button class="bbtn line sm" type="button" data-renovar="${m.id}" data-hasta="${esc(m.hasta)}" data-nombre="${esc(c.nombre)}">Renovar</button>
         ${m.pago_estado==="pendiente"&&+m.precio>0?`<button class="bbtn line sm" type="button" data-cobro-mem="${m.id}">Cobrar con tarjeta</button>`:""}
@@ -832,16 +834,49 @@ async function agregarFijo(memId){
   let res=null;
   const ok=await pedir({titulo:"Agregar lugar fijo", ok:"Guardar",
     html:`<p>Se repite cada semana mientras dure la membresía.</p>
-      <label class="fld">Clase del horario<select name="h">${clases.map(h=>opt(h.id,`${DIAS[h.dia_semana-1]} ${h12(h.inicio)} · ${h.clase} (${h.instructora})`)).join("")}</select></label>
-      <div data-lugar>${seatsHTML([])}</div><p class="privacy" data-cupo hidden>Pilates Reformer: ocupa una máquina, sin número de lugar.</p>`,
-    alAbrir:f=>{ activarSeats(f); const sel=f.querySelector('[name="h"]'), upd=()=>{ const h=clases.find(x=>x.id===sel.value), b=h&&h.modo==="lugares";
-      f.querySelector("[data-lugar]").hidden=!b; f.querySelector("[data-cupo]").hidden=b; }; sel.addEventListener("change",upd); upd(); },
+      ${selClaseFija(clases,"")}
+      <div data-lugar hidden>${seatsHTML([])}</div><p class="privacy" data-cupo hidden>Pilates Reformer: ocupa una máquina, sin número de lugar.</p>`,
+    alAbrir:f=>{ activarSeats(f); vigilarClaseFija(f,clases); },
     accion:async f=>{
       const h=clases.find(x=>x.id===v(f,"h")); const l=+v(f,"lugar");
+      if(!h) return "Elige el día y la hora de su clase fija.";
       if(h.modo==="lugares"&&!l) return "Elige el lugar en la sala.";
       const r=await hacer("estudio_guardar_fijo",{p_membresia_id:+memId,p_horario_id:h.id,p_lugar:h.modo==="lugares"?l:null},{dlg:true});
       if(!r) return null; if(r.ok===false) return r.mensaje; res=r; return true; }});
   if(ok){ listo("Lugar fijo guardado"); conflictos(res.fijos); abrirFicha(CLI.clienta.id); }
+}
+// La clase del lugar fijo: sin nada elegido de entrada, para que no se guarde una que no es
+function selClaseFija(clases,actual){
+  return `<label class="fld">Día y hora de su clase<select name="h" required><option value="">Elige la clase…</option>${clases.map(h=>
+    `<option value="${esc(h.id)}"${h.id===actual?" selected":""}>${esc(`${DIAS[h.dia_semana-1]} ${h12(h.inicio)} · ${h.clase} (${h.instructora})`)}</option>`).join("")}</select></label>`;
+}
+function vigilarClaseFija(f,clases){
+  const sel=f.querySelector('[name="h"]'), upd=()=>{ const h=clases.find(x=>x.id===sel.value), b=!!h&&h.modo==="lugares";
+    f.querySelector("[data-lugar]").hidden=!b; f.querySelector("[data-cupo]").hidden=!h||b; };
+  sel.addEventListener("change",upd); upd();
+}
+// Cambiar un lugar fijo de clase (día y hora) o de número: las reservas fijas que vienen se mueven solas, sin avisar
+async function editarFijo(id){
+  const f0=(CLI.membresias||[]).flatMap(m=>m.fijos||[]).find(x=>x.id===id); if(!f0) return;
+  const clases=(CAT.horario||[]).filter(h=>h.modo!=="inscripcion");
+  let res=null;
+  const ok=await pedir({titulo:"Cambiar lugar fijo", ok:"Guardar el cambio",
+    html:`<p>Ahora: <b>${esc(DIAS[f0.dia_semana-1])} ${esc(h12(f0.inicio))} · ${esc(f0.clase)}${f0.lugar?`, lugar ${f0.lugar}`:""}</b>.</p>
+      ${selClaseFija(clases,f0.horario_id)}
+      <div data-lugar hidden>${seatsHTML([])}</div><p class="privacy" data-cupo hidden>Pilates Reformer: ocupa una máquina, sin número de lugar.</p>
+      <p class="privacy">Sus reservas fijas que vienen se cancelan en la clase de antes y se crean en la nueva, sin cargo y sin avisarle. Si el lugar está tomado alguna fecha, te digo cuál.</p>`,
+    alAbrir:f=>{ activarSeats(f); vigilarClaseFija(f,clases);
+      if(f0.lugar){ const b=f.querySelector(`[data-seats] [data-n="${f0.lugar}"]`); if(b){ b.setAttribute("aria-pressed","true"); f.querySelector('[name="lugar"]').value=f0.lugar; } } },
+    accion:async f=>{
+      const h=clases.find(x=>x.id===v(f,"h")); const l=+v(f,"lugar");
+      if(!h) return "Elige el día y la hora de su clase fija.";
+      if(h.modo==="lugares"&&!l) return "Elige el lugar en la sala.";
+      const r=await hacer("estudio_editar_fijo",{p_fijo_id:id,p_horario_id:h.id,p_lugar:h.modo==="lugares"?l:null},{dlg:true});
+      if(!r) return null; if(r.ok===false) return r.mensaje; res=r; return true; }});
+  if(!ok) return;
+  listo(`Lugar fijo cambiado${res.reservas_canceladas?`: ${res.reservas_canceladas} reserva(s) movida(s) a la clase nueva`:""}`);
+  const fj=res.fijos; if(fj) conflictos({...fj,conflictos:(fj.conflictos||[]).filter(c=>c.motivo!=="ya_tiene_reserva")});
+  abrirFicha(CLI.clienta.id);
 }
 async function quitarFijo(id){
   const ok=await pedir({titulo:"Quitar lugar fijo", ok:"Quitar", peligro:true, html:`<p>Se cancelan las reservas futuras de ese lugar fijo (sin cargo ni aviso).</p>`,
@@ -1337,13 +1372,14 @@ function eventos(){
     if(e.target.closest("[data-renovar-todas]")){ renovarTodas(); return; }
     if(e.target.closest("[data-exp-control]")){ exportarControl(); return; }
     if(e.target.closest("[data-importar]")){ importarMembresias(); return; }
-    const t=e.target.closest("[data-ficha],[data-renovar],[data-fijo],[data-quitar-fijo],[data-mem],[data-cancel-mem],[data-borrar],[data-cobro-mem]"); if(!t) return;
+    const t=e.target.closest("[data-ficha],[data-renovar],[data-fijo],[data-quitar-fijo],[data-editar-fijo],[data-mem],[data-cancel-mem],[data-borrar],[data-cobro-mem]"); if(!t) return;
     const d=t.dataset;
     if(d.cobroMem) cobrarConTarjeta({p_membresia_id:+d.cobroMem});
     else if(d.renovar) renovar(d.renovar,d.hasta,d.nombre);
     else if(d.ficha) abrirFicha(+d.ficha);
     else if(d.fijo) agregarFijo(d.fijo);
     else if(d.quitarFijo) quitarFijo(d.quitarFijo);
+    else if(d.editarFijo) editarFijo(+d.editarFijo);
     else if(d.mem) membresia(d.mem);
     else if(d.cancelMem) cancelarMem(d.cancelMem);
     else if(d.borrar) borrarDatos(d.borrar);
