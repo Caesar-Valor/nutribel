@@ -92,7 +92,29 @@
 .dlgerr{margin:12px 0 0;padding:10px 12px;border-radius:12px;border:1.5px solid #8f2f22;color:var(--b-ink);font-weight:600}
 :root[data-mode="dark"] .dlgerr,:root[data-mode="dark"] .estado li.mal{border-color:#f0a596}
 .edlg .seats{margin-top:0}
+/* Lugares del lugar fijo (DECISIONES §54): ocupado = .seat.busy de la reserva pública; con reservas sueltas = punto y borde a rayas */
+.edlg .seat{position:relative;min-height:44px}
+.edlg .seat:disabled:not(.busy){opacity:.45;cursor:not-allowed}
+.edlg .seat.warn{border-style:dashed;border-color:var(--brown)}
+.edlg .seat.warn::after{content:"";position:absolute;top:5px;right:5px;width:7px;height:7px;border-radius:50%;background:var(--brown)}
+.edlg .seat.warn[aria-pressed="true"]::after{background:var(--on-brown)}
+.edlg .seatnota{margin-top:8px;padding:8px 12px;border-radius:12px;border:1.5px dashed var(--brown);color:var(--b-ink);font-weight:500}
+@media (max-width:480px){ .edlg [data-lugar] .srow > div{grid-template-columns:repeat(auto-fill,minmax(44px,1fr))} }
 .edlg[open]{animation:none}
+/* Asistencia (DECISIONES §55) */
+.asis-pend{margin-top:12px;padding:12px 14px;border-radius:14px;border:1.5px solid #8f2f22;background:var(--paper)}
+.asis-pend .lista li{align-items:center}
+.asis-clases{list-style:none;margin:0;padding:0;display:grid;gap:8px}
+.asis-clases > li{border:1.5px solid var(--line);border-radius:14px;padding:4px 12px}
+.asis-clases > li.pend{border-color:#8f2f22}
+.asis-clases summary{cursor:pointer;min-height:44px;display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:4px 12px;padding:6px 0}
+.asis-clases summary .t{font-weight:600}
+.asis-clases summary .c{color:var(--muted);font-size:14px}
+.asis-est{font-weight:600;font-size:14px}
+.asis-est.falto{color:#8f2f22}
+.asis-est.pendiente{color:var(--muted)}
+:root[data-mode="dark"] .asis-pend,:root[data-mode="dark"] .asis-clases > li.pend{border-color:#f0a596}
+:root[data-mode="dark"] .asis-est.falto{color:#f0a596}
 @media (min-width:640px){
   .ebuscar{grid-template-columns:1fr auto;align-items:end}
 }

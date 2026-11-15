@@ -296,8 +296,9 @@ async function seguridad(){
 let TAB="";
 function montarTabs(){
   // 13/11/2026: «Reseñas» (solo la dueña) y «Ballet niñas» (la dueña y la instructora asignada), si están encendidas
-  const t=YO.rol==="instructora" ? [["clases","Mis clases"]].concat(YO.ninas?[["ninas","Ballet niñas"]]:[])
-    : [["clases","Clases"],["clientas","Clientas"],["cobros","Cobros"],["avisos","Avisos"]].concat(conComunidad()?[["comunidad","Comunidad"]]:[])
+  // 15/11/2026: «Asistencia» para todos (la instructora ve solo sus clases; DECISIONES §55)
+  const t=YO.rol==="instructora" ? [["clases","Mis clases"],["asistencia","Asistencia"]].concat(YO.ninas?[["ninas","Ballet niñas"]]:[])
+    : [["clases","Clases"],["asistencia","Asistencia"],["clientas","Clientas"],["cobros","Cobros"],["avisos","Avisos"]].concat(conComunidad()?[["comunidad","Comunidad"]]:[])
       .concat(YO.foro?[["foro","Conversación"]]:[]).concat(YO.resenas?[["resenas","Reseñas"]]:[]).concat(YO.ninas?[["ninas","Ballet niñas"]]:[])
       .concat(esDuena()?[["ingresos","Ingresos"],["ajustes","Ajustes"],["exportar","Exportar"]]:[]);
   $("#tabs").innerHTML=t.map(([id,n],i)=>`<button role="tab" type="button" id="t-${id}" aria-controls="p-${id}" aria-selected="${i===0}" tabindex="${i?-1:0}">${n}${id==="cobros"?' <span class="tcnt" id="cntEnlaces" hidden></span>':""}</button>`).join("");
@@ -309,7 +310,7 @@ function montarTabs(){
   abrirTab(t[0][0]);
 }
 // Contador de Cobros: enlaces de tarjeta por enviar + transferencias por confirmar
-const PANELES = ["clases","clientas","cobros","avisos","comunidad","foro","resenas","ninas","ingresos","ajustes","exportar"];
+const PANELES = ["clases","asistencia","clientas","cobros","avisos","comunidad","foro","resenas","ninas","ingresos","ajustes","exportar"];
 let CNT={enlaces:0,transf:0};
 function pintarContador(){
   const b=$("#cntEnlaces"); if(!b) return;
@@ -330,7 +331,7 @@ function abrirTab(id){
   TAB=id;
   document.querySelectorAll('#tabs [role="tab"]').forEach(b=>{ const on=b.id==="t-"+id; b.setAttribute("aria-selected",on); b.tabIndex=on?0:-1; });
   PANELES.forEach(x=>{ $("#p-"+x).hidden=x!==id; });
-  ({clases:cargarSemana, clientas:abrirClientas, cobros:cargarCobros, avisos:cargarAvisos, comunidad:cargarComunidad, foro:cargarForo, resenas:cargarResenas, ninas:cargarNinas, ingresos:cargarIngresos, ajustes:cargarAjustes, exportar:()=>{}})[id]();
+  ({clases:cargarSemana, asistencia:cargarAsistencia, clientas:abrirClientas, cobros:cargarCobros, avisos:cargarAvisos, comunidad:cargarComunidad, foro:cargarForo, resenas:cargarResenas, ninas:cargarNinas, ingresos:cargarIngresos, ajustes:cargarAjustes, exportar:()=>{}})[id]();
   if(id!=="cobros"&&YO&&YO.rol!=="instructora"){ contarEnlaces(); contarTransf(); }
 }
 
@@ -376,7 +377,9 @@ async function cargarClase(id){
 }
 function pintarClase(){
   const {sesion:s, alumnas, espera, sem}=CLASE, box=$("#cDet"), admin=esAdmin();
-  const asisDesde=msLV(s.fecha,sem.inicio)-60*60e3, puedeAsis=Date.now()>=asisDesde;
+  // Asistencia: desde una hora antes hasta 7 días después de que termina (DECISIONES §55)
+  const asisDesde=msLV(s.fecha,sem.inicio)-60*60e3, asisHasta=msLV(s.fecha,sem.fin||sem.inicio)+7*864e5;
+  const puedeAsis=Date.now()>=asisDesde&&Date.now()<=asisHasta, asisCerrada=Date.now()>asisHasta;
   const cancelada=s.estado==="cancelada", insc=s.modo==="inscripcion";
   const tags=a=>[a.origen==="fijo"?`<span class="tagx web">Miembro</span>`:"", a.primera_vez?`<span class="tagx prim">Primera vez</span>`:"",
     a.origen==="estudio"?`<span class="tagx">Por el estudio</span>`:"",
@@ -390,7 +393,7 @@ function pintarClase(){
       <button class="bbtn line sm peligro" type="button" data-a="cancelar-clase">Cancelar clase</button></div>`:""}
     ${admin&&cancelada?`<div class="eacc"><button class="bbtn line sm" type="button" data-a="reabrir">Reabrir clase</button></div>`:""}
     <h3>Alumnas (${alumnas.length})</h3>
-    ${!puedeAsis&&alumnas.length?`<p class="privacy">La asistencia se marca desde una hora antes de la clase.</p>`:""}
+    ${!puedeAsis&&alumnas.length?`<p class="privacy">${asisCerrada?"La asistencia se podía marcar o corregir hasta 7 días después de la clase.":"La asistencia se marca desde una hora antes de la clase."}</p>`:""}
     <ol class="roster est">${alumnas.map((a,i)=>`<li>
       <span class="seatno" title="${s.modo==="lugares"?"Lugar":"Orden"}"><span class="sr-only">${s.modo==="lugares"?"Lugar":"Número"} </span>${a.lugar||i+1}</span>
       <span class="nm">${esc(a.nombre)}${a.nombre_reserva?`<small>Reservó como ${esc(a.nombre_reserva)}</small>`:""}${a.telefono?`<small>${esc(a.telefono)}</small>`:admin&&a.clienta_id?`<small class="rev">Falta su WhatsApp</small>`:""}${a.revisar?`<small class="rev">${esc(a.revisar)}</small>`:""}</span>
@@ -712,7 +715,7 @@ async function dejarFijo(reservaId){
   if(!ok) return;
   listo(`Lugar fijo guardado: ${a.nombre}, ${cuando}${lugar?`, lugar ${lugar}`:""}`);
   // Las fechas en que ya tenía su reserva (como la de esta clase) se quedan como están: no es un problema
-  const fj=res&&res.fijos; if(fj) conflictos({...fj,conflictos:(fj.conflictos||[]).filter(c=>c.motivo!=="ya_tiene_reserva")});
+  avisarOmitidas(res);
   cargarClase(s.id);
 }
 function pintarFicha(){
@@ -781,7 +784,8 @@ function camposPago(f){
 async function membresia(id){
   const m=id==="nueva"?null:CLI.membresias.find(x=>x.id===+id);
   const desde=m?m.desde:hoy(), P=planes();
-  const ok=await pedir({titulo:m?"Editar membresía":"Nueva membresía", ok:"Guardar",
+  let nueva=null;
+  const ok=await pedir({titulo:m?"Editar membresía":"Nueva membresía", ok:m?"Guardar":"Guardar y elegir sus clases fijas",
     html:`<label class="fld">Plan<select name="plan">${P.map(p=>opt(p.id,`${p.nombre}${p.detalle?` · ${p.detalle}`:""} (${dinero(p.precio)})`,m?m.plan_id===p.id:false)).join("")}</select></label>
       <div class="two"><label class="fld">Desde<input type="date" name="desde" value="${esc(desde)}"></label>
       <label class="fld">Hasta<input type="date" name="hasta" value="${esc(m?m.hasta:finDeMes(desde))}"></label></div>
@@ -798,8 +802,11 @@ async function membresia(id){
       const r=await hacer("estudio_guardar_membresia",{p_id:m?m.id:null,p_clienta_id:CLI.clienta.id,p_plan_id:v(f,"plan"),p_desde:v(f,"desde"),p_hasta:v(f,"hasta"),
         p_precio:v(f,"precio")===""?null:+v(f,"precio"),p_pago_estado:v(f,"pago"),p_pago_metodo:v(f,"metodo")||null,p_notas:v(f,"notas"),
         p_pagado_en:pagado&&v(f,"pagado_en")||null,p_banco:pagado&&v(f,"metodo")==="transferencia"&&v(f,"banco")||null},{dlg:true});
-      if(!r) return null; if(r.ok===false) return r.mensaje; conflictos(r.fijos); return true; }});
-  if(ok){ listo("Membresía guardada"); abrirFicha(CLI.clienta.id); }
+      if(!r) return null; if(r.ok===false) return r.mensaje; nueva=m?null:r.membresia_id; if(m) conflictos(r.fijos); return true; }});
+  if(!ok) return;
+  listo("Membresía guardada");
+  if(nueva) await elegirFijos(nueva);
+  abrirFicha(CLI.clienta.id);
 }
 // Lo que la base de datos no pudo aplicar de los lugares fijos: el estudio decide
 function conflictos(fj,noCopiados){
@@ -823,33 +830,111 @@ async function renovar(id,hasta,nombre){
       const r=await hacer("estudio_renovar_membresia",{p_id:+id,p_desde:v(f,"desde"),p_hasta:v(f,"hasta"),p_precio:v(f,"precio")===""?null:+v(f,"precio"),
         p_pago_estado:v(f,"pago"),p_pago_metodo:v(f,"metodo")||null},{dlg:true});
       if(!r) return null; if(r.ok===false) return r.mensaje; res=r; return true; }});
-  if(ok){ listo("Membresía renovada"); conflictos(res.fijos,res.fijos_no_copiados); cargarVencen(); if(CLI) abrirFicha(CLI.clienta.id); }
+  if(!ok) return;
+  listo("Membresía renovada");
+  // Los fijos que no se pudieron copiar dejan clases por elegir: se ofrecen aquí mismo (§55)
+  if(CLI&&res.membresia_id) await elegirFijos(res.membresia_id);
+  conflictos(res.fijos,res.fijos_no_copiados); cargarVencen(); if(CLI) abrirFicha(CLI.clienta.id);
 }
-async function agregarFijo(memId){
+// op (al registrar o renovar la membresía): {titulo, no, intro, enFlujo}. Devuelve lo guardado o null.
+async function agregarFijo(memId,op={}){
   const clases=(CAT.horario||[]).filter(h=>h.modo!=="inscripcion");
   let res=null;
-  const ok=await pedir({titulo:"Agregar lugar fijo", ok:"Guardar",
-    html:`<p>Se repite cada semana mientras dure la membresía.</p>
+  const ok=await pedir({titulo:op.titulo||"Agregar lugar fijo", ok:"Guardar", no:op.no,
+    html:`${op.intro||"<p>Se repite cada semana mientras dure la membresía.</p>"}
       ${selClaseFija(clases,"")}
-      <div data-lugar hidden>${seatsHTML([])}</div><p class="privacy" data-cupo hidden>Pilates Reformer: ocupa una máquina, sin número de lugar.</p>`,
-    alAbrir:f=>{ activarSeats(f); vigilarClaseFija(f,clases); },
+      ${lugaresFijoHTML()}`,
+    alAbrir:f=>{ activarSeats(f); vigilarClaseFija(f,clases,{p_membresia_id:+memId}); },
     accion:async f=>{
       const h=clases.find(x=>x.id===v(f,"h")); const l=+v(f,"lugar");
       if(!h) return "Elige el día y la hora de su clase fija.";
       if(h.modo==="lugares"&&!l) return "Elige el lugar en la sala.";
       const r=await hacer("estudio_guardar_fijo",{p_membresia_id:+memId,p_horario_id:h.id,p_lugar:h.modo==="lugares"?l:null},{dlg:true});
       if(!r) return null; if(r.ok===false) return r.mensaje; res=r; return true; }});
-  if(ok){ listo("Lugar fijo guardado"); conflictos(res.fijos); abrirFicha(CLI.clienta.id); }
+  if(!ok) return null;
+  if(op.enFlujo) return res;
+  listo("Lugar fijo guardado"); avisarOmitidas(res); abrirFicha(CLI.clienta.id);
+  return res;
+}
+/* Al registrar o renovar una membresía (DECISIONES §55): ofrecer sus clases fijas en el mismo flujo, una por
+   una, tantas como trae el plan (barre-4 = 1, barre-8 = 2…; la ilimitada, hasta que diga «Terminar»).
+   Se puede dejar para después y hacerlo con «Agregar lugar fijo». Cada fijo reserva ya todas sus fechas. */
+async function elegirFijos(memId){
+  const p=await hacer("estudio_fijos_plan",{p_membresia_id:memId}); if(!p) return;
+  const total=p.ilimitada?null:p.faltan; if(total===0) return;
+  const hechos=[];
+  for(let i=1; total===null||i<=total; i++){
+    const n=p.tiene+i;
+    const intro=`<p>${i>1?"Ahora la siguiente.":total===null?"Su plan no tiene límite de clases: agrega las que vendrá cada semana.":
+      `Su plan trae ${p.maximo} ${p.maximo===1?"clase fija":"clases fijas"} por semana${p.tiene?` y ya tiene ${p.tiene}`:""}. Elige el día, la hora y el lugar.`}
+      Se le reservan ya todas las fechas hasta que termine la membresía.</p>`;
+    const r=await agregarFijo(memId,{enFlujo:true, intro,
+      titulo:total===null?`Clase fija ${n}`:`Clase fija ${n} de ${p.maximo}`,
+      no:i===1?"Elegir lugares después":total===null?"Terminar":"Elegir el resto después"});
+    if(!r) break;
+    hechos.push(r);
+  }
+  if(!hechos.length) return;
+  listo(hechos.length===1?"Clase fija guardada":`${hechos.length} clases fijas guardadas`);
+  const om=[...new Set(hechos.flatMap(r=>r.omitidas||[]))];
+  if(om.length) avisarOmitidas({omitidas:om});
 }
 // La clase del lugar fijo: sin nada elegido de entrada, para que no se guarde una que no es
 function selClaseFija(clases,actual){
   return `<label class="fld">Día y hora de su clase<select name="h" required><option value="">Elige la clase…</option>${clases.map(h=>
     `<option value="${esc(h.id)}"${h.id===actual?" selected":""}>${esc(`${DIAS[h.dia_semana-1]} ${h12(h.inicio)} · ${h.clase} (${h.instructora})`)}</option>`).join("")}</select></label>`;
 }
-function vigilarClaseFija(f,clases){
-  const sel=f.querySelector('[name="h"]'), upd=()=>{ const h=clases.find(x=>x.id===sel.value), b=!!h&&h.modo==="lugares";
-    f.querySelector("[data-lugar]").hidden=!b; f.querySelector("[data-cupo]").hidden=!h||b; };
+/* Estado de los lugares en «Agregar lugar fijo» y «Cambiar» (DECISIONES §54): al elegir la clase se pide
+   estudio_lugares_fijo (una llamada). Fijo de otra clienta: ocupado y deshabilitado, con su nombre corto.
+   Reservas sueltas en fechas que vienen: se puede elegir, con aviso; esas fechas se omiten al guardar.
+   En «Cambiar», su lugar actual sale elegido. */
+const fechasTxt=a=>a.length<2?`el ${a[0]||""}`:`el ${a.slice(0,-1).join(", el ")} y el ${a[a.length-1]}`;
+function lugaresFijoHTML(){
+  return `<div data-lugar>${seatsHTML([])}<p class="privacy" data-lhint aria-live="polite">Elige primero la clase.</p>
+    <p class="privacy" data-lfijos hidden></p><p class="privacy seatnota" data-lnota aria-live="polite" hidden></p></div>
+    <p class="privacy" data-cupo hidden>Pilates Reformer: ocupa una máquina, sin número de lugar.</p>`;
+}
+function vigilarClaseFija(f,clases,ref){
+  const sel=f.querySelector('[name="h"]'), box=f.querySelector("[data-seats]"), inp=f.querySelector('[name="lugar"]');
+  const hint=f.querySelector("[data-lhint]"), fij=f.querySelector("[data-lfijos]"), nota=f.querySelector("[data-lnota]");
+  const seats=[...box.querySelectorAll(".seat")]; let turno=0;
+  seats.forEach(b=>{ b.dataset.al=b.getAttribute("aria-label"); });
+  const limpiar=b=>{ b.className="seat"; b.disabled=true; b.removeAttribute("title"); delete b.dataset.fechas;
+    b.setAttribute("aria-pressed","false"); b.setAttribute("aria-label",b.dataset.al); };
+  const notaDe=b=>{ const fs=b&&b.dataset.fechas?b.dataset.fechas.split(","):[];
+    nota.hidden=!fs.length; nota.textContent=fs.length?`Este lugar está reservado ${fechasTxt(fs)}. Esas fechas no se le asignarán a esta clienta.`:""; };
+  box.addEventListener("click",e=>{ const b=e.target.closest("[data-n]"); if(b&&!b.disabled) notaDe(b); });
+  const upd=async()=>{
+    const h=clases.find(x=>x.id===sel.value), lug=!!h&&h.modo==="lugares", t=++turno;
+    f.querySelector("[data-lugar]").hidden=!!h&&!lug; f.querySelector("[data-cupo]").hidden=!h||lug;
+    seats.forEach(limpiar); inp.value=""; notaDe(null); fij.hidden=true; hint.hidden=false;
+    if(!h){ hint.textContent="Elige primero la clase."; return; }
+    if(!lug) return;
+    hint.textContent="Cargando los lugares de esa clase…";
+    const r=await hacer("estudio_lugares_fijo",{p_horario_id:h.id,...ref});
+    if(t!==turno) return;   // ya eligió otra clase
+    if(!r){ hint.textContent="No se pudieron cargar los lugares. Elige la clase otra vez."; return; }
+    const est=new Map((r.lugares||[]).map(x=>[x.lugar,x]));
+    seats.forEach(b=>{ const n=+b.dataset.n, x=est.get(n); b.disabled=false;
+      if(r.propio===n){ b.setAttribute("aria-pressed","true"); inp.value=n; b.setAttribute("aria-label",`Lugar ${n}, su lugar actual`); b.title="Su lugar actual"; }
+      else if(x&&x.fijo){ const l=`Lugar ${n}, fijo de ${x.fijo}`; b.classList.add("busy"); b.disabled=true; b.title=l; b.setAttribute("aria-label",l); }
+      else if(x&&x.fechas){ const l=`Lugar ${n}, reservado ${fechasTxt(x.fechas)}`; b.classList.add("warn"); b.dataset.fechas=x.fechas.join(","); b.title=l; b.setAttribute("aria-label",l); }
+    });
+    const ocup=(r.lugares||[]).filter(x=>x.fijo), avisos=(r.lugares||[]).filter(x=>x.fechas);
+    hint.hidden=!avisos.length; hint.textContent=avisos.length?"Los lugares con punto tienen reservas sueltas algunas fechas: se pueden elegir.":"";
+    fij.hidden=!ocup.length; fij.textContent=ocup.length?`Fijos de otras clientas: ${ocup.map(x=>`lugar ${x.lugar}, ${x.fijo}`).join(" · ")}.`:"";
+    const b=r.propio&&seats.find(x=>+x.dataset.n===r.propio); if(b) notaDe(b);
+  };
   sel.addEventListener("change",upd); upd();
+}
+// Después de guardar: las fechas que no se le asignaron (el lugar ya estaba reservado) y otros choques
+function avisarOmitidas(res){
+  const om=(res&&res.omitidas)||[], fj=res&&res.fijos;
+  const otros={...(fj||{}),conflictos:((fj&&fj.conflictos)||[]).filter(c=>c.motivo!=="ya_tiene_reserva"&&String(c.fijo_id)!==String(res.fijo_id))};
+  if(!om.length){ conflictos(otros); return; }
+  setTimeout(()=>pedir({titulo:"Lugar fijo guardado", ok:"Entendido", no:"",
+    html:`<p>No se le asignó ${om.length>1?"estas fechas":"esta fecha"} porque el lugar ya estaba reservado: <b>${esc(om.join(", "))}</b>.</p>
+      <p>Si hace falta, resérvale otro lugar ${om.length>1?"esos días":"ese día"} desde la clase.</p>`}),50);
 }
 // Cambiar un lugar fijo de clase (día y hora) o de número: las reservas fijas que vienen se mueven solas, sin avisar
 async function editarFijo(id){
@@ -859,10 +944,9 @@ async function editarFijo(id){
   const ok=await pedir({titulo:"Cambiar lugar fijo", ok:"Guardar el cambio",
     html:`<p>Ahora: <b>${esc(DIAS[f0.dia_semana-1])} ${esc(h12(f0.inicio))} · ${esc(f0.clase)}${f0.lugar?`, lugar ${f0.lugar}`:""}</b>.</p>
       ${selClaseFija(clases,f0.horario_id)}
-      <div data-lugar hidden>${seatsHTML([])}</div><p class="privacy" data-cupo hidden>Pilates Reformer: ocupa una máquina, sin número de lugar.</p>
-      <p class="privacy">Sus reservas fijas que vienen se cancelan en la clase de antes y se crean en la nueva, sin cargo y sin avisarle. Si el lugar está tomado alguna fecha, te digo cuál.</p>`,
-    alAbrir:f=>{ activarSeats(f); vigilarClaseFija(f,clases);
-      if(f0.lugar){ const b=f.querySelector(`[data-seats] [data-n="${f0.lugar}"]`); if(b){ b.setAttribute("aria-pressed","true"); f.querySelector('[name="lugar"]').value=f0.lugar; } } },
+      ${lugaresFijoHTML()}
+      <p class="privacy">Sus reservas fijas que vienen se cancelan en la clase de antes y se crean en la nueva, sin cargo y sin avisarle. Las fechas en que el lugar ya está reservado no se le asignan.</p>`,
+    alAbrir:f=>{ activarSeats(f); vigilarClaseFija(f,clases,{p_fijo_id:id}); },
     accion:async f=>{
       const h=clases.find(x=>x.id===v(f,"h")); const l=+v(f,"lugar");
       if(!h) return "Elige el día y la hora de su clase fija.";
@@ -871,7 +955,7 @@ async function editarFijo(id){
       if(!r) return null; if(r.ok===false) return r.mensaje; res=r; return true; }});
   if(!ok) return;
   listo(`Lugar fijo cambiado${res.reservas_canceladas?`: ${res.reservas_canceladas} reserva(s) movida(s) a la clase nueva`:""}`);
-  const fj=res.fijos; if(fj) conflictos({...fj,conflictos:(fj.conflictos||[]).filter(c=>c.motivo!=="ya_tiene_reserva")});
+  avisarOmitidas(res);
   abrirFicha(CLI.clienta.id);
 }
 async function quitarFijo(id){
@@ -1260,6 +1344,73 @@ async function editarPersonal(correo){
 }
 
 /* =========================================================
+   ASISTENCIA (DECISIONES §55): por clase y por clienta, con filtros y CSV.
+   Dueña y asistente, todo; instructora, solo sus clases. No avisa a nadie.
+   ========================================================= */
+let ASIS=null, asisLista=false;
+const ASIS_TXT={asistio:"Asistió", falto:"Faltó", pendiente:"Sin marcar"};
+function filtrosAsis(){
+  return {p_desde:$("#aDesde").value, p_hasta:$("#aHasta").value, p_clase:$("#aClase").value||null,
+    p_instructora:YO.rol==="instructora"?null:$("#aInst").value||null, p_clienta:$("#aCli").value.trim()||null};
+}
+function cargarAsistencia(){
+  if(!asisLista){
+    asisLista=true;
+    $("#aDesde").value=sumar(hoy(),-6); $("#aHasta").value=hoy();
+    const clases=[...new Set((CAT.horario||[]).filter(h=>h.modo!=="inscripcion").map(h=>h.clase))];
+    $("#aClase").innerHTML=opt("","Todas")+clases.map(c=>opt(c,c)).join("");
+    $("#aInst").innerHTML=opt("","Todas")+(CAT.instructoras||[]).map(i=>opt(i.nombre,i.nombre)).join("");
+    $("#aInstW").hidden=YO.rol==="instructora";
+  }
+  verAsistencia();
+}
+async function verAsistencia(){
+  const f=filtrosAsis(), box=$("#asistencia");
+  if(!f.p_desde||!f.p_hasta||f.p_hasta<f.p_desde){ aviso("Revisa las fechas: «hasta» no puede ser antes de «desde».","mal"); return; }
+  box.innerHTML=`<p class="privacy">Cargando…</p>`;
+  const r=await hacer("estudio_reporte_asistencia",f); if(!r){ box.innerHTML=""; return; }
+  ASIS=r; pintarAsistencia();
+}
+function pintarAsistencia(){
+  const {clases:C=[], clientas:K=[]}=ASIS, box=$("#asistencia");
+  if(!C.length){ box.innerHTML=`<div class="ebox"><p class="empty-state">No hay reservas en esas fechas con esos filtros.</p></div>`; return; }
+  const sum=k=>C.reduce((a,c)=>a+(+c[k]||0),0), pend=C.filter(c=>c.pasada&&c.sin_marcar>0);
+  const titulo=c=>`${fmtCorta(c.fecha)} · ${c.hora} · ${c.clase} · ${c.instructora}`;
+  const cuenta=c=>`${c.asistio} asistió · ${c.falto} faltó · ${c.sin_marcar} sin marcar`;
+  const ir=(c,txt)=>`<button class="bbtn line sm" type="button" data-ir-clase="${c.sesion_id}" data-fecha="${esc(c.fecha)}">${txt}</button>`;
+  box.innerHTML=`<div class="ebox">
+      <h2>Resumen</h2>
+      <p class="meta"><b>${C.length}</b> ${C.length===1?"clase":"clases"} · <b>${sum("asistio")}</b> asistencias · <b>${sum("falto")}</b> faltas · <b>${sum("sin_marcar")}</b> sin marcar</p>
+      ${pend.length?`<div class="asis-pend" role="note"><p><b>${pend.length} ${pend.length===1?"clase pasada quedó":"clases pasadas quedaron"} sin marcar</b></p>
+        <ul class="lista">${pend.map(c=>`<li><span>${esc(titulo(c))}<small>${c.sin_marcar} sin marcar</small></span>${c.editable?ir(c,"Marcar"):`<small>Pasaron más de 7 días</small>`}</li>`).join("")}</ul></div>`:""}
+    </div>
+    <div class="ebox"><h2>Por clase</h2>
+      <ul class="asis-clases">${C.map(c=>`<li class="${c.pasada&&c.sin_marcar>0?"pend":""}"><details>
+        <summary><span class="t">${esc(titulo(c))}</span><span class="c">${esc(cuenta(c))}${c.pasada&&c.sin_marcar>0?' <span class="tagx pend">Sin marcar</span>':""}</span></summary>
+        <ul class="lista">${c.alumnas.map(a=>`<li><span>${a.lugar?`${a.lugar} · `:""}${esc(a.nombre)}</span><span class="asis-est ${a.asistencia}">${ASIS_TXT[a.asistencia]||esc(a.asistencia)}</span></li>`).join("")}</ul>
+        ${c.editable?`<div class="eacc">${ir(c,"Marcar en la clase")}</div>`:""}
+      </details></li>`).join("")}</ul>
+    </div>
+    <div class="ebox"><h2>Por clienta</h2>
+      <div class="tablewrap"><table class="vtable"><caption class="sr-only">Asistencias y faltas por clienta</caption><thead><tr><th scope="col">Clienta</th><th scope="col">Asistió</th><th scope="col">Faltó</th><th scope="col">Sin marcar</th></tr></thead><tbody>
+      ${K.map(x=>`<tr><th scope="row">${esc(x.nombre)}</th><td>${x.asistio}</td><td>${x.falto}</td><td>${x.sin_marcar}</td></tr>`).join("")}
+      </tbody></table></div>
+      <p class="privacy">«Sin marcar» cuenta solo las clases que ya pasaron.</p>
+    </div>`;
+}
+// De Asistencia a la clase, en su semana, para marcar
+function irAClase(id,fecha){
+  const d=fromIso(fecha); d.setDate(d.getDate()-((d.getDay()+6)%7));
+  cWeek=Math.round((d-fromIso(lunes(0)))/(7*864e5)); cSel=+id;
+  if($("#cInst").value) $("#cInst").value="";
+  abrirTab("clases");
+}
+async function csvAsistencia(f){
+  const r=await hacer("estudio_reporte_asistencia",{...f,p_exportar:true}); if(!r) return;
+  descargarCsv("asistencia",r.filas||[],`bale-asistencia-${f.p_desde}-a-${f.p_hasta}.csv`);
+}
+
+/* =========================================================
    EXPORTAR (dueña): CSV con BOM para que Excel lea los acentos
    ========================================================= */
 const COLS = {clientas:{nombre:"Nombre",whatsapp:"WhatsApp",correo:"Correo",acepta_whatsapp:"Acepta WhatsApp",alta:"Alta",reservas:"Reservas activas",asistencias:"Asistencias"},
@@ -1269,6 +1420,7 @@ const COLS = {clientas:{nombre:"Nombre",whatsapp:"WhatsApp",correo:"Correo",acep
   control:{nombre:"Nombre",clases_fijas:"Clase fija y lugar",correo:"Correo",telefono:"Teléfono",plan:"Plan",desde:"Fecha de inicio",pagado_en:"Último pago",
     proximo_pago:"Próximo pago / renovación",monto:"Monto",pago_metodo:"Método de pago",banco:"Banco",estado:"Estado"},
   ingresos:{mes:"Mes",concepto:"Concepto",metodo:"Forma de pago",cantidad:"Cantidad",total:"Total RD$"},
+  asistencia:{fecha:"Fecha",hora:"Hora",clase:"Clase",instructora:"Instructora",clienta:"Clienta",lugar:"Lugar",asistencia:"Asistencia"},
   apuntadas:{nombre:"Nombre",telefono:"WhatsApp",correo:"Correo",estado:"Estado",creada:"Se apuntó"}};
 const TEXTO_CELDA = {estado:EST_MEM, pago_metodo:METODO};
 const METODO_ING = {transferencia:"Transferencia", tarjeta:"Tarjeta", efectivo:"Efectivo", sin_registrar:"Sin registrar"};
@@ -1289,6 +1441,7 @@ function descargarCsv(que,filas,nombre){
 async function exportar(e){
   e.preventDefault();
   const que=$("#xQue").value, args={p_que:que};
+  if(que==="asistencia"){ csvAsistencia({p_desde:$("#xDesde").value||sumar(hoy(),-30), p_hasta:$("#xHasta").value||hoy()}); return; }
   if(que==="reservas"||que==="ingresos"){ args.p_desde=$("#xDesde").value||null; args.p_hasta=$("#xHasta").value||null; }
   const r=await hacer("estudio_exportar",args); if(!r) return;
   descargarCsv(que,r.filas||[]);
@@ -1329,6 +1482,9 @@ function eventos(){
   $("#fCodigo").addEventListener("submit",confirmarCodigo);
   $("#eCodSalir").addEventListener("click",async()=>{ await sb.auth.signOut().catch(()=>{}); aviso(""); mostrarEntrar(); });
   $("#fIng").addEventListener("submit",e=>{ e.preventDefault(); cargarIngresos(); });
+  $("#fAsis").addEventListener("submit",e=>{ e.preventDefault(); verAsistencia(); });
+  $("#aCsv").addEventListener("click",()=>{ const f=filtrosAsis(); if(!f.p_desde||!f.p_hasta||f.p_hasta<f.p_desde){ aviso("Revisa las fechas.","mal"); return; } csvAsistencia(f); });
+  $("#asistencia").addEventListener("click",e=>{ const b=e.target.closest("[data-ir-clase]"); if(b) irAClase(b.dataset.irClase,b.dataset.fecha); });
   $("#iExp").addEventListener("click",exportarIngresos);
   $("#salir").addEventListener("click",async()=>{ await sb.auth.signOut().catch(()=>{}); aviso("Saliste del área del estudio."); mostrarEntrar(); });
   $("#tabs").addEventListener("click",e=>{ const t=e.target.closest('[role="tab"]'); if(t) abrirTab(t.id.slice(2)); });
@@ -1393,7 +1549,7 @@ function eventos(){
   $("#ajustes").addEventListener("click",e=>{ const h=e.target.closest("[data-hor]"); if(h){ editarHorario(h.dataset.hor); return; }
     const p=e.target.closest("[data-per]"); if(p) editarPersonal(p.dataset.per); });
   // Exportar
-  $("#xQue").addEventListener("change",()=>{ $("#xFechas").hidden=!["reservas","ingresos"].includes($("#xQue").value); });
+  $("#xQue").addEventListener("change",()=>{ $("#xFechas").hidden=!["reservas","ingresos","asistencia"].includes($("#xQue").value); });
   $("#iDesde").value=primeroDeMes(sumarMeses(hoy(),-5)); $("#iHasta").value=hoy();
   $("#xDesde").value=sumar(hoy(),-30); $("#xHasta").value=sumar(hoy(),30);
   $("#fExp").addEventListener("submit",exportar);

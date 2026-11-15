@@ -14,12 +14,12 @@
 <link rel="preload" href="fonts/montserrat-latin.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="stylesheet" href="css/base.css?v=3c66c5f9">
 <link rel="stylesheet" href="css/bale.css?v=bb33d517">
-<link rel="stylesheet" href="css/estudio.css?v=e82f4db6">
+<link rel="stylesheet" href="css/estudio.css?v=13005416">
 <script src="js/vendor/supabase.js?v=bb37eb70" defer></script>
 <script src="js/core.js?v=75e2696e" defer></script>
 <script src="js/calendario.js?v=eee2f388" defer></script>
 <script src="js/hojas.js?v=b96436bb" defer></script>
-<script src="js/estudio.js?v=3099ab22" defer></script>
+<script src="js/estudio.js?v=ab2739f3" defer></script>
 </head>
 <body data-page="bale-estudio">
 <header class="btop">
@@ -75,6 +75,25 @@
         <div class="vdetail" id="cDet"></div>
       </div>
       <p class="eacc" id="icsWrap" hidden><button class="bbtn line" type="button" id="icsSemana">Descargar mi calendario de la semana (.ics)</button></p>
+    </section>
+
+    <section role="tabpanel" id="p-asistencia" aria-labelledby="t-asistencia" hidden>
+      <div class="ebox">
+        <h2>Asistencia</h2>
+        <form class="form" id="fAsis" novalidate>
+          <div class="two">
+            <label class="fld">Desde<input type="date" id="aDesde"></label>
+            <label class="fld">Hasta<input type="date" id="aHasta"></label>
+          </div>
+          <div class="two">
+            <label class="fld">Clase<select id="aClase"></select></label>
+            <label class="fld" id="aInstW">Instructora<select id="aInst"></select></label>
+          </div>
+          <label class="fld">Clienta<input type="search" id="aCli" maxlength="60" placeholder="Nombre o parte del nombre"></label>
+          <div class="eacc"><button class="bbtn solid sm" type="submit">Ver</button><button class="bbtn line sm" type="button" id="aCsv">Descargar CSV</button></div>
+        </form>
+      </div>
+      <div id="asistencia" aria-live="polite"></div>
     </section>
 
     <section role="tabpanel" id="p-clientas" aria-labelledby="t-clientas" hidden>
@@ -162,7 +181,7 @@
         <h2>Exportar para Excel</h2>
         <p class="privacy">Descarga un archivo CSV que Excel abre con los acentos bien. Cada descarga queda registrada.</p>
         <form class="form" id="fExp" novalidate>
-          <label class="fld">Qué<select id="xQue"><option value="clientas">Clientas</option><option value="reservas">Reservas</option><option value="membresias">Membresías</option><option value="control">Control de membresías</option><option value="ingresos">Ingresos</option></select></label>
+          <label class="fld">Qué<select id="xQue"><option value="clientas">Clientas</option><option value="reservas">Reservas</option><option value="membresias">Membresías</option><option value="control">Control de membresías</option><option value="ingresos">Ingresos</option><option value="asistencia">Asistencia</option></select></label>
           <div class="two" id="xFechas" hidden>
             <label class="fld">Desde<input type="date" id="xDesde"></label>
             <label class="fld">Hasta<input type="date" id="xHasta"></label>
