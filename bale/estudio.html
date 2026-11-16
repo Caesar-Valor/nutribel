@@ -14,12 +14,12 @@
 <link rel="preload" href="fonts/montserrat-latin.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="stylesheet" href="css/base.css?v=3c66c5f9">
 <link rel="stylesheet" href="css/bale.css?v=bb33d517">
-<link rel="stylesheet" href="css/estudio.css?v=8f79e456">
+<link rel="stylesheet" href="css/estudio.css?v=32812eba">
 <script src="js/vendor/supabase.js?v=bb37eb70" defer></script>
 <script src="js/core.js?v=75e2696e" defer></script>
 <script src="js/calendario.js?v=eee2f388" defer></script>
 <script src="js/hojas.js?v=b96436bb" defer></script>
-<script src="js/estudio.js?v=e0305c32" defer></script>
+<script src="js/estudio.js?v=8592e8ca" defer></script>
 </head>
 <body data-page="bale-estudio">
 <header class="btop">
@@ -101,6 +101,7 @@
       <div class="ebox" id="vencen"></div>
       <div class="ebuscar">
         <label class="fld">Buscar clienta (nombre, WhatsApp o correo)<input id="qCli" type="search" autocomplete="off"></label>
+        <label class="fld">Mostrar<select id="fCliFiltro"><option value="">Todas</option><option value="sin_permiso">Sin permiso de WhatsApp</option><option value="falta_whatsapp">Falta WhatsApp</option><option value="falta_correo">Falta correo</option></select></label>
         <button class="bbtn line" type="button" id="nuevaCli">Nueva clienta</button>
       </div>
       <div class="vres">
@@ -131,6 +132,8 @@
 
     <section role="tabpanel" id="p-avisos" aria-labelledby="t-avisos" hidden>
       <div class="ebox" id="avEstado"></div>
+      <div class="ebox" id="avCola"></div>
+      <div class="ebox" id="avMiembros" hidden></div>
     </section>
 
     <section role="tabpanel" id="p-comunidad" aria-labelledby="t-comunidad" hidden>
@@ -181,7 +184,7 @@
         <h2>Exportar para Excel</h2>
         <p class="privacy">Descarga un archivo CSV que Excel abre con los acentos bien. Cada descarga queda registrada.</p>
         <form class="form" id="fExp" novalidate>
-          <label class="fld">Qué<select id="xQue"><option value="clientas">Clientas</option><option value="reservas">Reservas</option><option value="membresias">Membresías</option><option value="control">Control de membresías</option><option value="ingresos">Ingresos</option><option value="asistencia">Asistencia</option></select></label>
+          <label class="fld">Qué<select id="xQue"><option value="clientas">Clientas</option><option value="reservas">Reservas</option><option value="membresias">Membresías</option><option value="control">Control de membresías</option><option value="ingresos">Ingresos</option><option value="asistencia">Asistencia</option><option value="correos_miembros">Correos de las miembros activas</option></select></label>
           <div class="two" id="xFechas" hidden>
             <label class="fld">Desde<input type="date" id="xDesde"></label>
             <label class="fld">Hasta<input type="date" id="xHasta"></label>

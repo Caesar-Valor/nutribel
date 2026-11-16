@@ -104,6 +104,28 @@
 .edlg .porasignar .linkbtn{min-height:44px;padding:0 4px}
 @media (max-width:480px){ .edlg [data-lugar] .srow > div{grid-template-columns:repeat(auto-fill,minmax(44px,1fr))} }
 .edlg[open]{animation:none}
+/* Recordatorios, cola de WhatsApp, marcas de la ficha y correo a las miembros (DECISIONES §57) */
+.ebuscar select{border:1.5px solid var(--line);background:var(--paper);border-radius:12px;padding:10px 12px;min-height:46px;margin-top:4px;width:100%}
+.cli .marcas{color:var(--brown);font-weight:600}
+.cli-cuenta{padding:8px 4px}
+.marca-wa{border:1.5px solid #8f2f22;border-radius:12px;padding:10px 12px}
+.marca-wa .linkbtn{min-height:44px;padding:0 4px}
+.marca-correo{min-height:44px;align-items:center;margin:0 0 12px}
+.wa-pausa{margin:10px 0;padding:12px 14px;border-radius:14px;border:1.5px solid #8f2f22;background:var(--paper);color:var(--b-ink)}
+.wa-pausa p{margin:0 0 8px}
+.cola-filtro{max-width:280px}
+.cola td small{display:block;color:var(--muted);white-space:normal;max-width:260px}
+.vtable.cola td:nth-child(3),.vtable.cola td:nth-child(4){text-align:left}
+.cola .e-fallido{color:#8f2f22;font-weight:600}
+.cola .e-cancelado{color:var(--muted)}
+.previa-rec{white-space:pre-wrap;font:500 13.5px/1.55 var(--b-sans);background:var(--b-bg);border:1px dashed var(--line);border-radius:12px;padding:12px;margin:0;color:var(--b-ink);overflow-wrap:anywhere}
+.previa-rec .btn-previa{display:inline-block;margin-top:8px;background:var(--brown);color:var(--on-brown);border-radius:999px;padding:8px 16px;font-weight:600}
+.previa-opc{display:flex;flex-wrap:wrap;gap:6px 16px}
+.aviso-cargo{padding:10px 12px;border-radius:12px;border:1.5px dashed var(--brown);color:var(--b-ink);margin:0}
+.dlgnota{padding:10px 12px;border-radius:12px;border:1.5px solid var(--brown);color:var(--b-ink);font-weight:500}
+.dlgnota .bbtn{margin-top:8px}
+:root[data-mode="dark"] .marca-wa,:root[data-mode="dark"] .wa-pausa{border-color:#f0a596}
+:root[data-mode="dark"] .cola .e-fallido{color:#f0a596}
 /* Asistencia (DECISIONES §55) */
 .asis-pend{margin-top:12px;padding:12px 14px;border-radius:14px;border:1.5px solid #8f2f22;background:var(--paper)}
 .asis-pend .lista li{align-items:center}
@@ -119,7 +141,7 @@
 :root[data-mode="dark"] .asis-pend,:root[data-mode="dark"] .asis-clases > li.pend{border-color:#f0a596}
 :root[data-mode="dark"] .asis-est.falto{color:#f0a596}
 @media (min-width:640px){
-  .ebuscar{grid-template-columns:1fr auto;align-items:end}
+  .ebuscar{grid-template-columns:1fr auto auto;align-items:end}
 }
 @media (min-width:900px){
   .est{padding:26px 20px 60px}

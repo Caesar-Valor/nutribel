@@ -30,13 +30,15 @@ Desde **una hora antes** de la clase, toca **Asistió** o **Faltó** en cada alu
 
 ## Reservar por teléfono (o en persona)
 
-En la clase, **Reservar para una clienta** → busca por nombre o WhatsApp (o abre **O una clienta nueva**), elige el lugar en la sala, el pago (**Por pagar**, **Ya pagó** o **Cortesía**) y si le mandas la confirmación. Si la clienta tiene membresía, la base de datos la cuenta sola.
+En la clase, **Reservar para una clienta** → busca por nombre o WhatsApp (o abre **O una clienta nueva**), elige el lugar en la sala y el pago (**Por pagar**, **Ya pagó** o **Cortesía**). Si la clienta tiene membresía, la base de datos la cuenta sola.
+
+**Avisar a la clienta** viene marcada: le llega la confirmación **30 minutos después** de reservar, con los datos que tenga la reserva en ese momento (si la cancelas antes, no sale nada; si la cambias, sale con lo último). Por correo, a cualquier hora, la misma confirmación de la página con el botón «Ver o cancelar mi reserva». Por WhatsApp (si su ficha lo acepta) solo cuando reservas **después del recordatorio de la noche** (de noche para mañana, o el mismo día): un solo mensaje que confirma y recuerda, nunca de 9:00 pm a 7:00 am (si cae de noche, sale a las 8:00 am) y no sale si falta menos de 1 hora para la clase. Si reservas antes, el WhatsApp es el recordatorio de la noche. **Desmárcala** cuando solo estés corrigiendo una reserva. Los lugares fijos, las membresías, las renovaciones y la importación nunca avisan, y lo que cambies o canceles después de que salió la confirmación tampoco.
 
 **¿No tienes su WhatsApp?** Para una clienta nueva basta el nombre: el WhatsApp y el correo son opcionales. El lugar queda apartado igual (nadie más lo puede tomar y la instructora lo ve ocupado). Con su correo, la confirmación y los recordatorios le llegan por correo; sin correo ni WhatsApp no le llega ningún aviso. En la lista de la clase sale **Falta su WhatsApp**: cuando te lo dé, ponlo en su **Ficha** (con «Acepta avisos por WhatsApp») y sus recordatorios pendientes salen también por WhatsApp. Si usas el mismo correo otra vez, se usa la misma ficha.
 
 ## Cancelar una reserva
 
-En la lista de alumnas, **Cancelar** → elige el cargo: **Automático** (si es el mismo día de la clase, RD$300), **Sí** o **No**, y si la avisas. El lugar queda libre y, si hay lista de espera, se avisa a la primera.
+En la lista de alumnas, **Cancelar** → elige el cargo: **Automático** (si es el mismo día de la clase, RD$300), **Sí** o **Sin cargo**. A la clienta no le llega ningún mensaje. El lugar queda libre y, si hay lista de espera, se avisa a la primera.
 
 ## Asignar el lugar fijo de una miembro (al empezar el mes)
 
@@ -55,6 +57,17 @@ El lugar fijo se reserva solo cada semana mientras dure la membresía.
 **Al cancelar una reserva de lugar fijo**, «Avisar a la clienta» viene desmarcado: márcalo solo si de verdad quieres avisarle.
 
 ![Ficha de una clienta](../referencia/capturas-sistema/despues/9-estudio-clientas-390.png)
+
+## Recordatorios y avisos (16/11/2026)
+
+- **Recordatorio de la clase:** le llega a cada clienta con reserva, una vez, la **noche anterior a las 8:00 pm** (por correo y, si su ficha tiene «Acepta avisos por WhatsApp», por WhatsApp). También a las miembros fijas y a las reservas que haces tú. Una reserva hecha después de esa hora no lo recibe (si la haces tú con «Avisar a la clienta», le llega el WhatsApp que confirma y recuerda; mira «Reservar para una clienta»). Marifer cambia la hora y el texto en **Ajustes → Recordatorio de la clase** y **Texto del recordatorio** (con vista previa). El «Lote de la mañana» está apagado: si se enciende, esos mensajes dicen el cargo por cancelar el mismo día.
+- **Permiso de WhatsApp:** en **Clientas → Mostrar** están «Sin permiso de WhatsApp», «Falta WhatsApp» y «Falta correo». Abre cada ficha y marca «Acepta avisos por WhatsApp» **solo** si ella lo aceptó. Nada se marca solo.
+- **«WhatsApp no válido»** en la ficha: ese número no tiene WhatsApp y sus avisos van solo por correo. Si corriges el número, se vuelve a intentar.
+- **«Correo no entrega»** en la ficha: márcalo si un correo rebotó; mientras esté marcado no se le manda ningún correo.
+- **Avisos → Registro de avisos:** qué salió, qué está en cola y qué no salió y por qué (de ayer a pasado mañana).
+- **«WhatsApp en pausa»:** WhatsApp limitó el número o fallaron varios seguidos. Mientras tanto salen solo correos. Solo César lo reanuda.
+- **Correo a las miembros (solo Marifer):** en Avisos. Escribe asunto y mensaje, mira la vista previa, envíate una prueba y confirma. Sale un correo a cada miembro activa, uno cada 10 segundos. Nunca por WhatsApp.
+- **Cancelar «sin cargo»:** si la clienta avisó a tiempo por WhatsApp y lo registras al día siguiente, al cancelar elige «Sin cargo».
 
 ## Cobros
 

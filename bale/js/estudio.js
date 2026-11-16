@@ -43,6 +43,8 @@ const finDeMes = s=>{ const d=fromIso(s); d.setMonth(d.getMonth()+1); d.setDate(
 const dinero = n=>n==null||n===""?"":NB.money(+n);
 const esAdmin = ()=>YO&&(YO.rol==="duena"||YO.rol==="asistente");
 const esDuena = ()=>YO&&YO.rol==="duena";
+// El administrador (César, bale.personal.admin): prueba los avisos y reanuda el WhatsApp en pausa (§57)
+const esAdministrador = ()=>!!(YO&&YO.admin);
 
 /* ---------- Avisos ---------- */
 function aviso(msg,tipo){
@@ -425,7 +427,7 @@ async function cancelarReserva(id,nombre){
       <fieldset class="opts"><legend>¿Se cobra el cargo de cancelación tardía?</legend>
         <label class="radio"><input type="radio" name="cargo" value="auto" checked> Automático (si es el mismo día de la clase, sí)</label>
         <label class="radio"><input type="radio" name="cargo" value="si"> Sí, cobrar el cargo</label>
-        <label class="radio"><input type="radio" name="cargo" value="no"> No cobrar</label></fieldset>
+        <label class="radio"><input type="radio" name="cargo" value="no"> Sin cargo (por ejemplo, avisó a tiempo por WhatsApp)</label></fieldset>
       <p class="privacy">A la clienta no le llega ningún mensaje: si hace falta, avísale tú.</p>`,
     accion:async f=>{ const r=await hacer("estudio_cancelar_reserva",{p_reserva_id:id,p_cargo:f.querySelector('[name="cargo"]:checked').value,p_avisar:false},{dlg:true});
       if(!r) return null; if(r.ok===false) return r.mensaje; listo(r.tardia?`Reserva cancelada con cargo de ${dinero(r.cargo)}`:"Reserva cancelada"); return true; }});
@@ -524,7 +526,8 @@ async function reservarPara(){
       ${barra?`<p class="steph">Lugar</p>${seatsHTML(s.lugares_ocupados)}`:""}
       <label class="fld">Pago<select name="pago">${PAGO_OPC.map(([k,n])=>opt(k,n,k==="pendiente")).join("")}</select></label>
       <p class="privacy" data-pago-nota hidden></p>
-      <p class="privacy">No le llega confirmación (desde el área no se avisa); sí los recordatorios de su clase.</p>`,
+      <label class="check"><input type="checkbox" name="avisar" checked> Avisar a la clienta</label>
+      <p class="privacy">Le llega la confirmación a los 30 minutos (si la cancelas o la cambias antes, sale con lo último o no sale): por correo y, si la reserva es después del recordatorio de la noche, un WhatsApp (nunca de noche). Desmárcala al corregir una reserva. Los recordatorios de su clase le llegan igual.</p>`,
     alAbrir:f=>{
       activarSeats(f);
       const q=f.querySelector('[name="q"]'), ul=f.querySelector("[data-res]");
@@ -539,14 +542,15 @@ async function reservarPara(){
         nota.hidden=!mem; nota.textContent=mem?"Tiene membresía: si esta clase no la cubre, queda en «Revisar membresía», sin cobro para ella.":""; });
     },
     accion:async f=>{
-      const args={p_sesion_id:s.id, p_pago_estado:v(f,"pago")||null};
+      const args={p_sesion_id:s.id, p_pago_estado:v(f,"pago")||null, p_avisar:v(f,"avisar")};
       if(barra){ const l=+v(f,"lugar"); if(!l) return "Elige el lugar en la sala."; args.p_lugar=l; }
       if(elegida) args.p_clienta_id=elegida;
       else{ if(!v(f,"nombre")) return "Elige una clienta de la lista o escribe el nombre de una nueva.";
         Object.assign(args,{p_nombre:v(f,"nombre"),p_telefono:v(f,"tel"),p_correo:v(f,"correo")||null,p_acepta_whatsapp:v(f,"wa")}); }
       const r=await hacer("estudio_reservar",args,{dlg:true}); if(!r) return null; if(r.ok===false) return r.mensaje;
       const falta=r.sin_whatsapp&&r.sin_correo?" Sin WhatsApp ni correo: no le llegan los recordatorios.":r.sin_whatsapp?" Sin WhatsApp: los recordatorios le llegan por correo.":"";
-      listo((r.revisar?`Reservado: ${r.reserva.nombre}. Revisar membresía: ${r.revisar}`:`Reservado: ${r.reserva.nombre}, ${r.reserva.lugar_texto}`)+falta); return true;
+      const conf=r.confirmacion?" La confirmación le llega en 30 minutos.":"";
+      listo((r.revisar?`Reservado: ${r.reserva.nombre}. Revisar membresía: ${r.revisar}`:`Reservado: ${r.reserva.nombre}, ${r.reserva.lugar_texto}`)+conf+falta); return true;
     }});
   if(ok) recargarClase();
 }
@@ -678,11 +682,17 @@ async function renovarTodas(){
       if(!r) return null; if(r.ok===false) return r.mensaje; listo(`${r.renovadas} ${r.renovadas===1?"membresía renovada":"membresías renovadas"} (por pagar)`); return true; }});
   if(ok&&buenas.length) abrirClientas();
 }
+/* Filtros (16/11/2026, DECISIONES §57): «Sin permiso de WhatsApp», «Falta WhatsApp» y «Falta correo», para revisar
+   ficha por ficha y marcar el permiso solo a quien sí lo dio. Nada se marca solo. */
+const FILTRO_CLI = {sin_permiso:"sin permiso de WhatsApp", falta_whatsapp:"sin WhatsApp", falta_correo:"sin correo"};
 async function buscarClientas(){
-  const r=await hacer("estudio_clientas",{p_buscar:$("#qCli").value.trim()||null,p_limite:60}); if(!r) return;
-  $("#cliList").innerHTML=r.clientas.map(c=>`<li><button type="button" class="vcls cli" data-ficha="${c.id}" aria-pressed="${CLI&&CLI.clienta.id===c.id}">
-    <span class="n">${esc(c.nombre)}<small>${[c.telefono||"Sin WhatsApp",c.correo].filter(Boolean).map(esc).join(" · ")}</small></span>
-    <span class="c">${c.membresia?esc(c.membresia):`${c.reservas} ${c.reservas===1?"reserva":"reservas"}`}</span></button></li>`).join("")||`<li class="empty-state">No hay clientas con esa búsqueda.</li>`;
+  const filtro=$("#fCliFiltro").value||null;
+  const r=await hacer("estudio_clientas",{p_buscar:$("#qCli").value.trim()||null,p_limite:filtro?500:60,...(filtro?{p_filtro:filtro}:{})}); if(!r) return;
+  const marcas=c=>[c.telefono&&!c.acepta_whatsapp?"Sin permiso de WhatsApp":"",c.whatsapp_invalido?"WhatsApp no válido":"",c.correo_no_entrega?"Correo no entrega":""].filter(Boolean);
+  $("#cliList").innerHTML=(filtro?`<li class="privacy cli-cuenta">${r.clientas.length} ${r.clientas.length===1?"clienta":"clientas"} ${esc(FILTRO_CLI[filtro])}. Abre cada ficha y marca el permiso solo si ella lo aceptó.</li>`:"")+
+    (r.clientas.map(c=>`<li><button type="button" class="vcls cli" data-ficha="${c.id}" aria-pressed="${CLI&&CLI.clienta.id===c.id}">
+    <span class="n">${esc(c.nombre)}<small>${[c.telefono||"Sin WhatsApp",c.correo||"Sin correo"].map(esc).join(" · ")}</small>${filtro||marcas(c).length?`<small class="marcas">${marcas(c).map(esc).join(" · ")}</small>`:""}</span>
+    <span class="c">${c.membresia?esc(c.membresia):`${c.reservas} ${c.reservas===1?"reserva":"reservas"}`}</span></button></li>`).join("")||`<li class="empty-state">${filtro?"Ninguna clienta en esta lista.":"No hay clientas con esa búsqueda."}</li>`);
 }
 async function abrirFicha(id){
   const r=await hacer("estudio_clienta",{p_clienta_id:id}); if(!r) return;
@@ -725,6 +735,9 @@ function pintarFicha(){
   const c=CLI.clienta, M=CLI.membresias||[], R=CLI.reservas||[], cargos=R.filter(x=>x.cancelacion_tardia);
   $("#cliDet").innerHTML=`<h2>${esc(c.nombre)}</h2>
     <p class="meta">${c.telefono?esc(c.telefono):"Sin WhatsApp"}${c.correo?` · ${esc(c.correo)}`:""} · ${c.acepta_whatsapp?"acepta avisos por WhatsApp":"sin avisos por WhatsApp"}</p>
+    ${!c.anonimizada&&c.whatsapp_invalido?`<p class="note marca-wa">WhatsApp no válido: ese número no tiene WhatsApp, así que sus avisos salen solo por correo. Si lo corriges, se vuelve a intentar solo.
+      <button class="linkbtn" type="button" data-wa-reintentar="${c.id}">Volver a intentar con este número</button></p>`:""}
+    ${c.anonimizada?"":`<label class="check marca-correo"><input type="checkbox" data-correo-no-entrega="${c.id}" ${c.correo_no_entrega?"checked":""}> Correo no entrega (rebotó: mientras esté marcado no se le manda ningún correo)</label>`}
     ${c.anonimizada?`<p class="note">Datos personales borrados. Solo queda el historial anónimo.</p>`:`
     <form class="form efich" id="fCli" novalidate>
       <div class="two"><label class="fld">Nombre<input name="nombre" value="${esc(c.nombre)}"></label>
@@ -757,6 +770,18 @@ function pintarFicha(){
     ${esDuena()&&!c.anonimizada?`<h3>Privacidad</h3><p class="privacy">Si la clienta lo pide (Ley 172-13), se borran su nombre, WhatsApp, correo y notas. Queda solo el historial anónimo.</p>
       <div class="eacc"><button class="bbtn line sm peligro" type="button" data-borrar="${c.id}">Borrar datos personales</button></div>`:""}`;
 }
+// «Correo no entrega» se guarda al marcarlo (dueña y asistente)
+async function marcarCorreo(el){
+  const on=el.checked;
+  const r=await hacer("estudio_marcar_clienta",{p_clienta_id:+el.dataset.correoNoEntrega,p_correo_no_entrega:on});
+  if(!r){ el.checked=!on; return; }
+  listo(on?"Marcado: no se le mandan correos":"Se le vuelven a mandar correos");
+  if(CLI&&CLI.clienta) CLI.clienta.correo_no_entrega=on; buscarClientas();
+}
+async function reintentarWhatsapp(id){
+  const r=await hacer("estudio_marcar_clienta",{p_clienta_id:id,p_whatsapp_valido:true}); if(!r) return;
+  listo("Se volverá a intentar por WhatsApp"); abrirFicha(id);
+}
 async function guardarCli(f){
   const r=await hacer("estudio_guardar_clienta",{p_id:CLI.clienta.id,p_nombre:v(f,"nombre"),p_telefono:v(f,"tel"),p_correo:v(f,"correo"),p_notas:v(f,"notas"),p_acepta_whatsapp:v(f,"wa")});
   if(r){ listo("Datos guardados"); abrirFicha(CLI.clienta.id); }
@@ -787,7 +812,7 @@ function camposPago(f){
 async function membresia(id){
   const m=id==="nueva"?null:CLI.membresias.find(x=>x.id===+id);
   const desde=m?m.desde:hoy(), P=planes();
-  let nueva=null;
+  let nueva=null, rango=null;
   const ok=await pedir({titulo:m?"Editar membresía":"Nueva membresía", ok:m?"Guardar":"Guardar y elegir sus clases fijas",
     html:`<label class="fld">Plan<select name="plan">${P.map(p=>opt(p.id,`${p.nombre}${p.detalle?` · ${p.detalle}`:""} (${dinero(p.precio)})`,m?m.plan_id===p.id:false)).join("")}</select></label>
       <div class="two"><label class="fld">Desde<input type="date" name="desde" value="${esc(desde)}"></label>
@@ -805,10 +830,10 @@ async function membresia(id){
       const r=await hacer("estudio_guardar_membresia",{p_id:m?m.id:null,p_clienta_id:CLI.clienta.id,p_plan_id:v(f,"plan"),p_desde:v(f,"desde"),p_hasta:v(f,"hasta"),
         p_precio:v(f,"precio")===""?null:+v(f,"precio"),p_pago_estado:v(f,"pago"),p_pago_metodo:v(f,"metodo")||null,p_notas:v(f,"notas"),
         p_pagado_en:pagado&&v(f,"pagado_en")||null,p_banco:pagado&&v(f,"metodo")==="transferencia"&&v(f,"banco")||null},{dlg:true});
-      if(!r) return null; if(r.ok===false) return r.mensaje; nueva=m?null:r.membresia_id; if(m) conflictos(r.fijos); return true; }});
+      if(!r) return null; if(r.ok===false) return r.mensaje; nueva=m?null:r.membresia_id; rango={desde:v(f,"desde"),hasta:v(f,"hasta")}; if(m) conflictos(r.fijos); return true; }});
   if(!ok) return;
   listo("Membresía guardada");
-  if(nueva) await elegirFijos(nueva);
+  if(nueva) await elegirFijos(nueva,rango);
   abrirFicha(CLI.clienta.id);
 }
 // Lo que la base de datos no pudo aplicar de los lugares fijos: el estudio decide
@@ -822,7 +847,7 @@ function conflictos(fj,noCopiados){
 }
 async function renovar(id,hasta,nombre){
   const desde=sumar(hasta,1);
-  let res=null;
+  let res=null, rango=null;
   const ok=await pedir({titulo:`Renovar: ${nombre}`, ok:"Renovar",
     html:`<p>Nueva membresía con el mismo plan y los mismos lugares fijos.</p>
       <div class="two"><label class="fld">Desde<input type="date" name="desde" value="${esc(desde)}"></label>
@@ -832,28 +857,52 @@ async function renovar(id,hasta,nombre){
     accion:async f=>{
       const r=await hacer("estudio_renovar_membresia",{p_id:+id,p_desde:v(f,"desde"),p_hasta:v(f,"hasta"),p_precio:v(f,"precio")===""?null:+v(f,"precio"),
         p_pago_estado:v(f,"pago"),p_pago_metodo:v(f,"metodo")||null},{dlg:true});
-      if(!r) return null; if(r.ok===false) return r.mensaje; res=r; return true; }});
+      if(!r) return null; if(r.ok===false) return r.mensaje; res=r; rango={desde:v(f,"desde"),hasta:v(f,"hasta")}; return true; }});
   if(!ok) return;
   listo("Membresía renovada");
   // Los fijos que no se pudieron copiar dejan clases por elegir: se ofrecen aquí mismo (§55)
-  if(CLI&&res.membresia_id) await elegirFijos(res.membresia_id);
+  if(CLI&&res.membresia_id) await elegirFijos(res.membresia_id,rango);
   conflictos(res.fijos,res.fijos_no_copiados); cargarVencen(); if(CLI) abrirFicha(CLI.clienta.id);
 }
 // op (al registrar o renovar la membresía): {titulo, no, intro, enFlujo}. Devuelve lo guardado o null.
+// Sus lugares fijos (de cualquier membresía activa) que se cruzan con las fechas de esta membresía, por clase:
+// para no ofrecer una clase que ya tiene (§57). Al renovar, los de la membresía que termina no cuentan.
+function fijosVigentes(memId,rango){
+  const M=(CLI&&CLI.membresias)||[], m=M.find(x=>x.id===+memId)||rango||{};
+  const d=m.desde&&m.desde>hoy()?m.desde:hoy(), h=m.hasta||"9999-12-31";
+  const r=new Map();
+  M.filter(x=>x.estado==="activa").forEach(x=>(x.fijos||[]).filter(f=>f.desde<=h&&f.hasta>=d).forEach(f=>{ if(!r.has(f.horario_id)) r.set(f.horario_id,f); }));
+  return r;
+}
+const lugarDeFijo = f=>f.lugar?`lugar ${f.lugar}`:"lugar por asignar";
 async function agregarFijo(memId,op={}){
   const clases=(CAT.horario||[]).filter(h=>h.modo!=="inscripcion");
-  let res=null;
+  const suyos=fijosVigentes(memId,op.rango);
+  let res=null, yaTiene=null;
   const ok=await pedir({titulo:op.titulo||"Agregar lugar fijo", ok:"Guardar", no:op.no,
     html:`${op.intro||"<p>Se repite cada semana mientras dure la membresía.</p>"}
-      ${selClaseFija(clases,"")}
+      ${selClaseFija(clases,"",suyos)}
+      <p class="privacy dlgnota" data-ya-fija hidden></p>
       ${lugaresFijoHTML()}`,
-    alAbrir:f=>{ activarSeats(f); vigilarClaseFija(f,clases,{p_membresia_id:+memId}); },
+    alAbrir:f=>{ activarSeats(f); vigilarClaseFija(f,clases,{p_membresia_id:+memId});
+      f.querySelector("[data-ya-fija]").addEventListener("click",e=>{ if(e.target.closest("[data-cambiar-su-lugar]")&&yaTiene){ const id=yaTiene.id; if(cerrarDlg) cerrarDlg(false); setTimeout(()=>editarFijo(id),0); } }); },
     accion:async f=>{
       const h=clases.find(x=>x.id===v(f,"h")); const l=+v(f,"lugar");
       if(!h) return "Elige el día y la hora de su clase fija.";
+      const ya=suyos.get(h.id);
+      if(ya) return mostrarYaFija(f,ya);
       if(h.modo==="lugares"&&!l&&!f.dataset.porAsignar) return "Elige el lugar en la sala.";
       const r=await hacer("estudio_guardar_fijo",{p_membresia_id:+memId,p_horario_id:h.id,p_lugar:h.modo==="lugares"&&l?l:null},{dlg:true});
-      if(!r) return null; if(r.ok===false) return r.mensaje; res=r; return true; }});
+      if(!r) return null;
+      if(r.ok===false&&r.error==="conflicto"){ const f2=fijosVigentes(memId,op.rango).get(h.id)||fijosVigentes(null,{}).get(h.id); if(f2) return mostrarYaFija(f,f2); }
+      if(r.ok===false) return r.mensaje; res=r; return true; }});
+  function mostrarYaFija(f,fj){
+    yaTiene=fj;
+    const n=f.querySelector("[data-ya-fija]"); n.hidden=false;
+    n.innerHTML=`Ya tiene esta clase fija (${esc(lugarDeFijo(fj))}). Para cambiar su lugar usa Cambiar. <button class="bbtn line sm" type="button" data-cambiar-su-lugar>Cambiar su lugar</button>`;
+    n.scrollIntoView({block:"nearest"});
+    return `Ya tiene esta clase fija (${lugarDeFijo(fj)}). Para cambiar su lugar usa Cambiar.`;
+  }
   if(!ok) return null;
   if(op.enFlujo) return res;
   listo(res.por_asignar?"Lugar fijo guardado · lugar por asignar":"Lugar fijo guardado"); avisarOmitidas(res); abrirFicha(CLI.clienta.id);
@@ -862,7 +911,7 @@ async function agregarFijo(memId,op={}){
 /* Al registrar o renovar una membresía (DECISIONES §55): ofrecer sus clases fijas en el mismo flujo, una por
    una, tantas como trae el plan (barre-4 = 1, barre-8 = 2…; la ilimitada, hasta que diga «Terminar»).
    Se puede dejar para después y hacerlo con «Agregar lugar fijo». Cada fijo reserva ya todas sus fechas. */
-async function elegirFijos(memId){
+async function elegirFijos(memId,rango){
   const p=await hacer("estudio_fijos_plan",{p_membresia_id:memId}); if(!p) return;
   const total=p.ilimitada?null:p.faltan; if(total===0) return;
   const hechos=[];
@@ -871,7 +920,7 @@ async function elegirFijos(memId){
     const intro=`<p>${i>1?"Ahora la siguiente.":total===null?"Su plan no tiene límite de clases: agrega las que vendrá cada semana.":
       `Su plan trae ${p.maximo} ${p.maximo===1?"clase fija":"clases fijas"} por semana${p.tiene?` y ya tiene ${p.tiene}`:""}. Elige el día, la hora y el lugar.`}
       Se le reservan ya todas las fechas hasta que termine la membresía.</p>`;
-    const r=await agregarFijo(memId,{enFlujo:true, intro,
+    const r=await agregarFijo(memId,{enFlujo:true, intro, rango,
       titulo:total===null?`Clase fija ${n}`:`Clase fija ${n} de ${p.maximo}`,
       no:i===1?"Elegir lugares después":total===null?"Terminar":"Elegir el resto después"});
     if(!r) break;
@@ -883,9 +932,11 @@ async function elegirFijos(memId){
   if(om.length) avisarOmitidas({omitidas:om});
 }
 // La clase del lugar fijo: sin nada elegido de entrada, para que no se guarde una que no es
-function selClaseFija(clases,actual){
-  return `<label class="fld">Día y hora de su clase<select name="h" required><option value="">Elige la clase…</option>${clases.map(h=>
-    `<option value="${esc(h.id)}"${h.id===actual?" selected":""}>${esc(`${DIAS[h.dia_semana-1]} ${h12(h.inicio)} · ${h.clase} (${h.instructora})`)}</option>`).join("")}</select></label>`;
+// suyos: sus clases fijas vigentes (Map horario → fijo); salen marcadas «ya es su clase fija» y no se pueden elegir
+function selClaseFija(clases,actual,suyos){
+  return `<label class="fld">Día y hora de su clase<select name="h" required><option value="">Elige la clase…</option>${clases.map(h=>{
+    const ya=suyos&&suyos.has(h.id)&&h.id!==actual;
+    return `<option value="${esc(h.id)}"${h.id===actual?" selected":""}${ya?" disabled":""}>${esc(`${DIAS[h.dia_semana-1]} ${h12(h.inicio)} · ${h.clase} (${h.instructora})${ya?" · ya es su clase fija":""}`)}</option>`; }).join("")}</select></label>`;
 }
 /* Estado de los lugares en «Agregar lugar fijo» y «Cambiar» (DECISIONES §54): al elegir la clase se pide
    estudio_lugares_fijo (una llamada). Fijo de otra clienta: ocupado y deshabilitado, con su nombre corto.
@@ -1115,7 +1166,8 @@ async function cargarAvisos(){
   /* Cada canal se mira en quien lo manda: el correo sale de Supabase y el WhatsApp del servidor de Oracle */
   const deCorreo=vivos.filter(t=>t.estado&&"correo" in t.estado);
   const correo=!deCorreo.length?["mal","el notificador no responde"]:deCorreo.some(t=>t.estado.correo==="error")?["mal","con errores"]:["bien","funcionando"];
-  const wa=est.whatsapp==="desconectado"?["mal","desconectado"]:!r.whatsapp_automatico||est.whatsapp==="desactivado"?["", "apagado"]:est.whatsapp!=="conectado"?["mal","desconectado"]:["bien",est.modo_prueba?"funcionando (modo prueba)":"funcionando"];
+  const pz=r.whatsapp_pausa&&r.whatsapp_pausa.activa?r.whatsapp_pausa:null;
+  const wa=pz&&r.whatsapp_automatico?["mal","en pausa"]:est.whatsapp==="desconectado"?["mal","desconectado"]:!r.whatsapp_automatico||est.whatsapp==="desactivado"?["", "apagado"]:est.whatsapp!=="conectado"?["mal","desconectado"]:["bien",est.modo_prueba?"funcionando (modo prueba)":"funcionando"];
   const MOTIVO_WA={sin_vincular:"Falta vincular el teléfono.",cerrada:"WhatsApp cerró la sesión. Hay que volver a vincular el teléfono.",
     bloqueada:"WhatsApp restringió el número. Revisa el teléfono y no lo vuelvas a vincular todavía.",
     reemplazada:"Otro equipo abrió esta sesión. Hay que volver a vincular el teléfono."};
@@ -1125,6 +1177,8 @@ async function cargarAvisos(){
   $("#avEstado").innerHTML=`<h2>Estado de los avisos</h2>
     <ul class="estado"><li class="${correo[0]}"><b>Correo:</b> ${correo[1]}</li><li class="${wa[0]}"><b>WhatsApp:</b> ${wa[1]}</li></ul>
     ${notaWa?`<p class="privacy">${esc(notaWa)}</p>`:""}
+    ${pz?pausaHtml(pz):""}
+    ${r.whatsapp_envio?`<p class="privacy">WhatsApp: hasta ${esc(r.whatsapp_envio.por_minuto)} por minuto, ${esc(r.whatsapp_envio.por_hora)} por hora y ${esc(r.whatsapp_envio.por_dia)} por día, de ${esc(r.whatsapp_envio.pausa_min_s)} a ${esc(r.whatsapp_envio.pausa_max_s)} segundos entre uno y otro.${r.recordatorios?` Recordatorio de la clase: ${esc(textoLotes(r.recordatorios))}.`:""}</p>`:""}
     <p class="privacy">${ult?`Último latido del notificador: ${esc(new Date(ult).toLocaleString("es-DO",{timeZone:TZ,dateStyle:"medium",timeStyle:"short"}))}.`:"El notificador todavía no se ha conectado."}</p>
     ${esDuena()?`<div class="switches"><label class="check"><input type="checkbox" data-sw="correo_automatico" ${r.correo_automatico?"checked":""}> Enviar correos automáticos</label>
       <label class="check"><input type="checkbox" data-sw="whatsapp_automatico" ${r.whatsapp_automatico?"checked":""}> Enviar WhatsApp automáticos</label></div>`
@@ -1134,8 +1188,93 @@ async function cargarAvisos(){
       ${["correo","whatsapp"].map(c=>`<tr><th scope="row">${c==="correo"?"Correo":"WhatsApp"}</th><td>${cnt(c,"enviada")}</td><td>${cnt(c,"pendiente")+cnt(c,"enviando")}</td><td>${cnt(c,"error")}</td><td>${cnt(c,"vencida")+cnt(c,"omitida")+cnt(c,"anulada")}</td></tr>`).join("")}
     </tbody></table></div>
     ${esDuena()&&r.uso?usoPlan(r.uso):""}
+    ${esAdministrador()?`<div class="eacc"><button class="bbtn line sm" type="button" data-rec-prueba>Enviarme una prueba del recordatorio</button></div>`:""}
     <h3>Errores recientes</h3>
     ${(r.errores||[]).length?`<ul class="lista">${r.errores.map(e=>`<li><b>${e.canal==="correo"?"Correo":"WhatsApp"}</b> · ${esc(e.plantilla)} · ${esc(new Date(e.creada).toLocaleString("es-DO",{timeZone:TZ,dateStyle:"short",timeStyle:"short"}))}<small>${esc(e.error||"")}</small></li>`).join("")}</ul>`:`<p class="privacy">Sin errores.</p>`}`;
+  COLA=r.cola||null; pintarCola();
+  if(esDuena()) cargarMiembros(); else $("#avMiembros").hidden=true;
+}
+/* WhatsApp en pausa (DECISIONES §57): la pone el notificador ante una restricción de WhatsApp (463), el tope de chats
+   nuevos o fallos seguidos. Una desconexión normal no la pone. Solo el administrador la levanta; si fue por restricción,
+   no antes de la hora que dio WhatsApp. Mientras tanto, el correo sigue saliendo. */
+const MOTIVO_PAUSA={restriccion:"WhatsApp restringió el número para escribir a chats nuevos (código 463).",
+  tope_chats:"WhatsApp avisó que se llegó al límite de chats nuevos.", fallos:"Varios WhatsApp seguidos fallaron con la conexión abierta."};
+const fechaHora = t=>new Date(t).toLocaleString("es-DO",{timeZone:TZ,dateStyle:"medium",timeStyle:"short"});
+function pausaHtml(p){
+  const espera=p.motivo==="restriccion"&&p.hasta&&new Date(p.hasta)>new Date();
+  return `<div class="wa-pausa" role="status"><p><b>WhatsApp en pausa.</b> ${esc(MOTIVO_PAUSA[p.motivo]||"")}${p.desde?` Desde: ${esc(fechaHora(p.desde))}.`:""}</p>
+    <p>Mientras tanto, los recordatorios salen solo por correo.${p.hasta?` ${espera?"Se podrá reanudar a partir del":"WhatsApp indicó hasta el"} ${esc(fechaHora(p.hasta))}.`:""}</p>
+    ${esAdministrador()?`<button class="bbtn solid sm" type="button" data-reanudar ${espera?"disabled":""}>${espera?"Reanudar (todavía no)":"Reanudar WhatsApp"}</button>`
+      :`<p class="privacy">Solo el administrador puede reanudarlo.</p>`}</div>`;
+}
+async function reanudarWhatsapp(){
+  const ok=await pedir({titulo:"Reanudar el WhatsApp", ok:"Reanudar",
+    html:`<p>Los recordatorios pendientes vuelven a salir por WhatsApp, espaciados y dentro de los topes. Antes, revisa el teléfono del estudio.</p>`,
+    accion:async()=>{ const r=await hacer("estudio_reanudar_whatsapp",{},{dlg:true}); if(!r) return null; return r.ok===false?r.mensaje:true; }});
+  if(ok){ listo("WhatsApp reanudado"); cargarAvisos(); }
+}
+const textoLotes = c=>`lote de la noche a las ${h12(c.lote_noche||"20:00")}${c.lote_manana_activo?` y de la mañana a las ${h12(c.lote_manana||"08:00")} (clases desde ${c.minimo_horas||8} horas después)`:", lote de la mañana apagado"}`;
+// Registro de avisos: lo de ayer, hoy y los próximos 2 días, con nombre corto (sin teléfonos ni correos)
+let COLA=null;
+const EST_COLA={pendiente:"Pendiente",enviado:"Enviado",fallido:"Fallido",cancelado:"Cancelado"};
+function pintarCola(){
+  const box=$("#avCola"); if(!COLA){ box.hidden=true; return; }
+  box.hidden=false;
+  const f=(box.querySelector("[data-cola-filtro]")||{}).value||"";
+  const filas=COLA.filter(x=>!f||(f==="whatsapp"?x.canal==="whatsapp":f==="problemas"?["fallido","cancelado"].includes(x.estado):x.estado===f));
+  box.innerHTML=`<h2>Registro de avisos</h2>
+    <p class="privacy">De ayer a pasado mañana. «Cancelado» lleva el motivo (por ejemplo, sin permiso de WhatsApp en la ficha). Solo nombre corto: sin teléfonos ni correos.</p>
+    <label class="fld cola-filtro">Mostrar<select data-cola-filtro>${opt("","Todos",!f)}${opt("pendiente","Pendientes",f==="pendiente")}${opt("enviado","Enviados",f==="enviado")}${opt("problemas","Fallidos o cancelados",f==="problemas")}${opt("whatsapp","Solo WhatsApp",f==="whatsapp")}</select></label>
+    ${filas.length?`<div class="tablewrap"><table class="vtable cola"><caption class="sr-only">Registro de avisos</caption><thead><tr><th scope="col">Cuándo</th><th scope="col">Clienta</th><th scope="col">Aviso</th><th scope="col">Canal</th><th scope="col">Estado</th></tr></thead><tbody>
+      ${filas.map(x=>`<tr><td>${esc(fechaHora(x.enviada||x.programada))}</td><td>${esc(x.nombre||"—")}</td><td>${esc(PLANT_NOMBRE[x.plantilla]||x.plantilla)}${x.clase?`<small>${esc(x.clase)}</small>`:""}</td><td>${x.canal==="correo"?"Correo":"WhatsApp"}</td><td class="e-${esc(x.estado)}">${esc(EST_COLA[x.estado]||x.estado)}${x.motivo?`<small>${esc(x.motivo)}</small>`:""}</td></tr>`).join("")}
+    </tbody></table></div>`:`<p class="privacy">Nada en estos días.</p>`}`;
+}
+/* Correo a las miembros (solo la dueña, DECISIONES §57): asunto y mensaje, cuántas lo recibirán, vista previa,
+   prueba a ella misma y confirmación final. Un correo individual a cada miembro activa, uno cada 10 s. Nunca WhatsApp. */
+let MIEM=null;
+const negritaHtml = t=>esc(t).replace(/\*([^*\n]+)\*/g,"<b>$1</b>");
+async function cargarMiembros(){
+  const box=$("#avMiembros");
+  const [c,h]=await Promise.all([hacer("estudio_correo_miembros",{p_accion:"contar"}),hacer("estudio_correo_miembros",{p_accion:"historial"})]);
+  if(!c||!h){ box.hidden=true; return; }
+  MIEM=c; box.hidden=false;
+  const prev={asunto:(box.querySelector('[name="asunto"]')||{}).value||"", mensaje:(box.querySelector('[name="mensaje"]')||{}).value||""};
+  box.innerHTML=`<h2>Correo a las miembros</h2>
+    <p class="privacy">Le llega a cada miembro activa con correo (<b>${esc(c.total)}</b> hoy${c.sin_correo?`; ${esc(c.sin_correo)} sin correo o con «correo no entrega» no lo reciben`:""}). Solo correo, nunca WhatsApp. Sale uno cada 10 segundos. <code>{nombre}</code> pone su primer nombre y <code>*así*</code> sale en negrita.</p>
+    <form class="form" data-miembros novalidate>
+      <label class="fld">Asunto<input name="asunto" maxlength="150" value="${esc(prev.asunto)}"></label>
+      <label class="fld">Mensaje<textarea name="mensaje" rows="7" maxlength="4000">${esc(prev.mensaje)}</textarea></label>
+      <p class="steph">Vista previa</p><div class="previa-rec" data-previa-miembros aria-live="polite"></div>
+      <div class="eacc"><button class="bbtn line sm" type="button" data-miembros-prueba>Enviarme una prueba</button>
+        <button class="bbtn solid sm" type="submit">Enviar a ${esc(c.total)} ${c.total===1?"miembro":"miembros"}</button></div>
+    </form>
+    <h3>Envíos anteriores</h3>
+    ${(h.envios||[]).length?`<ul class="lista">${h.envios.map(e=>`<li><span><b>${esc(e.asunto)}</b><small>${esc(fechaHora(e.creado))} · ${esc(e.total)} ${e.total===1?"miembro":"miembros"}</small></span>
+      <span>${esc(e.enviados)} enviados${e.pendientes?` · ${esc(e.pendientes)} en cola`:""}${e.fallidos?` · <b>${esc(e.fallidos)} sin enviar</b>`:""}</span></li>`).join("")}</ul>`:`<p class="privacy">Todavía no se ha enviado ninguno.</p>`}`;
+  previaMiembros();
+}
+function previaMiembros(){
+  const f=$("[data-miembros]"); if(!f) return;
+  const a=v(f,"asunto"), m=f.querySelector('[name="mensaje"]').value.replace(/\{nombre\}/g,"Laura");
+  f.querySelector("[data-previa-miembros]").innerHTML=a||m?`<b>Asunto: ${esc(a)}</b>\n\n${negritaHtml(m)}`:"Escribe el asunto y el mensaje.";
+}
+const datosMiembros = f=>({a:v(f,"asunto"), m:f.querySelector('[name="mensaje"]').value.trim()});
+async function pruebaMiembros(){
+  const f=$("[data-miembros]"), d=datosMiembros(f);
+  if(d.a.length<3||d.m.length<10){ aviso("Escribe el asunto y el mensaje.","mal"); return; }
+  const r=await hacer("estudio_correo_miembros",{p_accion:"prueba",p_asunto:d.a,p_mensaje:d.m}); if(r) listo("Prueba enviada a tu correo");
+}
+async function enviarMiembros(f){
+  const d=datosMiembros(f);
+  if(d.a.length<3||d.m.length<10){ aviso("Escribe el asunto (3 letras o más) y el mensaje (10 o más).","mal"); return; }
+  const n=MIEM?MIEM.total:0, min=Math.max(1,Math.ceil(n*10/60));
+  const ok=await pedir({titulo:`Enviar a ${n} ${n===1?"miembro":"miembros"}`, ok:`Sí, enviar a ${n}`, peligro:true,
+    html:`<p>Se manda un correo a cada miembro activa con correo, uno cada 10 segundos (unos ${min} min). No se puede deshacer.</p>
+      <p><b>${esc(d.a)}</b></p><p class="privacy">¿Ya te enviaste una prueba para revisarlo?</p>`,
+    accion:async()=>{ const r=await hacer("estudio_correo_miembros",{p_accion:"enviar",p_asunto:d.a,p_mensaje:d.m,p_total:n},{dlg:true});
+      if(!r) return null; if(r.ok===false){ if(r.total!=null&&MIEM) MIEM.total=r.total; return r.mensaje; } return true; }});
+  if(!ok) return;
+  listo(`En cola: ${n} correos`); f.reset(); cargarMiembros();
 }
 // Plan gratis de Supabase: base de datos (500 MB), fotos de comprobantes (1 GB) y correos de Gmail (unos 500 al día)
 function usoPlan(u){
@@ -1166,7 +1305,33 @@ const PLANT_NOMBRE = {reserva_confirmada:"Reserva confirmada", recordatorio_dia_
   reserva_cancelada:"Reserva cancelada", clase_cancelada:"Clase cancelada", lugar_liberado:"Se liberó un lugar", estudio_nueva_reserva:"Al estudio: nueva reserva", estudio_cancelacion:"Al estudio: cancelación",
   membresia_por_vencer:"Membresía por vencer", transferencia_confirmada:"Transferencia confirmada", transferencia_rechazada:"Transferencia rechazada",
   membresia_confirmada:"Membresía nueva", membresia_renovada:"Membresía renovada",
-  resena_pedido:"Reseña: «¿Cómo te fue?»", resena_gracias:"Reseña: gracias", cambio_de_hora:"Cambio de hora de la clase"};
+  resena_pedido:"Reseña: «¿Cómo te fue?»", resena_gracias:"Reseña: gracias", cambio_de_hora:"Cambio de hora de la clase",
+  recordatorio_horas_antes:"Recordatorio de la clase", prueba_admin:"Prueba del administrador", aviso_duena:"Correo a las miembros",
+  confirmacion_estudio:"Confirmación (reserva del área)",
+  estudio_whatsapp_pausa:"Al administrador: WhatsApp en pausa", estudio_whatsapp_desconectado:"Al estudio: WhatsApp desconectado"};
+// Se editan en su propia sección (o no se editan): no salen en «Textos de los avisos»
+const PLANT_APARTE = /^(recordatorio_horas_antes|recordatorio_dia_antes|prueba_admin|aviso_duena)\./;
+/* Texto del recordatorio (DECISIONES §57): variables de una llave. Debe ser igual a bale.recordatorio_textos() y
+   bale.render_recordatorio() de la base: la línea con una variable vacía (p. ej. sin lugar) se quita entera. */
+const REC_TEXTO = {
+  texto:"¡Hola, {nombre}! 💗\n¡{Dia} tenemos una cita en balé! Tu clase de {clase} te espera a las {hora}. 🎀\nTu lugar: {lugar}.\n*Te pedimos llegar unos 10 minutos antes para prepararte y empezar a tiempo con el grupo. Si llegas tarde, el acceso a la clase será limitado.*\n¡No olvides tus medias antideslizantes! 🧦✨\n{cancelar}",
+  linea_noche:"Si no puedes venir, respóndenos hoy por aquí para liberar tu lugar sin cargo.",
+  linea_manana:"Si no puedes venir, respóndenos por aquí para liberar tu lugar. Como la clase es hoy, cancelar tiene un cargo de {cargo}.",
+  asunto:"Recordatorio: tu clase de {clase} es {dia} a las {hora}",
+  correo_noche:"Con el botón puedes ver o cancelar tu reserva. Cancelar es gratis hasta las 11:59 pm de hoy.",
+  correo_manana:"Con el botón puedes ver o cancelar tu reserva. Como la clase es hoy, cancelar tiene un cargo de {cargo}."};
+function renderRec(t,d){
+  return String(t||"").replace(/\r/g,"").split("\n")
+    .filter(l=>![...l.matchAll(/\{([A-Za-z_]+)\}/g)].some(m=>Object.prototype.hasOwnProperty.call(d,m[1])&&(d[m[1]]==null||d[m[1]]==="")))
+    .map(l=>l.replace(/\{([A-Za-z_]+)\}/g,(m,k)=>Object.prototype.hasOwnProperty.call(d,k)?String(d[k]??""):m)).join("\n").trim();
+}
+function armarRec(T,{manana,canal,lugar}){
+  const cargo=dinero((aj("cancelacion",{})||{}).cargo??300), Dia=manana?"Hoy":"Mañana";
+  const d={nombre:"Laura",clase:"Hot Barre",hora:"5:30 pm",lugar:lugar?"7 (barra del espejo)":"",Dia,dia:Dia.toLowerCase(),cargo};
+  d.cancelar=renderRec(manana?T.linea_manana:T.linea_noche,d);
+  const txt=renderRec(T.texto,d);
+  return canal==="correo"?{asunto:renderRec(T.asunto,d),cuerpo:`${txt}\n\n${renderRec(manana?T.correo_manana:T.correo_noche,d)}`}:{cuerpo:txt};
+}
 const VAR_MEM = ["plan","membresia","clases_texto","desde_larga","hasta_larga","fijos_texto","pago_linea","enlace_membresia","monto","pago_texto","enlace_pago","concepto","motivo"];
 Object.assign(EJEMPLO,{plan:"Barre · 8 clases al mes", desde_larga:"lunes 2 de noviembre", hasta_larga:"martes 1 de diciembre", monto:"RD$6,800",
   enlace_pago:"https://…/mi-reserva.html#m=…", concepto:"tu membresía", membresia:"Barre", clases_texto:"8 clases al mes",
@@ -1183,7 +1348,7 @@ async function cargarAjustes(){
   if(!a||!p||!per) return;
   CAT=await hacer("estudio_catalogos")||CAT;
   AJ=a.ajustes||{}; PLANT=p.plantillas||[];
-  const pago=aj("pago",{}), tr=pago.transferencia||{}, rec=aj("recordatorios",{}), sil=aj("horas_silencio",{});
+  const pago=aj("pago",{}), tr=pago.transferencia||{}, rec=Object.assign({lote_noche:"20:00",lote_manana_activo:false,lote_manana:"08:00",minimo_horas:8},aj("recordatorios",{})), sil=aj("horas_silencio",{});
   const n2fa=await nivel2FA();
   const sinPC=x=>/por confirmar/i.test(x||"")?"":x||"";
   const sec=(id,titulo,cuerpo,nota="")=>`<form class="ebox form" data-aj="${id}" novalidate><h2>${titulo}</h2>${nota?`<p class="privacy">${nota}</p>`:""}${cuerpo}<div class="eacc"><button class="bbtn solid sm" type="submit">Guardar</button></div></form>`;
@@ -1195,9 +1360,32 @@ async function cargarAjustes(){
     sec("reservas","Reservas por la web",`<div class="two"><label class="fld">Cierran (minutos antes de la clase)<input name="cierre" type="number" min="0" max="1440" value="${esc(aj("cierre_reserva_min",30))}"></label>
       <label class="fld">Reservas sueltas pendientes por persona<input name="max" type="number" min="1" max="20" value="${esc(aj("max_reservas_futuras",3))}"></label></div>
       <label class="fld">Se puede reservar hasta (días adelante)<input name="dias" type="number" min="1" max="60" value="${esc(aj("dias_abiertos",28))}"></label>`)+
-    sec("recordatorios","Recordatorios y horas de silencio",`<label class="fld">Recordatorio, horas antes de la clase (0 = no)<input name="horas" type="number" min="0" max="12" value="${esc(rec.horas_antes??6)}"></label>
-      <div class="two"><label class="fld">Sin WhatsApp desde<input name="sd" type="time" value="${esc(sil.desde||"21:00")}"></label><label class="fld">hasta<input name="sh" type="time" value="${esc(sil.hasta||"07:00")}"></label></div>`,
-      "Es el único recordatorio: el del día antes ya no sale (DECISIONES §53). Sale por correo y WhatsApp. Si esa hora cae en el silencio, sale 30 minutos antes de que empiece (una clase de 6:45 am lo recibe a las 8:30 pm del día anterior). Reservas con menos anticipación no lo reciben. Al guardar, los pendientes se reprograman.")+
+    sec("recordatorios","Recordatorio de la clase",`<label class="fld">Lote de la noche anterior (todas las clases del día siguiente)<input name="noche" type="time" value="${esc(rec.lote_noche||"20:00")}"></label>
+      <label class="check"><input type="checkbox" name="manana" ${rec.lote_manana_activo?"checked":""}> Lote de la mañana (el mismo día de la clase)</label>
+      <div class="two" data-manana-campos ${rec.lote_manana_activo?"":"hidden"}><label class="fld">Hora del lote de la mañana<input name="hm" type="time" value="${esc(rec.lote_manana||"08:00")}"></label>
+        <label class="fld">Solo clases que empiezan al menos (horas después)<input name="min" type="number" min="1" max="14" value="${esc(rec.minimo_horas??8)}"></label></div>
+      <p class="aviso-cargo" data-aviso-manana ${rec.lote_manana_activo?"":"hidden"}>Ojo: el lote de la mañana sale el mismo día de la clase, cuando cancelar ya tiene cargo de ${esc(dinero((aj("cancelacion",{})||{}).cargo??300))}. Esos recordatorios dicen el cargo; las demás clases lo reciben la noche anterior.</p>
+      <div class="two"><label class="fld">Sin WhatsApp desde<input name="sd" type="time" value="${esc(sil.desde||"21:00")}"></label><label class="fld">hasta<input name="sh" type="time" value="${esc(sil.hasta||"07:00")}"></label></div>
+      <p class="aviso-cargo" data-aviso-silencio hidden></p>`,
+      "Un solo recordatorio por reserva, a todas las reservas activas (web, área y lugares fijos), por correo y, si la ficha tiene el permiso, por WhatsApp. Una reserva hecha después de su lote no lo recibe. Si el WhatsApp está caído, se reintenta hasta 2 horas antes de la clase; el correo sale igual. Al guardar, los pendientes se reprograman.")+
+    `<form class="ebox form" data-aj="rectexto" novalidate><h2>Texto del recordatorio</h2>
+      <p class="privacy">Variables: <code>{nombre}</code> <code>{clase}</code> <code>{hora}</code> <code>{Dia}</code> (Hoy o Mañana) <code>{dia}</code> (en minúscula) <code>{lugar}</code> <code>{cargo}</code> <code>{cancelar}</code> (la línea de cancelar de abajo). Una línea con <code>{lugar}</code> se quita sola si no tiene lugar. <code>*así*</code> sale en negrita. WhatsApp no lleva enlaces; el correo lleva el botón «Ver o cancelar mi reserva».</p>
+      <label class="fld">Mensaje (WhatsApp y correo)<textarea name="texto" rows="9" maxlength="1500">${esc(recT().texto)}</textarea></label>
+      <label class="fld">Línea de cancelar, noche anterior (sin cargo)<input name="linea_noche" maxlength="300" value="${esc(recT().linea_noche)}"></label>
+      <label class="fld">Línea de cancelar, mismo día (con cargo)<input name="linea_manana" maxlength="300" value="${esc(recT().linea_manana)}"></label>
+      <label class="fld">Asunto del correo<input name="asunto" maxlength="300" value="${esc(recT().asunto)}"></label>
+      <label class="fld">Nota del correo, noche anterior<input name="correo_noche" maxlength="300" value="${esc(recT().correo_noche)}"></label>
+      <label class="fld">Nota del correo, mismo día<input name="correo_manana" maxlength="300" value="${esc(recT().correo_manana)}"></label>
+      <fieldset class="checks previa-opc"><legend>Vista previa</legend>
+        <label class="radio"><input type="radio" name="pv_cuando" value="noche" checked> Noche anterior</label>
+        <label class="radio"><input type="radio" name="pv_cuando" value="manana"> Mismo día</label>
+        <label class="radio"><input type="radio" name="pv_canal" value="whatsapp" checked> WhatsApp</label>
+        <label class="radio"><input type="radio" name="pv_canal" value="correo"> Correo</label>
+        <label class="check"><input type="checkbox" name="pv_lugar" checked> Con lugar asignado</label></fieldset>
+      <div class="previa-rec" data-previa-rec aria-live="polite"></div>
+      <div class="eacc"><button class="bbtn line sm" type="button" data-rec-restaurar>Volver al texto de siempre</button>
+        ${esAdministrador()?`<button class="bbtn line sm" type="button" data-rec-prueba>Enviarme una prueba</button>`:""}
+        <button class="bbtn solid sm" type="submit">Guardar texto</button></div></form>`+
     sec("membresias","Membresías",`<label class="fld">«Renueva pronto» en el control: cuando falten (días)<input name="pronto" type="number" min="1" max="60" value="${esc(aj("renueva_pronto_dias",7))}"></label>`,
       "Desde el área no se avisa a la clienta: quien renueva pronto se ve aquí y en el control de membresías.")+
     sec("seguridad","Seguridad",`<label class="check"><input type="checkbox" name="exigir" ${aj("exigir_2fa",false)?"checked":""}> Exigir la verificación en dos pasos a la dueña y a la asistente</label>`,
@@ -1221,7 +1409,7 @@ async function cargarAjustes(){
       <label class="check"><input type="checkbox" name="foro" ${aj("comunidad_foro",false)?"checked":""}> Abrir la conversación de alumnas en Comunidad (solo texto, se borra a los 10 días; la moderan la dueña y la asistente)</label>`:""}`,
       "La reseña no es anónima y solo la ves tú, en la pestaña «Reseñas». Si pones el enlace de Google, el correo de agradecimiento lo ofrece a todas las que respondieron (Google no permite pedírsela solo a las contentas). La lista de Ballet niñas guarda solo el nombre de la niña y el de su representante; la ven tú y la instructora que elijas."):"")+
     `<form class="ebox form" data-aj="plantilla" novalidate><h2>Textos de los avisos</h2>
-      <label class="fld">Aviso<select name="id">${PLANT.map(t=>{ const [k,c]=t.id.split("."); return opt(t.id,`${PLANT_NOMBRE[k]||k} · ${c==="correo"?"correo":"WhatsApp"}`); }).join("")}</select></label>
+      <label class="fld">Aviso<select name="id">${PLANT.filter(t=>!PLANT_APARTE.test(t.id)).map(t=>{ const [k,c]=t.id.split("."); return opt(t.id,`${PLANT_NOMBRE[k]||k} · ${c==="correo"?"correo":"WhatsApp"}`); }).join("")}</select></label>
       <label class="fld" data-asunto>Asunto<input name="asunto" maxlength="200"></label>
       <label class="fld">Texto<textarea name="cuerpo" rows="10" maxlength="4000"></textarea></label>
       <p class="privacy">Variables: ${VARIABLES.map(x=>`<code>{{${x}}}</code>`).join(" ")}. Solo en los avisos al estudio: ${VAR_ESTUDIO.map(x=>`<code>{{${x}}}</code>`).join(" ")}. En los de membresía y transferencia: ${VAR_MEM.map(x=>`<code>{{${x}}}</code>`).join(" ")}. En los de reseña: ${VAR_RES.map(x=>`<code>{{${x}}}</code>`).join(" ")}. En el de cambio de hora: ${VAR_HORA.map(x=>`<code>{{${x}}}</code>`).join(" ")}.</p>
@@ -1241,7 +1429,33 @@ async function cargarAjustes(){
   const fp=$('[data-aj="plantilla"]'); plantillaSel(fp);
   fp.querySelector('[name="id"]').addEventListener("change",()=>plantillaSel(fp));
   fp.addEventListener("input",()=>previa(fp));
+  const fr=$('[data-aj="recordatorios"]'), ft=$('[data-aj="rectexto"]');
+  const lotes=()=>{ const on=fr.querySelector('[name="manana"]').checked; fr.querySelector("[data-manana-campos]").hidden=!on; fr.querySelector("[data-aviso-manana]").hidden=!on;
+    // El lote de la noche dentro de las horas de silencio: el WhatsApp esperaría a la mañana (el correo sale igual)
+    const n=v(fr,"noche"), d=v(fr,"sd"), h=v(fr,"sh"), sil=d&&h&&d!==h&&(d>h?(n>=d||n<h):(n>=d&&n<h)), a=fr.querySelector("[data-aviso-silencio]");
+    a.hidden=!sil; a.textContent=sil?"El lote de la noche cae en las horas sin WhatsApp: ese WhatsApp saldría a la mañana siguiente. El correo sale igual.":""; };
+  fr.addEventListener("input",lotes); fr.addEventListener("change",lotes); lotes();
+  ft.addEventListener("input",()=>previaRec(ft)); ft.addEventListener("change",()=>previaRec(ft)); previaRec(ft);
+  ft.addEventListener("click",e=>{ if(e.target.closest("[data-rec-restaurar]")){ Object.keys(REC_TEXTO).forEach(k=>{ const el=ft.querySelector(`[name="${k}"]`); if(el) el.value=REC_TEXTO[k]; }); previaRec(ft); listo("Texto de siempre puesto: guárdalo para usarlo"); }
+    if(e.target.closest("[data-rec-prueba]")) pruebaRecordatorio(); });
   $("#ajustes").__per=per.personal||[];
+}
+const recT = ()=>Object.assign({},REC_TEXTO,aj("recordatorio_texto",{})||{});
+const textosRec = f=>Object.fromEntries(Object.keys(REC_TEXTO).map(k=>[k,(f.querySelector(`[name="${k}"]`)||{}).value||""]));
+function previaRec(f){
+  const manana=f.querySelector('[name="pv_cuando"]:checked').value==="manana", canal=f.querySelector('[name="pv_canal"]:checked').value;
+  const m=armarRec(textosRec(f),{manana,canal,lugar:f.querySelector('[name="pv_lugar"]').checked});
+  f.querySelector("[data-previa-rec]").innerHTML=canal==="correo"?`<b>Asunto: ${esc(m.asunto)}</b>\n\n${negritaHtml(m.cuerpo)}\n<span class="btn-previa">Ver o cancelar mi reserva</span>`:negritaHtml(m.cuerpo);
+}
+// «Enviarme una prueba» (solo el administrador): con el texto guardado, a su correo y, si lo pone, a su WhatsApp
+async function pruebaRecordatorio(){
+  let r=null, wa="";
+  const ok=await pedir({titulo:"Enviarme una prueba", ok:"Enviar la prueba",
+    html:`<p>Te llega el recordatorio con datos de ejemplo, con el <b>texto guardado</b> (guarda antes si lo cambiaste). Nunca a una clienta.</p>
+      <label class="fld">Tu WhatsApp (opcional; si lo dejas vacío, solo correo)<input name="wa" type="tel" value="${esc(YO.whatsapp_prueba||"")}"></label>
+      <label class="check"><input type="checkbox" name="manana"> Como el lote de la mañana (dice «Hoy» y el cargo)</label>`,
+    accion:async f=>{ wa=v(f,"wa"); r=await hacer("estudio_probar_recordatorio",{p_whatsapp:wa||null,p_manana:v(f,"manana")},{dlg:true}); if(!r) return null; return r.ok===false?r.mensaje:true; }});
+  if(ok){ if(r.whatsapp) YO.whatsapp_prueba=wa; listo(r.whatsapp?"Prueba enviada a tu correo y a tu WhatsApp":"Prueba enviada a tu correo"); }
 }
 function plantillaSel(f){
   const t=PLANT.find(x=>x.id===v(f,"id"))||{}, correo=/\.correo$/.test(t.id||"");
@@ -1265,8 +1479,18 @@ async function guardarAjustes(f){
     if(c==null||m==null||d==null){ aviso("Revisa los números de las reservas.","mal"); return; }
     ok=!!await ajuste("cierre_reserva_min",c)&&!!await ajuste("max_reservas_futuras",m)&&!!await ajuste("dias_abiertos",d);
   }else if(id==="recordatorios"){ const rec0=aj("recordatorios",{});
-    const h=num("horas",0,12); if(h==null||!v(f,"sd")||!v(f,"sh")){ aviso("Revisa las horas.","mal"); return; }
-    ok=!!await ajuste("recordatorios",{dia_antes_hora:rec0.dia_antes_hora||"18:00",horas_antes:h})&&!!await ajuste("horas_silencio",{desde:v(f,"sd"),hasta:v(f,"sh")});
+    const on=v(f,"manana"), m=on?num("min",1,14):(rec0.minimo_horas??8);
+    if(!v(f,"noche")||!v(f,"sd")||!v(f,"sh")||(on&&(!v(f,"hm")||m==null))){ aviso("Revisa las horas.","mal"); return; }
+    if(on&&!rec0.lote_manana_activo){ const c=await pedir({titulo:"Encender el lote de la mañana",ok:"Encender",
+      html:`<p>Las clases que empiezan al menos ${esc(m)} horas después de las ${esc(h12(v(f,"hm")))} recibirán el recordatorio ese mismo día. Como cancelar el mismo día tiene cargo, esos mensajes lo dicen.</p>`}); if(!c) return; }
+    const val={...rec0,lote_noche:v(f,"noche"),lote_manana_activo:on,lote_manana:on?v(f,"hm"):(rec0.lote_manana||"08:00"),minimo_horas:m};
+    ok=!!await ajuste("recordatorios",val)&&!!await ajuste("horas_silencio",{desde:v(f,"sd"),hasta:v(f,"sh")});
+    if(ok){ AJ.recordatorios={valor:val}; AJ.horas_silencio={valor:{desde:v(f,"sd"),hasta:v(f,"sh")}}; }
+  }else if(id==="rectexto"){
+    const t=textosRec(f);
+    if(t.texto.trim().length<10){ aviso("El mensaje del recordatorio no puede quedar vacío.","mal"); return; }
+    ok=!!await ajuste("recordatorio_texto",t);
+    if(ok) AJ.recordatorio_texto={valor:t};
   }else if(id==="membresias"){
     const p=num("pronto",1,60);
     if(p==null){ aviso("Revisa los días: «renueva pronto» de 1 a 60.","mal"); return; }
@@ -1426,7 +1650,7 @@ async function csvAsistencia(f){
 /* =========================================================
    EXPORTAR (dueña): CSV con BOM para que Excel lea los acentos
    ========================================================= */
-const COLS = {clientas:{nombre:"Nombre",whatsapp:"WhatsApp",correo:"Correo",acepta_whatsapp:"Acepta WhatsApp",alta:"Alta",reservas:"Reservas activas",asistencias:"Asistencias"},
+const COLS = {correos_miembros:{nombre:"Nombre",correo:"Correo"}, clientas:{nombre:"Nombre",whatsapp:"WhatsApp",correo:"Correo",acepta_whatsapp:"Acepta WhatsApp",alta:"Alta",reservas:"Reservas activas",asistencias:"Asistencias"},
   reservas:{fecha:"Fecha",hora:"Hora",clase:"Clase",instructora:"Instructora",clienta:"Clienta",whatsapp:"WhatsApp",lugar:"Lugar",estado:"Estado",origen:"Origen",asistencia:"Asistencia",pago:"Pago",metodo:"Método",monto:"Monto",cancelacion_tardia:"Cancelación tardía",cargo:"Cargo",cargo_estado:"Estado del cargo"},
   membresias:{clienta:"Clienta",whatsapp:"WhatsApp",plan:"Plan",detalle:"Detalle",desde:"Desde",hasta:"Hasta",precio:"Precio",pago:"Pago",metodo:"Método",pagado_en:"Último pago",banco:"Banco",estado:"Estado"},
   // las mismas columnas del Excel de Brittany
@@ -1455,6 +1679,7 @@ async function exportar(e){
   e.preventDefault();
   const que=$("#xQue").value, args={p_que:que};
   if(que==="asistencia"){ csvAsistencia({p_desde:$("#xDesde").value||sumar(hoy(),-30), p_hasta:$("#xHasta").value||hoy()}); return; }
+  if(que==="correos_miembros"){ const r=await hacer("estudio_correos_miembros"); if(r) descargarCsv(que,r.filas||[]); return; }
   if(que==="reservas"||que==="ingresos"){ args.p_desde=$("#xDesde").value||null; args.p_hasta=$("#xHasta").value||null; }
   const r=await hacer("estudio_exportar",args); if(!r) return;
   descargarCsv(que,r.filas||[]);
@@ -1522,12 +1747,15 @@ function eventos(){
   $("#icsSemana").addEventListener("click",icsSemana);
   // Clientas
   $("#qCli").addEventListener("input",()=>{ clearTimeout(qT); qT=setTimeout(buscarClientas,300); });
+  $("#fCliFiltro").addEventListener("change",buscarClientas);
+  $("#p-clientas").addEventListener("change",e=>{ const c=e.target.closest("[data-correo-no-entrega]"); if(c) marcarCorreo(c); });
   $("#nuevaCli").addEventListener("click",nuevaClienta);
   $("#p-clientas").addEventListener("change",e=>{ const s=e.target.closest("[data-ctrl]"); if(s&&CTRL){ ctrlF[s.dataset.ctrl]=s.value; pintarControl(); const n=$(`#control [data-ctrl="${s.dataset.ctrl}"]`); if(n) n.focus(); } });
   $("#p-clientas").addEventListener("click",e=>{
     if(e.target.closest("[data-renovar-todas]")){ renovarTodas(); return; }
     if(e.target.closest("[data-exp-control]")){ exportarControl(); return; }
     if(e.target.closest("[data-importar]")){ importarMembresias(); return; }
+    const wr=e.target.closest("[data-wa-reintentar]"); if(wr){ reintentarWhatsapp(+wr.dataset.waReintentar); return; }
     const t=e.target.closest("[data-ficha],[data-renovar],[data-fijo],[data-quitar-fijo],[data-editar-fijo],[data-mem],[data-cancel-mem],[data-borrar],[data-cobro-mem]"); if(!t) return;
     const d=t.dataset;
     if(d.cobroMem) cobrarConTarjeta({p_membresia_id:+d.cobroMem});
@@ -1557,7 +1785,11 @@ function eventos(){
     const tm=e.target.closest("[data-cobro-mem2]"); if(tm) cobrarConTarjeta({p_membresia_id:+tm.dataset.cobroMem2},cargarCobros);
   });
   // Avisos y ajustes
-  $("#p-avisos").addEventListener("change",e=>{ if(e.target.dataset.sw) interruptor(e.target); });
+  $("#p-avisos").addEventListener("change",e=>{ if(e.target.dataset.sw) interruptor(e.target); if(e.target.matches("[data-cola-filtro]")){ pintarCola(); const s=$("#avCola [data-cola-filtro]"); if(s) s.focus(); } });
+  $("#p-avisos").addEventListener("click",e=>{ if(e.target.closest("[data-reanudar]")) reanudarWhatsapp(); if(e.target.closest("[data-miembros-prueba]")) pruebaMiembros();
+    if(e.target.closest("[data-rec-prueba]")) pruebaRecordatorio(); });
+  $("#p-avisos").addEventListener("input",e=>{ if(e.target.closest("[data-miembros]")) previaMiembros(); });
+  $("#p-avisos").addEventListener("submit",e=>{ const f=e.target.closest("[data-miembros]"); if(f){ e.preventDefault(); enviarMiembros(f); } });
   $("#ajustes").addEventListener("submit",e=>{ const f=e.target.closest("[data-aj]"); if(f){ e.preventDefault(); guardarAjustes(f); } });
   $("#ajustes").addEventListener("click",e=>{ const h=e.target.closest("[data-hor]"); if(h){ editarHorario(h.dataset.hor); return; }
     const p=e.target.closest("[data-per]"); if(p) editarPersonal(p.dataset.per); });
