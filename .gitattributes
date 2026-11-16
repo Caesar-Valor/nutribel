@@ -1,0 +1,22 @@
+# Finales de línea: todo el texto se guarda y se descarga con LF, también en Windows.
+# Git convierte a LF al hacer «git add» aunque el editor haya guardado CRLF.
+* text=auto eol=lf
+
+# Sin extensión (Cloudflare Pages, los genera construir.mjs)
+bale/_headers    text eol=lf
+bale/_redirects  text eol=lf
+
+# Binarios: nunca se tocan
+*.png    binary
+*.jpg    binary
+*.jpeg   binary
+*.webp   binary
+*.avif   binary
+*.gif    binary
+*.ico    binary
+*.woff2  binary
+*.woff   binary
+*.mp4    binary
+*.webm   binary
+*.pdf    binary
+*.zip    binary
