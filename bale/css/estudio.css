@@ -99,6 +99,9 @@
 .edlg .seat.warn::after{content:"";position:absolute;top:5px;right:5px;width:7px;height:7px;border-radius:50%;background:var(--brown)}
 .edlg .seat.warn[aria-pressed="true"]::after{background:var(--on-brown)}
 .edlg .seatnota{margin-top:8px;padding:8px 12px;border-radius:12px;border:1.5px dashed var(--brown);color:var(--b-ink);font-weight:500}
+/* Clase con «Lugar por asignar» (DECISIONES §56) */
+.edlg .porasignar{margin-top:8px}
+.edlg .porasignar .linkbtn{min-height:44px;padding:0 4px}
 @media (max-width:480px){ .edlg [data-lugar] .srow > div{grid-template-columns:repeat(auto-fill,minmax(44px,1fr))} }
 .edlg[open]{animation:none}
 /* Asistencia (DECISIONES §55) */

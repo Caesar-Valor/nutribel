@@ -381,7 +381,8 @@ function pintarClase(){
   const asisDesde=msLV(s.fecha,sem.inicio)-60*60e3, asisHasta=msLV(s.fecha,sem.fin||sem.inicio)+7*864e5;
   const puedeAsis=Date.now()>=asisDesde&&Date.now()<=asisHasta, asisCerrada=Date.now()>asisHasta;
   const cancelada=s.estado==="cancelada", insc=s.modo==="inscripcion";
-  const tags=a=>[a.origen==="fijo"?`<span class="tagx web">Miembro</span>`:"", a.primera_vez?`<span class="tagx prim">Primera vez</span>`:"",
+  const sinLugar=a=>s.modo==="lugares"&&!a.lugar;   // DECISIONES §56
+  const tags=a=>[sinLugar(a)?`<span class="tagx pend">Lugar por asignar</span>`:"", a.origen==="fijo"?`<span class="tagx web">Miembro</span>`:"", a.primera_vez?`<span class="tagx prim">Primera vez</span>`:"",
     a.origen==="estudio"?`<span class="tagx">Por el estudio</span>`:"",
     admin&&a.pago_estado?(p=>`<span class="tagx ${p==="pendiente"||p==="revisar"?"pend":""}">${esc(PAGO[p]||p)}${p==="pendiente"&&a.monto!=null?` ${esc(dinero(a.monto))}`:""}</span>`)(pagoDe(a)):""].join("");
   box.innerHTML=`<h2>${esc(s.clase)}${s.etiqueta||s.edad?` <small>${esc(s.etiqueta||s.edad)}</small>`:""}</h2>
@@ -395,7 +396,7 @@ function pintarClase(){
     <h3>Alumnas (${alumnas.length})</h3>
     ${!puedeAsis&&alumnas.length?`<p class="privacy">${asisCerrada?"La asistencia se podía marcar o corregir hasta 7 días después de la clase.":"La asistencia se marca desde una hora antes de la clase."}</p>`:""}
     <ol class="roster est">${alumnas.map((a,i)=>`<li>
-      <span class="seatno" title="${s.modo==="lugares"?"Lugar":"Orden"}"><span class="sr-only">${s.modo==="lugares"?"Lugar":"Número"} </span>${a.lugar||i+1}</span>
+      <span class="seatno" title="${s.modo==="lugares"?"Lugar":"Orden"}"><span class="sr-only">${s.modo==="lugares"?"Lugar":"Número"} </span>${sinLugar(a)?`<span aria-hidden="true">—</span><span class="sr-only">por asignar</span>`:a.lugar||i+1}</span>
       <span class="nm">${esc(a.nombre)}${a.nombre_reserva?`<small>Reservó como ${esc(a.nombre_reserva)}</small>`:""}${a.telefono?`<small>${esc(a.telefono)}</small>`:admin&&a.clienta_id?`<small class="rev">Falta su WhatsApp</small>`:""}${a.revisar?`<small class="rev">${esc(a.revisar)}</small>`:""}</span>
       <span class="tgs">${tags(a)}</span>
       <span class="asis" role="group" aria-label="Asistencia de ${esc(a.nombre)}">
@@ -705,10 +706,11 @@ async function dejarFijo(reservaId){
     return;
   }
   const lugar=s.modo==="lugares"?a.lugar:null;
-  if(s.modo==="lugares"&&!lugar){ aviso("Esa reserva no tiene lugar: elige uno con «Editar» y vuelve a intentarlo.","mal"); return; }
+  const porAsignar=!!(CAT.horario||[]).find(h=>h.id===s.horario_id&&h.por_asignar);
+  if(s.modo==="lugares"&&!lugar&&!porAsignar){ aviso("Esa reserva no tiene lugar: elige uno con «Editar» y vuelve a intentarlo.","mal"); return; }
   let res=null;
   const ok=await pedir({titulo:"Dejar fijo su lugar", ok:"Dejar fijo",
-    html:`<p><b>${esc(a.nombre)}</b> queda fija en <b>${esc(s.clase)}</b>, los <b>${esc(cuando)}</b>${lugar?`, <b>lugar ${lugar}</b>`:""}.</p>
+    html:`<p><b>${esc(a.nombre)}</b> queda fija en <b>${esc(s.clase)}</b>, los <b>${esc(cuando)}</b>${lugar?`, <b>lugar ${lugar}</b>`:s.modo==="lugares"?", <b>lugar por asignar</b>":""}.</p>
       <p>Se le reserva sola cada semana hasta el ${esc(fmtDay(m.hasta))} (fin de su membresía: ${esc(m.plan)}). Al renovar la membresía, el lugar fijo se copia.</p>`,
     accion:async()=>{ const x=await hacer("estudio_guardar_fijo",{p_membresia_id:m.id,p_horario_id:s.horario_id,p_lugar:lugar},{dlg:true});
       if(!x) return null; if(x.ok===false) return x.mensaje; res=x; return true; }});
@@ -718,6 +720,7 @@ async function dejarFijo(reservaId){
   avisarOmitidas(res);
   cargarClase(s.id);
 }
+const modoDe=id=>((CAT.horario||[]).find(h=>h.id===id)||{}).modo;
 function pintarFicha(){
   const c=CLI.clienta, M=CLI.membresias||[], R=CLI.reservas||[], cargos=R.filter(x=>x.cancelacion_tardia);
   $("#cliDet").innerHTML=`<h2>${esc(c.nombre)}</h2>
@@ -735,7 +738,7 @@ function pintarFicha(){
     ${M.map(m=>`<div class="mem ${m.estado!=="activa"?"off":""}">
       <p class="mt"><b>${esc(m.plan)}</b>${m.detalle?` · ${esc(m.detalle)}`:""}<small>${esc(fmtCorta(m.desde))} – ${esc(fmtCorta(m.hasta))} · ${esc(dinero(m.precio))} · ${esc(PAGO[m.pago_estado]||m.pago_estado)}${m.pago_metodo?` (${esc(METODO[m.pago_metodo])}${m.banco?`, ${esc(m.banco)}`:""})`:""}${m.pagado_en?` el ${esc(fmtCorta(m.pagado_en))}`:""}${m.estado!=="activa"?" · cancelada":""}</small>
         ${m.transferencia&&m.transferencia.estado==="por_confirmar"?`<small class="rev">Avisó una transferencia: confírmala en Cobros.</small>`:""}</p>
-      <ul class="fijos">${(m.fijos||[]).map(f=>`<li><span>${esc(DIAS[f.dia_semana-1])} ${esc(h12(f.inicio))} · ${esc(f.clase)}${f.lugar?` · lugar ${f.lugar}`:""}<small>${esc(fmtCorta(f.desde))} – ${esc(fmtCorta(f.hasta))}</small></span>
+      <ul class="fijos">${(m.fijos||[]).map(f=>`<li><span>${esc(DIAS[f.dia_semana-1])} ${esc(h12(f.inicio))} · ${esc(f.clase)}${f.lugar?` · lugar ${f.lugar}`:modoDe(f.horario_id)==="lugares"?" · Lugar por asignar":""}<small>${esc(fmtCorta(f.desde))} – ${esc(fmtCorta(f.hasta))}</small></span>
         ${m.estado==="activa"?`<span class="racc"><button class="linkbtn" type="button" data-editar-fijo="${f.id}">Cambiar</button>
           <button class="linkbtn" type="button" data-quitar-fijo="${f.id}">Quitar</button></span>`:""}</li>`).join("")||`<li class="privacy">Sin lugares fijos.</li>`}</ul>
       ${m.estado==="activa"&&!c.anonimizada?`<div class="eacc"><button class="bbtn solid sm" type="button" data-fijo="${m.id}">Agregar lugar fijo</button>
@@ -848,12 +851,12 @@ async function agregarFijo(memId,op={}){
     accion:async f=>{
       const h=clases.find(x=>x.id===v(f,"h")); const l=+v(f,"lugar");
       if(!h) return "Elige el día y la hora de su clase fija.";
-      if(h.modo==="lugares"&&!l) return "Elige el lugar en la sala.";
-      const r=await hacer("estudio_guardar_fijo",{p_membresia_id:+memId,p_horario_id:h.id,p_lugar:h.modo==="lugares"?l:null},{dlg:true});
+      if(h.modo==="lugares"&&!l&&!f.dataset.porAsignar) return "Elige el lugar en la sala.";
+      const r=await hacer("estudio_guardar_fijo",{p_membresia_id:+memId,p_horario_id:h.id,p_lugar:h.modo==="lugares"&&l?l:null},{dlg:true});
       if(!r) return null; if(r.ok===false) return r.mensaje; res=r; return true; }});
   if(!ok) return null;
   if(op.enFlujo) return res;
-  listo("Lugar fijo guardado"); avisarOmitidas(res); abrirFicha(CLI.clienta.id);
+  listo(res.por_asignar?"Lugar fijo guardado · lugar por asignar":"Lugar fijo guardado"); avisarOmitidas(res); abrirFicha(CLI.clienta.id);
   return res;
 }
 /* Al registrar o renovar una membresía (DECISIONES §55): ofrecer sus clases fijas en el mismo flujo, una por
@@ -891,29 +894,34 @@ function selClaseFija(clases,actual){
 const fechasTxt=a=>a.length<2?`el ${a[0]||""}`:`el ${a.slice(0,-1).join(", el ")} y el ${a[a.length-1]}`;
 function lugaresFijoHTML(){
   return `<div data-lugar>${seatsHTML([])}<p class="privacy" data-lhint aria-live="polite">Elige primero la clase.</p>
-    <p class="privacy" data-lfijos hidden></p><p class="privacy seatnota" data-lnota aria-live="polite" hidden></p></div>
+    <p class="privacy" data-lfijos hidden></p><p class="privacy seatnota" data-lnota aria-live="polite" hidden></p>
+    <div class="porasignar" data-lsin hidden><p class="privacy">Esta clase está con <b>lugar por asignar</b>: puedes guardarla sin elegir lugar. Si eliges uno, se le reserva donde esté libre.</p>
+      <button class="linkbtn" type="button" data-sinlugar>Sin lugar (por asignar)</button></div></div>
     <p class="privacy" data-cupo hidden>Pilates Reformer: ocupa una máquina, sin número de lugar.</p>`;
 }
 function vigilarClaseFija(f,clases,ref){
   const sel=f.querySelector('[name="h"]'), box=f.querySelector("[data-seats]"), inp=f.querySelector('[name="lugar"]');
-  const hint=f.querySelector("[data-lhint]"), fij=f.querySelector("[data-lfijos]"), nota=f.querySelector("[data-lnota]");
+  const hint=f.querySelector("[data-lhint]"), fij=f.querySelector("[data-lfijos]"), nota=f.querySelector("[data-lnota]"), sin=f.querySelector("[data-lsin]");
+  sin.querySelector("[data-sinlugar]").addEventListener("click",()=>{ inp.value=""; notaDe(null);
+    seats.forEach(b=>b.setAttribute("aria-pressed","false")); listo("Sin lugar: queda «Lugar por asignar»"); });
   const seats=[...box.querySelectorAll(".seat")]; let turno=0;
   seats.forEach(b=>{ b.dataset.al=b.getAttribute("aria-label"); });
   const limpiar=b=>{ b.className="seat"; b.disabled=true; b.removeAttribute("title"); delete b.dataset.fechas;
     b.setAttribute("aria-pressed","false"); b.setAttribute("aria-label",b.dataset.al); };
   const notaDe=b=>{ const fs=b&&b.dataset.fechas?b.dataset.fechas.split(","):[];
-    nota.hidden=!fs.length; nota.textContent=fs.length?`Este lugar está reservado ${fechasTxt(fs)}. Esas fechas no se le asignarán a esta clienta.`:""; };
+    nota.hidden=!fs.length; nota.textContent=fs.length?(f.dataset.porAsignar?`Este lugar está reservado ${fechasTxt(fs)}. Esas fechas quedan con lugar por asignar.`:`Este lugar está reservado ${fechasTxt(fs)}. Esas fechas no se le asignarán a esta clienta.`):""; };
   box.addEventListener("click",e=>{ const b=e.target.closest("[data-n]"); if(b&&!b.disabled) notaDe(b); });
   const upd=async()=>{
     const h=clases.find(x=>x.id===sel.value), lug=!!h&&h.modo==="lugares", t=++turno;
     f.querySelector("[data-lugar]").hidden=!!h&&!lug; f.querySelector("[data-cupo]").hidden=!h||lug;
-    seats.forEach(limpiar); inp.value=""; notaDe(null); fij.hidden=true; hint.hidden=false;
+    seats.forEach(limpiar); inp.value=""; notaDe(null); fij.hidden=true; hint.hidden=false; sin.hidden=true; delete f.dataset.porAsignar;
     if(!h){ hint.textContent="Elige primero la clase."; return; }
     if(!lug) return;
     hint.textContent="Cargando los lugares de esa clase…";
     const r=await hacer("estudio_lugares_fijo",{p_horario_id:h.id,...ref});
     if(t!==turno) return;   // ya eligió otra clase
     if(!r){ hint.textContent="No se pudieron cargar los lugares. Elige la clase otra vez."; return; }
+    if(r.por_asignar){ f.dataset.porAsignar="1"; sin.hidden=false; }
     const est=new Map((r.lugares||[]).map(x=>[x.lugar,x]));
     seats.forEach(b=>{ const n=+b.dataset.n, x=est.get(n); b.disabled=false;
       if(r.propio===n){ b.setAttribute("aria-pressed","true"); inp.value=n; b.setAttribute("aria-label",`Lugar ${n}, su lugar actual`); b.title="Su lugar actual"; }
@@ -942,7 +950,7 @@ async function editarFijo(id){
   const clases=(CAT.horario||[]).filter(h=>h.modo!=="inscripcion");
   let res=null;
   const ok=await pedir({titulo:"Cambiar lugar fijo", ok:"Guardar el cambio",
-    html:`<p>Ahora: <b>${esc(DIAS[f0.dia_semana-1])} ${esc(h12(f0.inicio))} · ${esc(f0.clase)}${f0.lugar?`, lugar ${f0.lugar}`:""}</b>.</p>
+    html:`<p>Ahora: <b>${esc(DIAS[f0.dia_semana-1])} ${esc(h12(f0.inicio))} · ${esc(f0.clase)}${f0.lugar?`, lugar ${f0.lugar}`:modoDe(f0.horario_id)==="lugares"?", lugar por asignar":""}</b>.</p>
       ${selClaseFija(clases,f0.horario_id)}
       ${lugaresFijoHTML()}
       <p class="privacy">Sus reservas fijas que vienen se cancelan en la clase de antes y se crean en la nueva, sin cargo y sin avisarle. Las fechas en que el lugar ya está reservado no se le asignan.</p>`,
@@ -950,12 +958,17 @@ async function editarFijo(id){
     accion:async f=>{
       const h=clases.find(x=>x.id===v(f,"h")); const l=+v(f,"lugar");
       if(!h) return "Elige el día y la hora de su clase fija.";
-      if(h.modo==="lugares"&&!l) return "Elige el lugar en la sala.";
-      const r=await hacer("estudio_editar_fijo",{p_fijo_id:id,p_horario_id:h.id,p_lugar:h.modo==="lugares"?l:null},{dlg:true});
+      if(h.modo==="lugares"&&!l&&!f.dataset.porAsignar) return "Elige el lugar en la sala.";
+      const r=await hacer("estudio_editar_fijo",{p_fijo_id:id,p_horario_id:h.id,p_lugar:h.modo==="lugares"&&l?l:null},{dlg:true});
       if(!r) return null; if(r.ok===false) return r.mensaje; res=r; return true; }});
   if(!ok) return;
-  listo(`Lugar fijo cambiado${res.reservas_canceladas?`: ${res.reservas_canceladas} reserva(s) movida(s) a la clase nueva`:""}`);
-  avisarOmitidas(res);
+  listo(`Lugar fijo cambiado${res.reservas_canceladas?`: ${res.reservas_canceladas} reserva(s) movida(s) a la clase nueva`:res.reservas_cambiadas?`: ${res.reservas_cambiadas} reserva(s) con el lugar nuevo`:""}`);
+  // En su misma clase, las fechas con ese lugar ya tomado siguen «por asignar» (DECISIONES §56)
+  const pa=res.por_asignar||[];
+  if(pa.length) setTimeout(()=>pedir({titulo:"Lugar fijo cambiado", ok:"Entendido", no:"",
+    html:`<p>${pa.length>1?"Estas fechas siguen":"Esta fecha sigue"} con <b>lugar por asignar</b> porque ese lugar ya estaba reservado: <b>${esc(pa.join(", "))}</b>.</p>
+      <p>Su reserva sigue en pie. Si hace falta, dale otro lugar ese día con «Editar» en la clase.</p>`}),50);
+  else avisarOmitidas(res);
   abrirFicha(CLI.clienta.id);
 }
 async function quitarFijo(id){
