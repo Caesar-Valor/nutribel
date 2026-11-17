@@ -32,7 +32,8 @@ const URL_BASE = SITIO + '/';
 // así que canonical y sitemap usan la forma final; el enlace con .html sigue funcionando.
 const urlDe = (nombre) => URL_BASE + (nombre === 'index.html' ? '' : nombre.replace(/\.html$/, ''));
 // Política de contenido (CSP), la misma en el <meta> de cada página y en bale/_headers. No ampliarla sin motivo.
-const CSP = "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; font-src 'self'; img-src 'self' data: blob: https://*.supabase.co; connect-src 'self' https://*.supabase.co wss://*.supabase.co; frame-src https://www.google.com https://www.instagram.com; base-uri 'self'; form-action 'self'; object-src 'none'";
+// Cloudflare Web Analytics (17/11/2026): su script (static.cloudflareinsights.com) y el envío de visitas (cloudflareinsights.com)
+const CSP = "default-src 'self'; script-src 'self' https://static.cloudflareinsights.com; style-src 'self' 'unsafe-inline'; font-src 'self'; img-src 'self' data: blob: https://*.supabase.co; connect-src 'self' https://*.supabase.co wss://*.supabase.co https://cloudflareinsights.com; frame-src https://www.google.com https://www.instagram.com; base-uri 'self'; form-action 'self'; object-src 'none'";
 // estudio.html (se edita a mano) lleva la suya: la misma sin frame-src (no muestra mapas ni Instagram)
 const CSP_ESTUDIO = CSP.replace(/ frame-src [^;]+;/, '');
 

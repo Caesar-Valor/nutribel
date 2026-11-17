@@ -50,8 +50,12 @@ function tarjeta(p){
   if(p.tipo==="actividad"){
     const [, m, d]=p.fecha.split("-").map(Number);
     const meta=[`${d} de ${MESES[m-1]}`, hora12(p.hora), p.lugar, p.precio!=null?NB.money(+p.precio):"Gratis"].filter(Boolean).join(" · ");
-    return `<li class="actividad" id="p${p.id}"><p class="afecha" aria-hidden="true"><b>${d}</b><span>${MESES[m-1].slice(0,3)}</span></p>
-      <div><span class="kick">Próxima actividad</span>${solo}<h3>${esc(p.titulo)}</h3><p class="ameta">${esc(meta)}</p><div class="cuerpo-pub">${cuerpo(p.cuerpo)}</div>${fotos(p,"(min-width:768px) 200px, 40vw")}${accion(p)}${wa?`<div class="acciones">${wa}</div>`:""}${social(p)}</div></li>`;
+    // 17/11/2026: con una sola foto (un flyer), la foto va grande y completa: al lado del texto en escritorio y debajo
+    // en el celular. Sin vista ampliada (9/11). Con varias fotos, la cuadrícula de siempre.
+    const una=(p.fotos||[]).length===1?p.fotos[0]:null;
+    const foto1=una?`<figure class="afoto"><img src="${esc(fotoSrc(una))}" alt="${esc(una.alt||"")}" width="800" height="1000" loading="lazy" decoding="async"></figure>`:"";
+    return `<li class="actividad${una?" una-foto":""}" id="p${p.id}"><p class="afecha" aria-hidden="true"><b>${d}</b><span>${MESES[m-1].slice(0,3)}</span></p>
+      <div class="atexto"><span class="kick">Próxima actividad</span>${solo}<h3>${esc(p.titulo)}</h3><p class="ameta">${esc(meta)}</p><div class="cuerpo-pub">${cuerpo(p.cuerpo)}</div>${una?"":fotos(p,"(min-width:768px) 200px, 40vw")}${accion(p)}${wa?`<div class="acciones">${wa}</div>`:""}${social(p)}</div>${foto1}</li>`;
   }
   const f=(p.fotos||[])[0];
   return `<li class="momento" id="p${p.id}">${f?`<figure><img src="${esc(fotoSrc(f))}" alt="${esc(f.alt||"")}" width="800" height="1000" loading="lazy" decoding="async"></figure>`:""}
