@@ -58,7 +58,8 @@ async function rpc(fn,args){
   const {data,error}=await sb.rpc(fn,args||{});
   if(error){
     if(error.code==="42501"||/no_autorizado|requiere_2fa/.test(error.message||"")){
-      const e=new Prohibido(/requiere_2fa/.test(error.message||"")?"requiere_2fa":"no_autorizado"); throw e;
+      const e=new Prohibido(/requiere_2fa/.test(error.message||"")?"requiere_2fa":/no_autorizado/.test(error.message||"")?"no_autorizado":"permiso_base");
+      e.hint=error.hint||""; throw e;
     }
     throw new Error(error.message||"error");
   }
@@ -71,10 +72,29 @@ async function hacer(fn,args,{dlg=false}={}){
     if(r&&r.ok===false){ if(dlg) return r; aviso(r.mensaje||"No se pudo completar.","mal"); return null; }
     return r;
   }catch(e){
-    if(e instanceof Prohibido){ sesionTerminada(e.message); return null; }
+    if(e instanceof Prohibido){
+      // 17/11/2026: un error de permiso en una acción no cierra la sesión si sigue vigente (antes sacaba a Bri al
+      // cancelar por un fallo de la base). Solo se cierra si de verdad expiró, o si pide el segundo paso.
+      if(e.message!=="requiere_2fa"&&await sesionViva()){
+        const msg=e.message==="no_autorizado"
+          ? (e.hint||"Tu cuenta no tiene permiso para esto.")+" Tu sesión sigue abierta."
+          : "La base de datos no dejó completar esta acción por un permiso. Tu sesión sigue abierta. Si se repite, avísale a César con la hora.";
+        if(dlg) return {ok:false,mensaje:msg};
+        aviso(msg,"mal"); return null;
+      }
+      sesionTerminada(e.message); return null;
+    }
     aviso("No hay conexión con la base de datos. Revisa el internet e inténtalo de nuevo.","mal");
     return dlg?{ok:false,mensaje:"No hay conexión con la base de datos. Inténtalo de nuevo."}:null;
   }
+}
+// ¿La sesión sigue vigente? Se pregunta al servidor de Auth (no basta el token guardado). Sin conexión, no se cierra.
+async function sesionViva(){
+  try{
+    const {data,error}=await sb.auth.getUser();
+    if(data&&data.user) return true;
+    return !(error&&(error.status===401||error.status===403||/session|expired|jwt/i.test(error.name+" "+(error.message||""))));
+  }catch(x){ return true; }
 }
 function sesionTerminada(cod){
   if(cerrarDlg) cerrarDlg(null);
