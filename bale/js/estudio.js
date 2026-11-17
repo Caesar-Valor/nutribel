@@ -1352,7 +1352,8 @@ function renderRec(t,d){
 function armarRec(T,{manana,canal,lugar}){
   const cargo=dinero((aj("cancelacion",{})||{}).cargo??300), Dia=manana?"Hoy":"Mañana";
   const d={nombre:"Laura",clase:"Hot Barre",hora:"5:30 pm",lugar:lugar?"7 (barra del espejo)":"",Dia,dia:Dia.toLowerCase(),cargo};
-  d.cancelar=renderRec(manana?T.linea_manana:T.linea_noche,d);
+  // §60: en el correo no va la línea de cancelar (invita a responder y el Gmail no se lee de noche): la nota lleva al botón
+  d.cancelar=canal==="correo"?"":renderRec(manana?T.linea_manana:T.linea_noche,d);
   const txt=renderRec(T.texto,d);
   return canal==="correo"?{asunto:renderRec(T.asunto,d),cuerpo:`${txt}\n\n${renderRec(manana?T.correo_manana:T.correo_noche,d)}`}:{cuerpo:txt};
 }
@@ -1393,18 +1394,20 @@ async function cargarAjustes(){
       <p class="aviso-cargo" data-aviso-silencio hidden></p>`,
       "Un solo recordatorio por reserva, a todas las reservas activas (web, área y lugares fijos), por correo y, si la ficha tiene el permiso, por WhatsApp. Una reserva hecha después de su lote no lo recibe. Si el WhatsApp está caído, se reintenta hasta 2 horas antes de la clase; el correo sale igual. Al guardar, los pendientes se reprograman.")+
     `<form class="ebox form" data-aj="rectexto" novalidate><h2>Texto del recordatorio</h2>
-      <p class="privacy">Variables: <code>{nombre}</code> <code>{clase}</code> <code>{hora}</code> <code>{Dia}</code> (Hoy o Mañana) <code>{dia}</code> (en minúscula) <code>{lugar}</code> <code>{cargo}</code> <code>{cancelar}</code> (la línea de cancelar de abajo). Una línea con <code>{lugar}</code> se quita sola si no tiene lugar. <code>*así*</code> sale en negrita. WhatsApp no lleva enlaces; el correo lleva el botón «Ver o cancelar mi reserva».</p>
+      <p class="privacy">Variables: <code>{nombre}</code> <code>{clase}</code> <code>{hora}</code> <code>{Dia}</code> (Hoy o Mañana) <code>{dia}</code> (en minúscula) <code>{lugar}</code> <code>{cargo}</code> <code>{cancelar}</code> (la línea de cancelar de abajo; solo en WhatsApp, en el correo se quita y queda la nota con el botón). Una línea con <code>{lugar}</code> se quita sola si no tiene lugar. <code>*así*</code> sale en negrita. WhatsApp no lleva enlaces; el correo lleva el botón «Ver o cancelar mi reserva».</p>
       <label class="fld">Mensaje (WhatsApp y correo)<textarea name="texto" rows="9" maxlength="1500">${esc(recT().texto)}</textarea></label>
-      <label class="fld">Línea de cancelar, noche anterior (sin cargo)<input name="linea_noche" maxlength="300" value="${esc(recT().linea_noche)}"></label>
-      <label class="fld">Línea de cancelar, mismo día (con cargo)<input name="linea_manana" maxlength="300" value="${esc(recT().linea_manana)}"></label>
+      <label class="fld">Línea de cancelar en WhatsApp, noche anterior (sin cargo)<input name="linea_noche" maxlength="300" value="${esc(recT().linea_noche)}"></label>
+      <label class="fld">Línea de cancelar en WhatsApp, mismo día (con cargo)<input name="linea_manana" maxlength="300" value="${esc(recT().linea_manana)}"></label>
       <label class="fld">Asunto del correo<input name="asunto" maxlength="300" value="${esc(recT().asunto)}"></label>
-      <label class="fld">Nota del correo, noche anterior<input name="correo_noche" maxlength="300" value="${esc(recT().correo_noche)}"></label>
-      <label class="fld">Nota del correo, mismo día<input name="correo_manana" maxlength="300" value="${esc(recT().correo_manana)}"></label>
+      <label class="fld">Nota del correo, noche anterior (junto al botón para cancelar)<input name="correo_noche" maxlength="300" value="${esc(recT().correo_noche)}"></label>
+      <label class="fld">Nota del correo, mismo día (junto al botón para cancelar)<input name="correo_manana" maxlength="300" value="${esc(recT().correo_manana)}"></label>
       <fieldset class="checks previa-opc"><legend>Vista previa</legend>
-        <label class="radio"><input type="radio" name="pv_cuando" value="noche" checked> Noche anterior</label>
-        <label class="radio"><input type="radio" name="pv_cuando" value="manana"> Mismo día</label>
-        <label class="radio"><input type="radio" name="pv_canal" value="whatsapp" checked> WhatsApp</label>
-        <label class="radio"><input type="radio" name="pv_canal" value="correo"> Correo</label>
+        <div class="previa-grupo" role="radiogroup" aria-label="Cuándo sale">
+          <label class="radio"><input type="radio" name="pv_cuando" value="noche" checked> Noche anterior</label>
+          <label class="radio"><input type="radio" name="pv_cuando" value="manana"> Mismo día</label></div>
+        <div class="previa-grupo" role="radiogroup" aria-label="Canal">
+          <label class="radio"><input type="radio" name="pv_canal" value="whatsapp" checked> WhatsApp</label>
+          <label class="radio"><input type="radio" name="pv_canal" value="correo"> Correo</label></div>
         <label class="check"><input type="checkbox" name="pv_lugar" checked> Con lugar asignado</label></fieldset>
       <div class="previa-rec" data-previa-rec aria-live="polite"></div>
       <div class="eacc"><button class="bbtn line sm" type="button" data-rec-restaurar>Volver al texto de siempre</button>

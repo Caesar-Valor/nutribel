@@ -131,7 +131,11 @@
 .cola .e-cancelado{color:var(--muted)}
 .previa-rec{white-space:pre-wrap;font:500 13.5px/1.55 var(--b-sans);background:var(--b-bg);border:1px dashed var(--line);border-radius:12px;padding:12px;margin:0;color:var(--b-ink);overflow-wrap:anywhere}
 .previa-rec .btn-previa{display:inline-block;margin-top:8px;background:var(--brown);color:var(--on-brown);border-radius:999px;padding:8px 16px;font-weight:600}
-.previa-opc{display:flex;flex-wrap:wrap;gap:6px 16px}
+/* §60: la regla general de .form input (ancho 100 %, 44 px de alto, borde) no debe tocar botones redondos ni casillas */
+.est .form .radio input,.est .form .check input{width:22px;height:22px;min-height:0;padding:0;margin:0;border:0;border-radius:0;background:none;flex:none}
+.previa-opc{display:flex;flex-direction:column;gap:4px}
+.previa-opc .previa-grupo{display:flex;flex-wrap:wrap;gap:0 20px}
+.previa-opc .radio,.previa-opc .check{min-height:44px;align-items:center;font-weight:500;font-size:15px}
 .aviso-cargo{padding:10px 12px;border-radius:12px;border:1.5px dashed var(--brown);color:var(--b-ink);margin:0}
 .dlgnota{padding:10px 12px;border-radius:12px;border:1.5px solid var(--brown);color:var(--b-ink);font-weight:500}
 .dlgnota .bbtn{margin-top:8px}
