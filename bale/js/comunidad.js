@@ -2,9 +2,11 @@
    balé — comunidad.html
    La página ya trae, compilado desde data/comunidad.json, lo de siempre (respaldo).
    Con data/config.json → sistema.comunidad = true (después de aplicar la migración), se cambia por las
-   publicaciones del estudio: actividades con «Me apunto» (cupo y lista de espera), anuncios y
-   fotos, «Me gusta» y comentarios (si el estudio los encendió; se ven al aprobarlos).
-   Sin sesión, «Me apunto» lleva a «Mi cuenta» y vuelve aquí. Si algo falla, queda el respaldo.
+   publicaciones del estudio: actividades, anuncios y fotos, «Me gusta» y comentarios (si el estudio
+   los encendió; se ven al aprobarlos). Si algo falla, queda el respaldo.
+   17/11/2026, decisión de la dueña: sin «Me apunto». En una actividad queda solo «Reservar por
+   WhatsApp» (botón principal, abre el WhatsApp del estudio con el mensaje ya escrito). Las apuntadas
+   que hubiera en la base no se borran; el área sigue mostrando «Quién se apuntó».
    ========================================================= */
 (function(){
 "use strict";
@@ -26,17 +28,6 @@ const fotoSrc = f=>f.ruta ? `${BASE}/storage/v1/object/public/comunidad/${f.ruta
 const fotos = (p,sizes)=>(p.fotos||[]).length ? `<div class="afotos">${p.fotos.map((f,i)=>`<img src="${esc(fotoSrc(f))}" alt="${esc(f.alt||"")}" width="800" height="1000" loading="${i?"lazy":"lazy"}" decoding="async" sizes="${sizes}">`).join("")}</div>` : "";
 function hora12(h){ if(!h) return ""; const [H,M]=h.split(":").map(Number); return `${(H%12)||12}:${String(M).padStart(2,"0")} ${H<12?"a. m.":"p. m."}`; }
 
-function accion(p){
-  if(p.tipo!=="actividad") return "";
-  const mio=p.mio&&p.mio.apuntada;
-  const cupo=p.cupo!=null?`<p class="acupo" aria-live="polite">${p.libres>0?`${p.libres} de ${p.cupo} lugares libres`:"Llena: puedes quedar en la lista de espera"}</p>`:"";
-  let b;
-  if(!conSesion) b=`<a class="btn sm" href="cuenta.html?volver=${encodeURIComponent(`comunidad.html#p${p.id}`)}">Me apunto</a>`;
-  else if(mio==="apuntada") b=`<span class="mode">Estás apuntada</span> <button class="btn texto sm" type="button" data-salir="${p.id}">Ya no voy</button>`;
-  else if(mio==="espera") b=`<span class="mode">En la lista de espera</span> <button class="btn texto sm" type="button" data-salir="${p.id}">Salir de la lista</button>`;
-  else b=`<button class="btn sm" type="button" data-apuntar="${p.id}">${p.cupo!=null&&p.libres<=0?"Lista de espera":"Me apunto"}</button>`;
-  return cupo+`<div class="acciones">${b}</div>`;
-}
 function social(p){
   const g=conSesion?`<button class="btn texto sm megusta" type="button" data-gusta="${p.id}" aria-pressed="${!!(p.mio&&p.mio.me_gusta)}"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 21s-7.5-4.6-9.5-9.2C1.2 8.6 3.4 5 7 5c2 0 3.4 1.1 5 3 1.6-1.9 3-3 5-3 3.6 0 5.8 3.6 4.5 6.8C19.5 16.4 12 21 12 21z" fill="none" stroke="currentColor" stroke-width="1.8"/></svg>Me gusta${p.me_gusta?` · ${p.me_gusta}`:""}</button>`
     : (p.me_gusta?`<span class="cmeta">${p.me_gusta} ${p.me_gusta===1?"Me gusta":"Me gusta"}</span>`:"");
@@ -45,7 +36,9 @@ function social(p){
   return (g?`<div class="acciones">${g}</div>`:"")+com;
 }
 function tarjeta(p){
-  const wa=p.mensaje?`<button class="btn line sm" type="button" data-wa="${esc(p.mensaje)}">${esc(p.boton||"Escribir por WhatsApp")}</button>`:"";
+  // En una actividad, «Reservar por WhatsApp» es el botón principal (relleno); en lo demás, con borde
+  const act=p.tipo==="actividad";
+  const wa=p.mensaje?`<button class="btn${act?"":" line"} sm" type="button" data-wa="${esc(p.mensaje)}">${esc(p.boton||(act?"Reservar por WhatsApp":"Escribir por WhatsApp"))}</button>`:"";
   const solo=p.visibilidad==="comunidad"?`<span class="solo-com">Solo comunidad</span>`:"";
   if(p.tipo==="actividad"){
     const [, m, d]=p.fecha.split("-").map(Number);
@@ -55,7 +48,7 @@ function tarjeta(p){
     const una=(p.fotos||[]).length===1?p.fotos[0]:null;
     const foto1=una?`<figure class="afoto"><img src="${esc(fotoSrc(una))}" alt="${esc(una.alt||"")}" width="800" height="1000" loading="lazy" decoding="async"></figure>`:"";
     return `<li class="actividad${una?" una-foto":""}" id="p${p.id}"><p class="afecha" aria-hidden="true"><b>${d}</b><span>${MESES[m-1].slice(0,3)}</span></p>
-      <div class="atexto"><span class="kick">Próxima actividad</span>${solo}<h3>${esc(p.titulo)}</h3><p class="ameta">${esc(meta)}</p><div class="cuerpo-pub">${cuerpo(p.cuerpo)}</div>${una?"":fotos(p,"(min-width:768px) 200px, 40vw")}${accion(p)}${wa?`<div class="acciones">${wa}</div>`:""}${social(p)}</div>${foto1}</li>`;
+      <div class="atexto"><span class="kick">Próxima actividad</span>${solo}<h3>${esc(p.titulo)}</h3><p class="ameta">${esc(meta)}</p><div class="cuerpo-pub">${cuerpo(p.cuerpo)}</div>${una?"":fotos(p,"(min-width:768px) 200px, 40vw")}${wa?`<div class="acciones">${wa}</div>`:""}${social(p)}</div>${foto1}</li>`;
   }
   const f=(p.fotos||[])[0];
   return `<li class="momento" id="p${p.id}">${f?`<figure><img src="${esc(fotoSrc(f))}" alt="${esc(f.alt||"")}" width="800" height="1000" loading="lazy" decoding="async"></figure>`:""}
@@ -94,17 +87,15 @@ async function cargar(){
 }
 
 document.addEventListener("click",async e=>{
-  const a=e.target.closest("[data-apuntar],[data-salir],[data-gusta]"); if(!a) return;
-  const id=+(a.dataset.apuntar||a.dataset.salir||a.dataset.gusta);
-  const fn=a.dataset.apuntar?"comunidad_apuntarme":a.dataset.salir?"comunidad_desapuntarme":"comunidad_me_gusta";
-  const args=fn==="comunidad_me_gusta"?{p_id:id,p_on:a.getAttribute("aria-pressed")!=="true"}:{p_id:id};
+  const a=e.target.closest("[data-gusta]"); if(!a) return;
+  const id=+a.dataset.gusta;
+  const args={p_id:id,p_on:a.getAttribute("aria-pressed")!=="true"};
   a.disabled=true;
   try{
-    const j=await C.rpc(fn,args);
+    const j=await C.rpc("comunidad_me_gusta",args);
     if(!j.ok){ NB.toast(j.mensaje||"No se pudo. Inténtalo de nuevo."); a.disabled=false; return; }
     if(j.publicacion) reemplazar(j.publicacion);
-    if(j.mensaje) NB.toast(j.mensaje); else if(fn==="comunidad_desapuntarme") NB.toast("Listo: ya no estás apuntada.");
-    const n=document.querySelector(`#p${id} [data-apuntar],#p${id} [data-salir],#p${id} [data-gusta]`); if(n&&fn!=="comunidad_me_gusta") n.focus();
+    if(j.mensaje) NB.toast(j.mensaje);
   }catch(err){ NB.toast(C.mensaje(err)); a.disabled=false; }
 });
 document.addEventListener("submit",async e=>{
