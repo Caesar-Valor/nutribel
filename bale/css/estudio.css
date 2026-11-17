@@ -30,6 +30,17 @@
 :root[data-mode="dark"] .bbtn.solid.peligro,:root[data-mode="dark"] .bbtn.peligro:hover:not(:disabled){background:#f0a596;border-color:#f0a596;color:#1d1715}
 .est .tabs{position:sticky;top:calc(env(safe-area-inset-top,0px) + var(--top-h));z-index:5;background:var(--cream)}
 .est [role="tab"]{min-height:48px;padding:12px 14px}
+/* Punto 20 (16/11/2026): pestañas siempre a la vista. Teléfono: una fila que se desliza, con degradado donde hay más.
+   Desde 760 px: pasan a una segunda línea si no caben, sin desplazamiento. */
+.est .tabs.hay-der{-webkit-mask-image:linear-gradient(90deg,#000 calc(100% - 40px),transparent);mask-image:linear-gradient(90deg,#000 calc(100% - 40px),transparent)}
+.est .tabs.hay-izq{-webkit-mask-image:linear-gradient(90deg,transparent,#000 40px);mask-image:linear-gradient(90deg,transparent,#000 40px)}
+.est .tabs.hay-izq.hay-der{-webkit-mask-image:linear-gradient(90deg,transparent,#000 40px,#000 calc(100% - 40px),transparent);mask-image:linear-gradient(90deg,transparent,#000 40px,#000 calc(100% - 40px),transparent)}
+@media (min-width:760px){
+  .est .tabs{flex-wrap:wrap;overflow-x:visible;row-gap:0}
+  .est [role="tab"]{padding:12px 12px}
+}
+/* «Por clienta»: los números a la derecha, bajo su título, con cifras del mismo ancho */
+.vtable.asis-tabla th.num,.vtable.asis-tabla td.num{text-align:right;font-variant-numeric:tabular-nums;width:1%;padding-left:20px}
 .est .vweek{margin-bottom:12px}
 .est .vcls{min-height:56px}
 .vcls.cli{grid-template-columns:1fr auto}

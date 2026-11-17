@@ -305,6 +305,7 @@ function montarTabs(){
       .concat(esDuena()?[["ingresos","Ingresos"],["ajustes","Ajustes"],["exportar","Exportar"]]:[]);
   $("#tabs").innerHTML=t.map(([id,n],i)=>`<button role="tab" type="button" id="t-${id}" aria-controls="p-${id}" aria-selected="${i===0}" tabindex="${i?-1:0}">${n}${id==="cobros"?' <span class="tcnt" id="cntEnlaces" hidden></span>':""}</button>`).join("");
   $("#tabs").hidden=t.length<2;
+  vigilarTabs();
   PANELES.forEach(id=>{ $("#p-"+id).hidden=true; });
   $("#cInstW").hidden=YO.rol==="instructora";
   $("#icsWrap").hidden=YO.rol!=="instructora";
@@ -329,9 +330,32 @@ async function contarTransf(){
   try{ const r=await rpc("estudio_transferencias",{}); if(r&&r.ok){ CNT.transf=+r.total||0; pintarContador(); } return r; }
   catch(e){ return null; }
 }
+// 16/11/2026 (punto 20 de Marifer): en el teléfono las pestañas siguen en una fila que se desliza; un degradado en el
+// borde dice que hay más y la pestaña activa siempre queda a la vista. Desde 760 px pasan a una segunda línea (CSS).
+function bordesTabs(){
+  const el=$("#tabs"); if(!el) return;
+  const max=el.scrollWidth-el.clientWidth;
+  el.classList.toggle("hay-izq",el.scrollLeft>2);
+  el.classList.toggle("hay-der",max>2&&el.scrollLeft<max-2);
+}
+function verTabActiva(){
+  const el=$("#tabs"), b=el&&el.querySelector('[aria-selected="true"]'); if(!b) return;
+  if(el.scrollWidth<=el.clientWidth){ bordesTabs(); return; }
+  const margen=32, ini=b.getBoundingClientRect().left-el.getBoundingClientRect().left+el.scrollLeft, fin=ini+b.offsetWidth;
+  if(ini<el.scrollLeft+margen) el.scrollLeft=Math.max(0,ini-margen);
+  else if(fin>el.scrollLeft+el.clientWidth-margen) el.scrollLeft=fin-el.clientWidth+margen;
+  bordesTabs();
+}
+let tabsVigiladas=false;
+function vigilarTabs(){
+  if(tabsVigiladas) return; tabsVigiladas=true;
+  $("#tabs").addEventListener("scroll",bordesTabs,{passive:true});
+  addEventListener("resize",verTabActiva,{passive:true});
+}
 function abrirTab(id){
   TAB=id;
   document.querySelectorAll('#tabs [role="tab"]').forEach(b=>{ const on=b.id==="t-"+id; b.setAttribute("aria-selected",on); b.tabIndex=on?0:-1; });
+  verTabActiva();
   PANELES.forEach(x=>{ $("#p-"+x).hidden=x!==id; });
   ({clases:cargarSemana, asistencia:cargarAsistencia, clientas:abrirClientas, cobros:cargarCobros, avisos:cargarAvisos, comunidad:cargarComunidad, foro:cargarForo, resenas:cargarResenas, ninas:cargarNinas, ingresos:cargarIngresos, ajustes:cargarAjustes, exportar:()=>{}})[id]();
   if(id!=="cobros"&&YO&&YO.rol!=="instructora"){ contarEnlaces(); contarTransf(); }
@@ -1629,8 +1653,8 @@ function pintarAsistencia(){
       </details></li>`).join("")}</ul>
     </div>
     <div class="ebox"><h2>Por clienta</h2>
-      <div class="tablewrap"><table class="vtable"><caption class="sr-only">Asistencias y faltas por clienta</caption><thead><tr><th scope="col">Clienta</th><th scope="col">Asistió</th><th scope="col">Faltó</th><th scope="col">Sin marcar</th></tr></thead><tbody>
-      ${K.map(x=>`<tr><th scope="row">${esc(x.nombre)}</th><td>${x.asistio}</td><td>${x.falto}</td><td>${x.sin_marcar}</td></tr>`).join("")}
+      <div class="tablewrap"><table class="vtable asis-tabla"><caption class="sr-only">Asistencias y faltas por clienta</caption><thead><tr><th scope="col">Clienta</th><th scope="col" class="num">Asistió</th><th scope="col" class="num">Faltó</th><th scope="col" class="num">Sin marcar</th></tr></thead><tbody>
+      ${K.map(x=>`<tr><th scope="row">${esc(x.nombre)}</th><td class="num">${x.asistio}</td><td class="num">${x.falto}</td><td class="num">${x.sin_marcar}</td></tr>`).join("")}
       </tbody></table></div>
       <p class="privacy">«Sin marcar» cuenta solo las clases que ya pasaron.</p>
     </div>`;
@@ -1727,8 +1751,9 @@ function eventos(){
   $("#salir").addEventListener("click",async()=>{ await sb.auth.signOut().catch(()=>{}); aviso("Saliste del área del estudio."); mostrarEntrar(); });
   $("#tabs").addEventListener("click",e=>{ const t=e.target.closest('[role="tab"]'); if(t) abrirTab(t.id.slice(2)); });
   $("#tabs").addEventListener("keydown",e=>{ const d=e.key==="ArrowRight"?1:e.key==="ArrowLeft"?-1:0; if(!d) return;
+    e.preventDefault();   // la flecha no debe desplazar además la fila de pestañas
     const tabs=[...document.querySelectorAll('#tabs [role="tab"]')], i=tabs.findIndex(t=>t.getAttribute("aria-selected")==="true"), n=tabs[(i+d+tabs.length)%tabs.length];
-    abrirTab(n.id.slice(2)); n.focus(); });
+    abrirTab(n.id.slice(2)); n.focus({preventScroll:true}); verTabActiva(); });
   // Clases
   $("#cPrev").addEventListener("click",()=>{ cWeek--; cSel=null; cargarSemana(); });
   $("#cNext").addEventListener("click",()=>{ cWeek++; cSel=null; cargarSemana(); });
