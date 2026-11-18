@@ -9,6 +9,7 @@ Capturas de ejemplo (datos ficticios) en `referencia/capturas-sistema/despues/`.
 | **Clases** | La semana, la lista de alumnas de cada clase, asistencia, reservar, cancelar |
 | **Clientas** | **Control de membresías** (el Excel de siempre), renovar las de la semana, fichas, lugares fijos e **importar** |
 | **Cobros** | Transferencias por confirmar, pagos con tarjeta, clases y membresías por pagar, cargos de RD$300 y lo pagado |
+| **Mensajes** | Envíos con foto a varias clientas (invitaciones, eventos), con prueba, destinatarias y seguimiento |
 | **Avisos** | Si los correos y los WhatsApp automáticos están funcionando, y el uso del plan gratis |
 | **Ingresos**, **Ajustes** y **Exportar** | Solo tú: el dinero del mes, pago, textos de los avisos, horario, precios, personal, seguridad y Excel |
 
@@ -60,7 +61,7 @@ El lugar fijo se reserva solo cada semana mientras dure la membresía.
 
 ## Recordatorios y avisos (16/11/2026)
 
-- **Recordatorio de la clase:** le llega a cada clienta con reserva, una vez, la **noche anterior a las 8:00 pm** (por correo y, si su ficha tiene «Acepta avisos por WhatsApp», por WhatsApp). También a las miembros fijas y a las reservas que haces tú. Una reserva hecha después de esa hora no lo recibe (si la haces tú con «Avisar a la clienta», le llega el WhatsApp que confirma y recuerda; mira «Reservar para una clienta»). Marifer cambia la hora y el texto en **Ajustes → Recordatorio de la clase** y **Texto del recordatorio** (con vista previa). El «Lote de la mañana» está apagado: si se enciende, esos mensajes dicen el cargo por cancelar el mismo día.
+- **Recordatorio de la clase:** le llega a cada clienta con reserva, una vez, la **noche anterior a las 8:00 pm** (por correo y, si su ficha tiene «Acepta avisos por WhatsApp», por WhatsApp). También a las miembros fijas y a las reservas que haces tú. Una reserva hecha después de esa hora no lo recibe (si la haces tú con «Avisar a la clienta», le llega el WhatsApp que confirma y recuerda; mira «Reservar para una clienta»). Marifer cambia la hora y el texto en **Ajustes → Recordatorio de la clase** y **Texto del recordatorio** (con vista previa). El «Lote de la mañana» está encendido desde el 17/11/2026: las clases desde las 4:00 pm lo reciben ese mismo día a las 8:00 am, y esos mensajes dicen el cargo por cancelar el mismo día.
 - **Permiso de WhatsApp:** en **Clientas → Mostrar** están «Sin permiso de WhatsApp», «Falta WhatsApp» y «Falta correo». Abre cada ficha y marca «Acepta avisos por WhatsApp» **solo** si ella lo aceptó. Nada se marca solo.
 - **«WhatsApp no válido»** en la ficha: ese número no tiene WhatsApp y sus avisos van solo por correo. Si corriges el número, se vuelve a intentar.
 - **«Correo no entrega»** en la ficha: márcalo si un correo rebotó; mientras esté marcado no se le manda ningún correo.
@@ -68,6 +69,20 @@ El lugar fijo se reserva solo cada semana mientras dure la membresía.
 - **«WhatsApp en pausa»:** WhatsApp limitó el número o fallaron varios seguidos. Mientras tanto salen solo correos. Solo César lo reanuda.
 - **Correo a las miembros (solo Marifer):** en Avisos. Escribe asunto y mensaje, mira la vista previa, envíate una prueba y confirma. Sale un correo a cada miembro activa, uno cada 10 segundos. Nunca por WhatsApp.
 - **Cancelar «sin cargo»:** si la clienta avisó a tiempo por WhatsApp y lo registras al día siguiente, al cancelar elige «Sin cargo».
+
+## Mensajes (envíos con foto a varias clientas)
+
+Para invitar a un evento o avisar algo a varias clientas a la vez, por WhatsApp y por correo. Solo Marifer y Bri.
+
+1. **Redactar:** escribe el mensaje. Sale **exactamente** como lo escribas. Con **Insertar {nombre}**, a cada una le llega con su nombre. `*así*` sale en negrita y `_así_` en cursiva. Puedes poner una foto (JPG, PNG o WebP): se ajusta sola. Con foto, el texto puede tener hasta 1.000 letras. Elige WhatsApp, correo o los dos (con los dos, quien no tiene WhatsApp válido lo recibe solo por correo) y, si va por correo, el asunto.
+2. **Vista previa y prueba:** mira cómo se verá en WhatsApp y en el correo. **Enviarme una prueba** te llega a ti (la primera vez te pide tu WhatsApp de prueba) y al correo del estudio. Sin una prueba de ese mismo mensaje no se puede enviar; si cambias algo, otra prueba.
+3. **Destinatarias:** miembros activas, membresía vencida hace poco, todas las clientas o elegir a mano (se pueden combinar; nadie lo recibe dos veces). **Ver a quién le llega** muestra quién lo recibe por WhatsApp, quién solo por correo y quién queda fuera y por qué. Ojo con **Todas las clientas**: muchas personas que no esperan el mensaje aumentan el riesgo de que WhatsApp limite el número.
+4. **Envío:** ahora o un día y hora. La pantalla dice cuánto tarda. Sale **un WhatsApp cada 2 minutos más o menos**, solo de lunes a sábado de 9:00 am a 7:45 pm; lo que no alcance sigue solo al día siguiente. No se puede acelerar: así WhatsApp no limita el número.
+
+Mientras se envía: **Pausar**, **Reanudar** y **Cancelar lo pendiente** (lo que ya salió no se toca). Si **WhatsApp avisa de un límite**, el mensaje se pausa solo, sale una franja arriba del área y **solo César** lo reanuda. En **Mensajes enviados** está cada uno con quién lo mandó, a quién no le llegó y por qué, y la **lista de nombres para copiar**. Los números sin WhatsApp quedan marcados en la ficha: revísalos.
+
+- Una clienta recibe como mucho **un mensaje cada 7 días** (Marifer lo cambia en Ajustes → «Mensajes a varias clientas»).
+- **No enviar promociones** (en la ficha): si una clienta pide no recibir más, márcalo. Sigue recibiendo sus recordatorios y avisos de reservas.
 
 ## Cobros
 

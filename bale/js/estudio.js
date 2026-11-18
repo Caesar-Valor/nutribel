@@ -7,6 +7,7 @@
    - instructora: Mis clases (alumnas, lugar, primera vez y asistencia) y su .ics
    - asistente: Clases, Clientas, Cobros y Avisos
    - dueña: además Ajustes (pago, reservas, avisos, horario, precios, personal) y Exportar
+   - dueña y asistente: Mensajes (envíos con foto a varias clientas, DECISIONES §67)
    Sin animaciones de entrada: es una herramienta. Lo que toca dinero o borra pide confirmación.
    ========================================================= */
 (function(){
@@ -223,6 +224,7 @@ async function entrarApp(){
   $("#seguridad").hidden=YO.rol==="instructora";
   const q=$("#quien"); q.hidden=false; q.textContent=`${YO.nombre} · ${{duena:"Dueña",asistente:"Asistente",instructora:"Instructora"}[YO.rol]||""}`;
   montarTabs();
+  pintarAlerta(null);   // §67: si WhatsApp pausó un mensaje, la franja sale en cualquier pestaña
 }
 async function login(e){
   e.preventDefault();
@@ -320,7 +322,7 @@ function montarTabs(){
   // 13/11/2026: «Reseñas» (solo la dueña) y «Ballet niñas» (la dueña y la instructora asignada), si están encendidas
   // 15/11/2026: «Asistencia» para todos (la instructora ve solo sus clases; DECISIONES §55)
   const t=YO.rol==="instructora" ? [["clases","Mis clases"],["asistencia","Asistencia"]].concat(YO.ninas?[["ninas","Ballet niñas"]]:[])
-    : [["clases","Clases"],["asistencia","Asistencia"],["clientas","Clientas"],["cobros","Cobros"],["avisos","Avisos"]].concat(conComunidad()?[["comunidad","Comunidad"]]:[])
+    : [["clases","Clases"],["asistencia","Asistencia"],["clientas","Clientas"],["cobros","Cobros"],["avisos","Avisos"]].concat(YO.mensajes?[["mensajes","Mensajes"]]:[]).concat(conComunidad()?[["comunidad","Comunidad"]]:[])
       .concat(YO.foro?[["foro","Conversación"]]:[]).concat(YO.resenas?[["resenas","Reseñas"]]:[]).concat(YO.ninas?[["ninas","Ballet niñas"]]:[])
       .concat(esDuena()?[["ingresos","Ingresos"],["ajustes","Ajustes"],["exportar","Exportar"]]:[]);
   $("#tabs").innerHTML=t.map(([id,n],i)=>`<button role="tab" type="button" id="t-${id}" aria-controls="p-${id}" aria-selected="${i===0}" tabindex="${i?-1:0}">${n}${id==="cobros"?' <span class="tcnt" id="cntEnlaces" hidden></span>':""}</button>`).join("");
@@ -333,7 +335,7 @@ function montarTabs(){
   abrirTab(t[0][0]);
 }
 // Contador de Cobros: enlaces de tarjeta por enviar + transferencias por confirmar
-const PANELES = ["clases","asistencia","clientas","cobros","avisos","comunidad","foro","resenas","ninas","ingresos","ajustes","exportar"];
+const PANELES = ["clases","asistencia","clientas","cobros","avisos","mensajes","comunidad","foro","resenas","ninas","ingresos","ajustes","exportar"];
 let CNT={enlaces:0,transf:0};
 function pintarContador(){
   const b=$("#cntEnlaces"); if(!b) return;
@@ -377,7 +379,7 @@ function abrirTab(id){
   document.querySelectorAll('#tabs [role="tab"]').forEach(b=>{ const on=b.id==="t-"+id; b.setAttribute("aria-selected",on); b.tabIndex=on?0:-1; });
   verTabActiva();
   PANELES.forEach(x=>{ $("#p-"+x).hidden=x!==id; });
-  ({clases:cargarSemana, asistencia:cargarAsistencia, clientas:abrirClientas, cobros:cargarCobros, avisos:cargarAvisos, comunidad:cargarComunidad, foro:cargarForo, resenas:cargarResenas, ninas:cargarNinas, ingresos:cargarIngresos, ajustes:cargarAjustes, exportar:()=>{}})[id]();
+  ({clases:cargarSemana, asistencia:cargarAsistencia, clientas:abrirClientas, cobros:cargarCobros, avisos:cargarAvisos, mensajes:cargarMensajes, comunidad:cargarComunidad, foro:cargarForo, resenas:cargarResenas, ninas:cargarNinas, ingresos:cargarIngresos, ajustes:cargarAjustes, exportar:()=>{}})[id]();
   if(id!=="cobros"&&YO&&YO.rol!=="instructora"){ contarEnlaces(); contarTransf(); }
 }
 
@@ -728,11 +730,11 @@ async function renovarTodas(){
 }
 /* Filtros (16/11/2026, DECISIONES §57): «Sin permiso de WhatsApp», «Falta WhatsApp» y «Falta correo», para revisar
    ficha por ficha y marcar el permiso solo a quien sí lo dio. Nada se marca solo. */
-const FILTRO_CLI = {sin_permiso:"sin permiso de WhatsApp", falta_whatsapp:"sin WhatsApp", falta_correo:"sin correo"};
+const FILTRO_CLI = {sin_permiso:"sin permiso de WhatsApp", falta_whatsapp:"sin WhatsApp", falta_correo:"sin correo", no_promociones:"que no reciben promociones"};
 async function buscarClientas(){
   const filtro=$("#fCliFiltro").value||null;
   const r=await hacer("estudio_clientas",{p_buscar:$("#qCli").value.trim()||null,p_limite:filtro?500:60,...(filtro?{p_filtro:filtro}:{})}); if(!r) return;
-  const marcas=c=>[c.telefono&&!c.acepta_whatsapp?"Sin permiso de WhatsApp":"",c.whatsapp_invalido?"WhatsApp no válido":"",c.correo_no_entrega?"Correo no entrega":""].filter(Boolean);
+  const marcas=c=>[c.telefono&&!c.acepta_whatsapp?"Sin permiso de WhatsApp":"",c.whatsapp_invalido?"WhatsApp no válido":"",c.correo_no_entrega?"Correo no entrega":"",c.no_promociones?"No enviar promociones":""].filter(Boolean);
   $("#cliList").innerHTML=(filtro?`<li class="privacy cli-cuenta">${r.clientas.length} ${r.clientas.length===1?"clienta":"clientas"} ${esc(FILTRO_CLI[filtro])}. Abre cada ficha y marca el permiso solo si ella lo aceptó.</li>`:"")+
     (r.clientas.map(c=>`<li><button type="button" class="vcls cli" data-ficha="${c.id}" aria-pressed="${CLI&&CLI.clienta.id===c.id}">
     <span class="n">${esc(c.nombre)}<small>${[c.telefono||"Sin WhatsApp",c.correo||"Sin correo"].map(esc).join(" · ")}</small>${filtro||marcas(c).length?`<small class="marcas">${marcas(c).map(esc).join(" · ")}</small>`:""}</span>
@@ -781,7 +783,8 @@ function pintarFicha(){
     <p class="meta">${c.telefono?esc(c.telefono):"Sin WhatsApp"}${c.correo?` · ${esc(c.correo)}`:""} · ${c.acepta_whatsapp?"acepta avisos por WhatsApp":"sin avisos por WhatsApp"}</p>
     ${!c.anonimizada&&c.whatsapp_invalido?`<p class="note marca-wa">WhatsApp no válido: ese número no tiene WhatsApp, así que sus avisos salen solo por correo. Si lo corriges, se vuelve a intentar solo.
       <button class="linkbtn" type="button" data-wa-reintentar="${c.id}">Volver a intentar con este número</button></p>`:""}
-    ${c.anonimizada?"":`<label class="check marca-correo"><input type="checkbox" data-correo-no-entrega="${c.id}" ${c.correo_no_entrega?"checked":""}> Correo no entrega (rebotó: mientras esté marcado no se le manda ningún correo)</label>`}
+    ${c.anonimizada?"":`<label class="check marca-correo"><input type="checkbox" data-correo-no-entrega="${c.id}" ${c.correo_no_entrega?"checked":""}> Correo no entrega (rebotó: mientras esté marcado no se le manda ningún correo)</label>
+    <label class="check marca-promo"><input type="checkbox" data-no-promociones="${c.id}" ${c.no_promociones?"checked":""}> No enviar promociones (no recibe los mensajes de la sección Mensajes; sí sus recordatorios y avisos)</label>`}
     ${c.anonimizada?`<p class="note">Datos personales borrados. Solo queda el historial anónimo.</p>`:`
     <form class="form efich" id="fCli" novalidate>
       <div class="two"><label class="fld">Nombre<input name="nombre" value="${esc(c.nombre)}"></label>
@@ -821,6 +824,14 @@ async function marcarCorreo(el){
   if(!r){ el.checked=!on; return; }
   listo(on?"Marcado: no se le mandan correos":"Se le vuelven a mandar correos");
   if(CLI&&CLI.clienta) CLI.clienta.correo_no_entrega=on; buscarClientas();
+}
+// «No enviar promociones» (§67): se guarda al marcarlo; lo pendiente de un mensaje para ella ya no sale
+async function marcarPromociones(el){
+  const on=el.checked;
+  const r=await hacer("estudio_marcar_clienta",{p_clienta_id:+el.dataset.noPromociones,p_no_promociones:on});
+  if(!r){ el.checked=!on; return; }
+  listo(on?"Marcado: no recibe promociones":"Vuelve a recibir promociones");
+  if(CLI&&CLI.clienta) CLI.clienta.no_promociones=on; buscarClientas();
 }
 async function reintentarWhatsapp(id){
   const r=await hacer("estudio_marcar_clienta",{p_clienta_id:id,p_whatsapp_valido:true}); if(!r) return;
@@ -1405,6 +1416,8 @@ async function cargarAjustes(){
     sec("reservas","Reservas por la web",`<div class="two"><label class="fld">Cierran (minutos antes de la clase)<input name="cierre" type="number" min="0" max="1440" value="${esc(aj("cierre_reserva_min",30))}"></label>
       <label class="fld">Reservas sueltas pendientes por persona<input name="max" type="number" min="1" max="20" value="${esc(aj("max_reservas_futuras",3))}"></label></div>
       <label class="fld">Se puede reservar hasta (días adelante)<input name="dias" type="number" min="1" max="60" value="${esc(aj("dias_abiertos",28))}"></label>`)+
+    sec("mensajes","Mensajes a varias clientas",`<label class="fld">Días mínimos entre dos mensajes a la misma clienta<input name="dias" type="number" min="1" max="60" value="${esc(aj("campanas_cada_dias",7))}"></label>`,
+      "Una clienta no recibe más de un mensaje de la sección Mensajes en ese tiempo. El ritmo, el horario y los cupos de WhatsApp son fijos (DECISIONES §67).")+
     sec("recordatorios","Recordatorio de la clase",`<label class="fld">Lote de la noche anterior (todas las clases del día siguiente)<input name="noche" type="time" value="${esc(rec.lote_noche||"20:00")}"></label>
       <label class="check"><input type="checkbox" name="manana" ${rec.lote_manana_activo?"checked":""}> Lote de la mañana (el mismo día de la clase)</label>
       <div class="two" data-manana-campos ${rec.lote_manana_activo?"":"hidden"}><label class="fld">Hora del lote de la mañana<input name="hm" type="time" value="${esc(rec.lote_manana||"08:00")}"></label>
@@ -1525,6 +1538,9 @@ async function guardarAjustes(f){
     const c=num("cierre",0,1440), m=num("max",1,20), d=num("dias",1,60);
     if(c==null||m==null||d==null){ aviso("Revisa los números de las reservas.","mal"); return; }
     ok=!!await ajuste("cierre_reserva_min",c)&&!!await ajuste("max_reservas_futuras",m)&&!!await ajuste("dias_abiertos",d);
+  }else if(id==="mensajes"){
+    const d=num("dias",1,60); if(d==null){ aviso("Los días entre mensajes van de 1 a 60.","mal"); return; }
+    ok=!!await hacer("estudio_campanas_ajuste",{p_dias:d}); if(ok) AJ.campanas_cada_dias={valor:d};
   }else if(id==="recordatorios"){ const rec0=aj("recordatorios",{});
     const on=v(f,"manana"), m=on?num("min",1,14):(rec0.minimo_horas??8);
     if(!v(f,"noche")||!v(f,"sd")||!v(f,"sh")||(on&&(!v(f,"hm")||m==null))){ aviso("Revisa las horas.","mal"); return; }
@@ -1758,6 +1774,366 @@ async function exportarIngresos(){
 /* =========================================================
    ARRANQUE
    ========================================================= */
+/* =========================================================
+   MENSAJES (18/11/2026, DECISIONES §67): envíos con foto a varias clientas, para la dueña y la asistente.
+   Redactar → vista previa y prueba (obligatoria, de ese mismo mensaje) → destinatarias → envío.
+   El texto sale EXACTO como lo escriben: aquí no se corrige ni se agrega nada; solo {nombre} lo cambia la base
+   por el nombre de pila. El ritmo, el horario y los cupos los pone la base (no se pueden cambiar desde aquí).
+   ========================================================= */
+const MSJ_EJEMPLO = "Laura";
+const MSJ_ESTADO = {borrador:"Borrador", programada:"Programado", enviando:"Enviándose", pausada:"En pausa", terminada:"Terminado", cancelada:"Cancelado"};
+let MSJ=null, MSJ_DATOS=null, MSJ_RES=null, MSJ_DET=null, MSJ_PASO=1, MSJ_RELOJ=null;
+const MSJ_SEL=new Map();   // selección a mano: id → nombre
+const msjNuevo = ()=>({id:null,texto:"",asunto:"",foto:null,canales:["whatsapp","correo"],grupos:["activas"],dias_vencida:60,ids:[],probada:false});
+const msjDe = c=>({id:+c.id,texto:c.texto,asunto:c.asunto||"",foto:c.foto||null,canales:c.canales||[],grupos:c.grupos||["activas"],
+  dias_vencida:c.dias_vencida||60,ids:(c.ids||[]).map(Number),probada:!!c.probada});
+// *negrita* y _cursiva_ como en WhatsApp (sobre el texto ya escapado)
+const fmtWa = t=>esc(t||"").replace(/\*([^*\n]+)\*/g,"<b>$1</b>").replace(/(^|[\s(¡¿>])_([^_\n]+)_(?=$|[\s.,;:!?)<])/gm,"$1<i>$2</i>").replace(/\n/g,"<br>");
+const fmtTel = t=>{ const d=String(t||"").replace(/\D/g,"").slice(-10); return d.length===10?`${d.slice(0,3)}-${d.slice(3,6)}-${d.slice(6)}`:String(t||""); };
+const msjConteo = (c,canal,est)=>((c.conteos||{})[canal]||{})[est]||0;
+function partesLV(ts){
+  const p={}; new Intl.DateTimeFormat("en-CA",{timeZone:TZ,year:"numeric",month:"2-digit",day:"2-digit",hour:"2-digit",minute:"2-digit",hourCycle:"h23"})
+    .formatToParts(new Date(ts)).forEach(x=>{ p[x.type]=x.value; });
+  return {fecha:`${p.year}-${p.month}-${p.day}`, hora:`${p.hour}:${p.minute}`};
+}
+function cuandoTxt(ts){
+  const {fecha,hora}=partesLV(ts), h=h12(hora);
+  return fecha===hoy()?`hoy a las ${h}`:fecha===sumar(hoy(),1)?`mañana a las ${h}`:`el ${fmtDay(fecha)} a las ${h}`;
+}
+const fechaMsj = ts=>{ if(!ts) return ""; const {fecha,hora}=partesLV(ts); return `${fmtCorta(fecha)} · ${h12(hora)}`; };
+const duracionTxt = min=>{ if(min<60) return `unos ${Math.max(1,min)} min`; const h=Math.floor(min/60), m=min%60; return `unas ${h} h${m?` ${m} min`:""}`; };
+function estimacionTxt(e){
+  if(!e||!e.mensajes) return "No hay WhatsApp que enviar.";
+  if(e.sin_horario) return "Ahora mismo no hay horario disponible para enviar.";
+  const n=e.mensajes===1?"1 WhatsApp":`${e.mensajes} WhatsApp`;
+  if(!e.otro_dia) return `${n}: ${duracionTxt(e.minutos)}. Empieza ${cuandoTxt(e.inicio)} y termina ${cuandoTxt(e.fin)}.`;
+  return `${n}: empieza ${cuandoTxt(e.inicio)} y sigue solo los días siguientes (de lunes a sábado, de 9:00 am a 7:45 pm). Termina ${cuandoTxt(e.fin)}.`;
+}
+const avisoTodas = `<p class="aviso-cargo">Incluye clientas que no vienen hace tiempo; enviar a muchas personas que no esperan el mensaje aumenta el riesgo de que WhatsApp limite el número.</p>`;
+
+async function cargarMensajes(){
+  const r=await hacer("estudio_campanas"); if(!r) return;
+  MSJ_DATOS=r;
+  if(!MSJ){ MSJ=r.borrador?msjDe(r.borrador):msjNuevo(); MSJ_PASO=1; }
+  MSJ_DET=r.activa?await rpc("estudio_campana_detalle",{p_id:+r.activa.id}).catch(()=>null):null;
+  pintarActiva(); pintarNuevo(); pintarHistorial(); pintarAlerta(r);
+  clearInterval(MSJ_RELOJ);
+  if(r.activa) MSJ_RELOJ=setInterval(refrescarActiva,15000);
+}
+async function refrescarActiva(){
+  if(TAB!=="mensajes"||document.hidden) return;
+  const r=await rpc("estudio_campanas").catch(()=>null); if(!r||!r.ok) return;
+  MSJ_DATOS=r;
+  MSJ_DET=r.activa?await rpc("estudio_campana_detalle",{p_id:+r.activa.id}).catch(()=>null):null;
+  pintarActiva(); pintarAlerta(r);
+  if(!r.activa){ clearInterval(MSJ_RELOJ); pintarHistorial(); if(MSJ_PASO===4) pintarNuevo(); }
+}
+// Franja arriba del área cuando WhatsApp pausó la campaña (en todas las pestañas)
+function pintarAlerta(r){
+  const a=$("#alertaCampana"); if(!a) return;
+  const hay=r?!!(r.activa&&r.activa.pausa_whatsapp):!!(YO&&YO.campana_alerta);
+  a.hidden=!hay;
+  if(hay) a.innerHTML=`<p><b>El mensaje que se estaba enviando se pausó solo:</b> WhatsApp limitó el número y lo que falta no sale hasta que se reanude.
+    ${esAdministrador()?"Revisa Avisos y reanúdalo en Mensajes cuando WhatsApp lo permita.":"Solo el administrador puede reanudarlo: avísale a César."}</p>
+    <button class="bbtn line sm" type="button" data-ir-mensajes>Ver el mensaje</button>`;
+}
+function pintarActiva(){
+  const box=$("#msjActiva"), c=MSJ_DATOS&&MSJ_DATOS.activa, d=MSJ_DET&&MSJ_DET.ok?MSJ_DET:null;
+  box.hidden=!c; if(!c){ box.innerHTML=""; return; }
+  const fila=(canal,nombre)=>{ if(!(c.canales||[]).includes(canal)) return "";
+    const env=msjConteo(c,canal,"enviada"), pen=msjConteo(c,canal,"pendiente")+msjConteo(c,canal,"enviando"),
+      fal=msjConteo(c,canal,"error")+msjConteo(c,canal,"omitida")+msjConteo(c,canal,"vencida");
+    return `<li><b>${nombre}</b><span>${env} ${env===1?"enviado":"enviados"} · ${pen} ${pen===1?"pendiente":"pendientes"} · ${fal} ${fal===1?"fallido":"fallidos"}</span></li>`; };
+  const pausa=c.estado==="pausada", soloAdm=pausa&&c.pausa_whatsapp&&!esAdministrador();
+  const estado=MSJ_ESTADO[c.estado]+(c.estado==="programada"&&c.programada_para?`: empieza ${cuandoTxt(c.programada_para)}`:"")
+    +(pausa?(c.pausa_whatsapp?". WhatsApp limitó el número.":". Se pausó desde aquí."):"");
+  box.innerHTML=`<h2>Mensaje en curso</h2>
+    <p class="msj-estado${pausa?" mal":""}">${esc(estado)}</p>
+    <p class="msj-texto">${fmtWa(c.texto.length>240?c.texto.slice(0,240)+"…":c.texto)}</p>
+    <ul class="msj-conteo">${fila("whatsapp","WhatsApp")}${fila("correo","Correo")}</ul>
+    ${d&&d.estimacion&&d.estimacion.mensajes&&!pausa?`<p class="privacy">Faltan ${esc(estimacionTxt(d.estimacion))}</p>`:""}
+    ${d&&d.fallidas.length?`<details><summary>No les llegó (${d.fallidas.length})</summary><ul class="lista">${d.fallidas.map(f=>`<li>${esc(f.nombre||"—")} · ${f.canal==="whatsapp"?"WhatsApp":"correo"}: ${esc(f.motivo)}</li>`).join("")}</ul></details>`:""}
+    ${d&&d.sin_whatsapp.length?`<p class="aviso-cargo">Números sin WhatsApp (ya quedaron marcados en su ficha; revísalos): ${esc(d.sin_whatsapp.join(", "))}</p>`:""}
+    <div class="eacc">${pausa?`<button class="bbtn solid sm" type="button" data-msj="reanudar"${soloAdm?" disabled":""}>Reanudar</button>`:`<button class="bbtn line sm" type="button" data-msj="pausar">Pausar</button>`}
+      <button class="bbtn line sm peligro" type="button" data-msj="cancelar">Cancelar lo pendiente</button>
+      <button class="bbtn line sm" type="button" data-msj-ver="${c.id}">Ver detalle</button></div>
+    ${soloAdm?`<p class="privacy">Solo el administrador puede reanudarlo.</p>`:""}`;
+}
+function pintarNuevo(){
+  const pasos=["Redactar","Vista previa y prueba","Destinatarias","Envío"];
+  $("#msjNuevo").innerHTML=`<h2>Nuevo mensaje</h2>
+    <ol class="msj-pasos">${pasos.map((p,i)=>`<li class="${i+1===MSJ_PASO?"on":i+1<MSJ_PASO?"hecho":""}"${i+1===MSJ_PASO?' aria-current="step"':""}>${i+1}. ${p}</li>`).join("")}</ol>
+    <div id="msjPaso">${[msjPaso1,msjPaso2,msjPaso3,msjPaso4][MSJ_PASO-1]()}</div>`;
+  if(MSJ_PASO===3) pintarSeleccion();
+}
+function msjPaso1(){
+  const m=MSJ, max=m.foto?1000:4000;
+  return `<form class="form msj-form" id="msjF1" novalidate>
+    <label class="fld">Mensaje<textarea name="texto" rows="9" maxlength="${max}" aria-describedby="msjCnt">${esc(m.texto)}</textarea></label>
+    <p class="privacy" id="msjCnt"><span id="msjCntN">${m.texto.length} de ${max} letras</span>${m.foto?" (con foto, WhatsApp no deja más)":""}. Sale exactamente como lo escribas: <code>*así*</code> sale en negrita y <code>_así_</code> en cursiva.</p>
+    <div class="eacc"><button class="bbtn line sm" type="button" data-msj-nombre>Insertar {nombre}</button></div>
+    <p class="privacy"><code>{nombre}</code> se cambia por el nombre de cada clienta. Si no lo pones, no se agrega nada.</p>
+    <fieldset class="opts"><legend>Foto (opcional)</legend>
+      ${m.foto?`<img class="msj-foto" src="${esc(m.foto)}" alt="Foto del mensaje"><div class="eacc"><button class="bbtn line sm" type="button" data-msj-quitar-foto>Quitar la foto</button></div>`:""}
+      <label class="fld">${m.foto?"Cambiar la foto":"Elegir una foto"}<input type="file" name="foto" accept="image/jpeg,image/png,image/webp"></label>
+      <p class="privacy">JPG, PNG o WebP. Se reduce a 1080 px de ancho y se le quitan los datos de la cámara.</p>
+      <p class="error" id="msjFotoErr" role="alert" hidden></p></fieldset>
+    <fieldset class="opts"><legend>Por dónde se envía</legend>
+      <label class="check"><input type="checkbox" name="c_whatsapp"${m.canales.includes("whatsapp")?" checked":""}> WhatsApp</label>
+      <label class="check"><input type="checkbox" name="c_correo"${m.canales.includes("correo")?" checked":""}> Correo</label>
+      <p class="privacy">Con los dos, quien no tiene WhatsApp válido lo recibe solo por correo.</p></fieldset>
+    <label class="fld" data-asunto${m.canales.includes("correo")?"":" hidden"}>Asunto del correo<input name="asunto" maxlength="150" value="${esc(m.asunto)}"></label>
+    <div class="eacc"><button class="bbtn solid sm" type="submit">Guardar y ver la vista previa</button></div></form>`;
+}
+function msjPaso2(){
+  const m=MSJ, wa=m.canales.includes("whatsapp"), co=m.canales.includes("correo"), tel=YO.whatsapp_prueba;
+  const txt=m.texto.split("{nombre}").join(MSJ_EJEMPLO);
+  return `<p class="privacy">Así lo verá una clienta llamada ${MSJ_EJEMPLO}.</p>
+    ${wa?`<h3>WhatsApp</h3><div class="wa-chat"><div class="wa-burbuja">${m.foto?`<img src="${esc(m.foto)}" alt="Foto del mensaje">`:""}<p>${fmtWa(txt)}</p><span class="wa-hora">${esc(h12(nowLV().hora))}</span></div></div>`:""}
+    ${co?`<h3>Correo</h3><div class="co-prev"><p class="co-asunto"><b>Asunto:</b> ${esc(m.asunto.split("{nombre}").join(MSJ_EJEMPLO))}</p>
+      <div class="co-cuerpo">${m.foto?`<img src="${esc(m.foto)}" alt="Foto del mensaje">`:""}${txt.split(/\n{2,}/).map(p=>`<p>${fmtWa(p)}</p>`).join("")}</div></div>`:""}
+    <h3>Prueba</h3>
+    ${wa?(tel?`<p class="privacy">La prueba por WhatsApp va a tu número de prueba, ${esc(fmtTel(tel))}. <button class="linkbtn" type="button" data-msj-tel>Cambiarlo</button></p>`
+      :`<form class="form" id="msjTel" novalidate><label class="fld">Tu WhatsApp de prueba<input name="tel" inputmode="tel" autocomplete="tel" placeholder="809 000 0000"></label>
+        <p class="privacy">Antes de probar, escribe tu número: la prueba te llega solo a ti.</p>
+        <div class="eacc"><button class="bbtn line sm" type="submit">Guardar mi WhatsApp de prueba</button></div></form>`):""}
+    ${co?`<p class="privacy">La prueba por correo va a tu correo y al del estudio.</p>`:""}
+    <p class="msj-estado${m.probada?" bien":""}">${m.probada?"Ya te enviaste una prueba de este mensaje.":"Antes de enviarlo, envíate una prueba. Si cambias el texto o la foto, hace falta otra."}</p>
+    <div class="eacc"><button class="bbtn line sm" type="button" data-msj-paso="1">Cambiar el mensaje</button>
+      <button class="bbtn ${m.probada?"line":"solid"} sm" type="button" data-msj="probar"${wa&&!tel?" disabled":""}>Enviarme una prueba</button>
+      <button class="bbtn solid sm" type="button" data-msj-paso="3"${m.probada?"":" disabled"}>Elegir destinatarias</button></div>`;
+}
+function msjPaso3(){
+  const m=MSJ, g=k=>m.grupos.includes(k)?" checked":"";
+  return `<form class="form msj-form" id="msjF3" novalidate>
+    <fieldset class="opts"><legend>A quién se envía (puedes marcar varios; nadie lo recibe dos veces)</legend>
+      <label class="check"><input type="checkbox" name="g_activas"${g("activas")}> Miembros activas</label>
+      <label class="check"><input type="checkbox" name="g_vencidas"${g("vencidas")}> Membresía vencida hace poco</label>
+      <label class="fld msj-diasfld">Vencida en los últimos (días)<input type="number" name="dias" min="1" max="365" value="${m.dias_vencida}" inputmode="numeric"></label>
+      <label class="check"><input type="checkbox" name="g_todas"${g("todas")}> Todas las clientas</label>
+      <div data-aviso-todas${m.grupos.includes("todas")?"":" hidden"}>${avisoTodas}</div>
+      <label class="check"><input type="checkbox" name="g_manual"${g("manual")}> Elegir a mano</label>
+    </fieldset>
+    <div data-manual${m.grupos.includes("manual")?"":" hidden"}>
+      <label class="fld">Buscar clienta<input type="search" name="buscar" placeholder="Nombre" autocomplete="off"></label>
+      <ul class="msj-busca" id="msjBusca"></ul>
+      <p class="privacy" id="msjSelN" aria-live="polite"></p><ul class="msj-sel" id="msjSel"></ul>
+    </div>
+    <div class="eacc"><button class="bbtn line sm" type="button" data-msj-paso="2">Volver</button><button class="bbtn solid sm" type="submit">Ver a quién le llega</button></div></form>
+    <div id="msjResumen" aria-live="polite"></div>`;
+}
+function pintarSeleccion(){
+  const n=$("#msjSelN"), ul=$("#msjSel"); if(!n) return;
+  const ids=MSJ.ids;
+  n.textContent=ids.length?`${ids.length} ${ids.length===1?"clienta elegida":"clientas elegidas"}.`:"Busca y marca a las clientas.";
+  ul.innerHTML=ids.map(id=>`<li><span>${esc(MSJ_SEL.get(id)||`Clienta n.º ${id}`)}</span><button class="linkbtn" type="button" data-msj-quitar="${id}" aria-label="Quitar a ${esc(MSJ_SEL.get(id)||"esta clienta")}">Quitar</button></li>`).join("");
+}
+let msjBuscarT=null;
+function buscarParaMensaje(q){
+  clearTimeout(msjBuscarT);
+  msjBuscarT=setTimeout(async()=>{
+    const ul=$("#msjBusca"); if(!ul) return;
+    if(q.trim().length<2){ ul.innerHTML=""; return; }
+    const r=await hacer("estudio_clientas",{p_buscar:q.trim(),p_limite:20}); if(!r) return;
+    ul.innerHTML=(r.clientas||[]).map(c=>`<li><label class="check"><input type="checkbox" data-msj-elegir="${c.id}" data-nombre="${esc(c.nombre)}"${MSJ.ids.includes(+c.id)?" checked":""}> ${esc(c.nombre)}${c.no_promociones?" <small>(no enviar promociones)</small>":""}</label></li>`).join("")
+      ||`<li class="note">No hay clientas con ese nombre.</li>`;
+  },250);
+}
+function pintarResumen(r){
+  const s=r.resumen, lista=a=>a.map(x=>typeof x==="string"?esc(x):`${esc(x.nombre)} <small>(${esc(x.motivo||"")})</small>`).join(", ");
+  $("#msjResumen").innerHTML=`<h3>A quién le llega</h3>
+    <ul class="msj-conteo"><li><b>${s.n_whatsapp}</b><span>por WhatsApp</span></li><li><b>${s.solo_correo.length}</b><span>solo por correo</span></li><li><b>${s.fuera.length}</b><span>quedan fuera</span></li></ul>
+    ${s.whatsapp.length?`<details><summary>WhatsApp (${s.whatsapp.length})</summary><p>${lista(s.whatsapp)}</p></details>`:""}
+    ${s.solo_correo.length?`<details><summary>Solo correo (${s.solo_correo.length})</summary><p>${lista(s.solo_correo)}</p></details>`:""}
+    ${s.fuera.length?`<details open><summary>Quedan fuera (${s.fuera.length})</summary><p>${lista(s.fuera)}</p></details>`:""}
+    <p class="privacy">Una clienta recibe como mucho un mensaje de estos cada ${r.cada_dias} días.</p>
+    ${r.otra_activa?`<p class="aviso-cargo">Ya hay un mensaje enviándose: este se podrá enviar cuando termine o canceles lo pendiente.</p>`:""}
+    <div class="eacc"><button class="bbtn solid sm" type="button" data-msj-paso="4"${s.n_personas&&!r.otra_activa?"":" disabled"}>Seguir</button></div>`;
+}
+function msjPaso4(){
+  const r=MSJ_RES;
+  return `<form class="form msj-form" id="msjF4" novalidate>
+    <fieldset class="opts"><legend>Cuándo</legend>
+      <label class="radio"><input type="radio" name="cuando" value="ahora" checked> Enviar ahora</label>
+      <label class="radio"><input type="radio" name="cuando" value="luego"> Elegir día y hora</label>
+      <div class="two" data-luego hidden><label class="fld">Día<input type="date" name="dia" min="${hoy()}" value="${hoy()}"></label>
+        <label class="fld">Hora<input type="time" name="hora" value="09:00"></label></div>
+    </fieldset>
+    <p class="msj-estim" id="msjEstim" aria-live="polite">${esc(estimacionTxt(r&&r.estimacion))}</p>
+    <p class="privacy">Sale un WhatsApp cada 100 a 140 segundos, solo de lunes a sábado de 9:00 am a 7:45 pm. Lo que no alcance sigue solo el siguiente día a las 9:00 am. Los correos salen de 3 en 3. No se puede acelerar.</p>
+    ${MSJ.grupos.includes("todas")?avisoTodas:""}
+    <div class="eacc"><button class="bbtn line sm" type="button" data-msj-paso="3">Volver</button><button class="bbtn solid sm" type="submit">Enviar</button></div></form>`;
+}
+function pintarHistorial(){
+  const h=(MSJ_DATOS&&MSJ_DATOS.historial)||[];
+  const res=c=>[ (c.canales||[]).includes("whatsapp")?`${msjConteo(c,"whatsapp","enviada")} de ${c.total_whatsapp??msjConteo(c,"whatsapp","enviada")} WhatsApp`:"",
+    (c.canales||[]).includes("correo")?`${msjConteo(c,"correo","enviada")} de ${c.total_correo??msjConteo(c,"correo","enviada")} correos`:""].filter(Boolean).join(" · ");
+  $("#msjHistorial").innerHTML=`<h2>Mensajes enviados</h2>${h.length?`<ul class="msj-hist">${h.map(c=>`<li><div>
+      <b>${esc(fechaMsj(c.enviada_en||c.creada))}</b> · ${esc(MSJ_ESTADO[c.estado]||c.estado)}${c.enviada_por?` · ${esc(c.enviada_por)}`:""}
+      <small>${esc(res(c))}</small><span class="msj-extracto">${esc(c.texto.replace(/\s+/g," ").slice(0,90))}${c.texto.length>90?"…":""}</span></div>
+      <button class="bbtn line sm" type="button" data-msj-ver="${c.id}">Ver</button></li>`).join("")}</ul>`:`<p class="note">Todavía no hay mensajes enviados.</p>`}`;
+}
+async function verMensaje(id){
+  const r=await hacer("estudio_campana_detalle",{p_id:id}); if(!r) return;
+  const c=r.campana, quien=[["Creado",c.creada_por],["probado",c.probada_por],["enviado",c.enviada_por],["pausado",c.pausada_por],["cancelado",c.cancelada_por]]
+    .filter(x=>x[1]).map(x=>`${x[0]} por ${x[1]}`).join(", ");
+  const linea=(canal,n)=>(c.canales||[]).includes(canal)?`<li><b>${n}</b><span>${msjConteo(c,canal,"enviada")} enviados · ${msjConteo(c,canal,"pendiente")+msjConteo(c,canal,"enviando")} pendientes · ${msjConteo(c,canal,"error")+msjConteo(c,canal,"omitida")+msjConteo(c,canal,"vencida")} fallidos</span></li>`:"";
+  await pedir({titulo:`Mensaje del ${fechaMsj(c.enviada_en||c.creada)}`, ok:"Cerrar", no:"", html:`
+    <p class="privacy">${esc(MSJ_ESTADO[c.estado]||c.estado)}.${quien?` ${esc(quien)}.`:""}</p>
+    ${c.foto?`<img class="msj-foto" src="${esc(c.foto)}" alt="Foto del mensaje">`:""}
+    ${c.asunto?`<p class="privacy"><b>Asunto del correo:</b> ${esc(c.asunto)}</p>`:""}
+    <p class="msj-texto">${fmtWa(c.texto)}</p>
+    <ul class="msj-conteo">${linea("whatsapp","WhatsApp")}${linea("correo","Correo")}</ul>
+    ${r.fallidas.length?`<h3>No les llegó (${r.fallidas.length})</h3><ul class="lista">${r.fallidas.map(f=>`<li>${esc(f.nombre||"—")} · ${f.canal==="whatsapp"?"WhatsApp":"correo"}: ${esc(f.motivo)}</li>`).join("")}</ul>`:""}
+    ${r.sin_whatsapp.length?`<p class="aviso-cargo">Números sin WhatsApp (ya quedaron marcados en su ficha; revísalos): ${esc(r.sin_whatsapp.join(", "))}</p>`:""}
+    <h3>Lo recibieron (${r.recibieron.length})</h3>
+    <label class="fld">Nombres, uno por línea<textarea class="msj-copia" readonly rows="8">${esc(r.recibieron.join("\n"))}</textarea></label>
+    <div class="eacc"><button class="bbtn line sm" type="button" data-copiar-lista>Copiar la lista</button></div>`, accion:()=>true});
+}
+// La foto: se reduce a 1080 px de ancho, sale como JPEG (sin los datos de la cámara) y se sube al bucket «mensajes»
+async function subirFotoMensaje(file){
+  if(!/^image\/(jpeg|png|webp)$/.test(file.type)&&!/\.(jpe?g|png|webp)$/i.test(file.name)) throw new Error("Elige una foto JPG, PNG o WebP.");
+  if(file.size>25*1024*1024) throw new Error("La foto pesa demasiado (máximo 25 MB).");
+  const bmp=await createImageBitmap(file).catch(()=>{ throw new Error("No se pudo leer la foto. Prueba con un JPG."); });
+  const k=Math.min(1,1080/bmp.width), w=Math.round(bmp.width*k), h=Math.round(bmp.height*k);
+  const cv=document.createElement("canvas"); cv.width=w; cv.height=h;
+  const cx=cv.getContext("2d"); cx.fillStyle="#fff"; cx.fillRect(0,0,w,h); cx.drawImage(bmp,0,0,w,h);
+  let blob=await new Promise(ok=>cv.toBlob(ok,"image/jpeg",.86));
+  if(blob&&blob.size>1.8*1024*1024) blob=await new Promise(ok=>cv.toBlob(ok,"image/jpeg",.7));
+  if(!blob) throw new Error("Este navegador no puede preparar la foto. Prueba en Chrome.");
+  const hex=[...crypto.getRandomValues(new Uint8Array(16))].map(b=>b.toString(16).padStart(2,"0")).join("");
+  const ruta=`campanas/${hoy().slice(0,7)}/${hex}.jpg`;
+  const {error}=await sb.storage.from("mensajes").upload(ruta,blob,{contentType:"image/jpeg",upsert:false});
+  if(error) throw new Error("No se pudo subir la foto. Revisa el internet e inténtalo de nuevo.");
+  return `${CFG.sistema.url.replace(/\/+$/,"")}/storage/v1/object/public/mensajes/${ruta}`;
+}
+function leerPaso1(f){
+  MSJ.texto=f.querySelector('[name="texto"]').value;   // tal cual: sin recortar espacios ni cambiar nada
+  MSJ.canales=[v(f,"c_whatsapp")?"whatsapp":"",v(f,"c_correo")?"correo":""].filter(Boolean);
+  MSJ.asunto=f.querySelector('[name="asunto"]').value;
+}
+function leerPaso3(f){
+  MSJ.grupos=["activas","vencidas","todas","manual"].filter(g=>v(f,"g_"+g));
+  MSJ.dias_vencida=Math.min(365,Math.max(1,parseInt(v(f,"dias"),10)||60));
+}
+async function guardarMsj(){
+  const m=MSJ;
+  const r=await hacer("estudio_campana_guardar",{p_id:m.id,p_texto:m.texto,p_asunto:m.asunto||null,p_foto:m.foto,
+    p_canales:m.canales,p_grupos:m.grupos,p_dias:m.dias_vencida,p_ids:m.ids});
+  if(!r) return false;
+  const sel=m.ids; Object.assign(MSJ,msjDe(r.campana)); MSJ.ids=sel;
+  return true;
+}
+const cuandoEs = f=>{ const r=f.querySelector('[name="cuando"]:checked'); return r?r.value:"ahora"; };   // v() lee el primer radio: aquí, el marcado
+const cuandoMsj = f=>cuandoEs(f)==="luego"&&v(f,"dia")&&v(f,"hora")?new Date(msLV(v(f,"dia"),v(f,"hora"))).toISOString():null;
+async function enviarMsj(f){
+  const cuando=cuandoMsj(f);
+  if(cuandoEs(f)==="luego"&&!cuando){ aviso("Elige el día y la hora.","mal"); return; }
+  const d=await hacer("estudio_campana_destinatarias",{p_id:MSJ.id,p_cuando:cuando}); if(!d) return;
+  const s=d.resumen, n=s.n_personas;
+  const txt=`Vas a enviar a ${n} ${n===1?"clienta":"clientas"} (${s.n_whatsapp} por WhatsApp${MSJ.canales.includes("correo")?` y ${s.n_correo} por correo`:""}). ¿Enviar?`;
+  const ok=await pedir({titulo:"Confirmar el envío", ok:"Enviar", html:`<p><b>${esc(txt)}</b></p><p>${esc(estimacionTxt(d.estimacion))}</p>${d.aviso_todas?avisoTodas:""}`,
+    accion:async()=>{ const r=await hacer("estudio_campana_enviar",{p_id:MSJ.id,p_cuando:cuando},{dlg:true}); if(!r) return null; if(r.ok===false) return r.mensaje; return true; }});
+  if(!ok) return;
+  listo(cuando?"Mensaje programado":"Mensaje en camino");
+  MSJ=msjNuevo(); MSJ_RES=null; MSJ_PASO=1; MSJ_SEL.clear();
+  cargarMensajes();
+}
+async function accionMsj(a){
+  const c=MSJ_DATOS&&MSJ_DATOS.activa;
+  if(a==="probar"){
+    if(!await guardarMsj()) return;
+    const r=await hacer("estudio_campana_probar",{p_id:MSJ.id}); if(!r) return;
+    Object.assign(MSJ,{probada:!!r.campana.probada});
+    listo(`Prueba enviada (${r.enviados}): revisa tu WhatsApp y tu correo`); pintarNuevo(); return;
+  }
+  if(!c) return;
+  if(a==="pausar"){ const r=await hacer("estudio_campana_pausar",{p_id:+c.id}); if(r){ listo("Mensaje en pausa"); cargarMensajes(); } return; }
+  if(a==="reanudar"){ const r=await hacer("estudio_campana_reanudar",{p_id:+c.id}); if(r){ listo("Mensaje reanudado"); cargarMensajes(); } return; }
+  if(a==="cancelar"){
+    const ok=await pedir({titulo:"Cancelar lo pendiente", ok:"Cancelar lo pendiente", no:"Volver", peligro:true,
+      html:`<p>Lo que todavía no salió ya no se envía. Lo enviado no se toca.</p>`,
+      accion:async()=>{ const r=await hacer("estudio_campana_cancelar",{p_id:+c.id},{dlg:true}); if(!r) return null; if(r.ok===false) return r.mensaje; return true; }});
+    if(ok){ listo("Se canceló lo pendiente"); cargarMensajes(); }
+  }
+}
+function eventosMensajes(){
+  document.addEventListener("click",e=>{ if(e.target.closest("[data-ir-mensajes]")) abrirTab("mensajes"); });
+  $("#dlg").addEventListener("click",e=>{ const b=e.target.closest("[data-copiar-lista]"); if(!b) return;
+    const t=$("#dlg .msj-copia"); if(!t) return;
+    (navigator.clipboard?navigator.clipboard.writeText(t.value):Promise.reject()).then(()=>listo("Lista copiada"),()=>{ t.select(); listo("Selecciona y copia la lista"); }); });
+  const p=$("#p-mensajes");
+  p.addEventListener("click",async e=>{
+    const b=e.target.closest("button"); if(!b) return;
+    if(b.dataset.msj){ accionMsj(b.dataset.msj); return; }
+    if(b.dataset.msjVer){ verMensaje(+b.dataset.msjVer); return; }
+    if(b.dataset.msjPaso){
+      const ir=+b.dataset.msjPaso;
+      if(ir===3&&!MSJ.probada) return;
+      if(ir===4&&!MSJ_RES) return;
+      MSJ_PASO=ir; pintarNuevo(); $("#msjNuevo").scrollIntoView({block:"start"}); return;
+    }
+    if(b.hasAttribute("data-msj-nombre")){
+      const t=$("#msjF1 [name=texto]"); const i=t.selectionStart??t.value.length, j=t.selectionEnd??i;
+      t.setRangeText("{nombre}",i,j,"end"); t.focus(); t.dispatchEvent(new Event("input",{bubbles:true})); return;
+    }
+    if(b.hasAttribute("data-msj-quitar-foto")){ leerPaso1($("#msjF1")); MSJ.foto=null; pintarNuevo(); return; }
+    if(b.hasAttribute("data-msj-tel")){ YO.whatsapp_prueba=null; pintarNuevo(); const t=$("#msjTel [name=tel]"); if(t) t.focus(); return; }
+    if(b.dataset.msjQuitar){ MSJ.ids=MSJ.ids.filter(x=>x!==+b.dataset.msjQuitar); pintarSeleccion();
+      const c=$(`#msjBusca [data-msj-elegir="${b.dataset.msjQuitar}"]`); if(c) c.checked=false; }
+  });
+  p.addEventListener("input",e=>{
+    if(e.target.matches("#msjF1 [name=texto]")){ const max=MSJ.foto?1000:4000, n=e.target.value.length;
+      $("#msjCntN").textContent=`${n} de ${max} letras`; }
+    if(e.target.matches("#msjF3 [name=buscar]")) buscarParaMensaje(e.target.value);
+  });
+  p.addEventListener("change",async e=>{
+    const t=e.target;
+    if(t.matches("#msjF1 [name=c_correo]")){ $("#msjF1 [data-asunto]").hidden=!t.checked; return; }
+    if(t.matches("#msjF1 [name=foto]")&&t.files&&t.files[0]){
+      const err=$("#msjFotoErr"); err.hidden=true; t.disabled=true;
+      try{ leerPaso1($("#msjF1")); MSJ.foto=await subirFotoMensaje(t.files[0]); pintarNuevo(); listo("Foto lista"); }
+      catch(x){ err.textContent=x.message; err.hidden=false; t.disabled=false; }
+      return;
+    }
+    if(t.matches("#msjF3 [name=g_todas]")){ $("#msjF3 [data-aviso-todas]").hidden=!t.checked; }
+    if(t.matches("#msjF3 [name=g_manual]")){ $("#msjF3").parentNode.querySelector("[data-manual]").hidden=!t.checked; }
+    if(t.dataset.msjElegir){ const id=+t.dataset.msjElegir;
+      if(t.checked){ if(!MSJ.ids.includes(id)) MSJ.ids.push(id); MSJ_SEL.set(id,t.dataset.nombre); } else MSJ.ids=MSJ.ids.filter(x=>x!==id);
+      pintarSeleccion(); }
+    if(t.matches("#msjF3 input")) $("#msjResumen").innerHTML="";
+    if(t.matches("#msjF4 input")){
+      const f=$("#msjF4"); f.querySelector("[data-luego]").hidden=cuandoEs(f)!=="luego";
+      const d=await hacer("estudio_campana_destinatarias",{p_id:MSJ.id,p_cuando:cuandoMsj(f)});
+      if(d){ MSJ_RES=d; $("#msjEstim").textContent=estimacionTxt(d.estimacion); }
+    }
+  });
+  p.addEventListener("submit",async e=>{
+    const f=e.target; e.preventDefault();
+    if(f.id==="msjF1"){
+      leerPaso1(f);
+      if(!MSJ.texto.trim()){ aviso("Escribe el mensaje.","mal"); return; }
+      if(!MSJ.canales.length){ aviso("Elige WhatsApp, correo o los dos.","mal"); return; }
+      if(await guardarMsj()){ aviso(""); MSJ_PASO=2; pintarNuevo(); }
+      return;
+    }
+    if(f.id==="msjTel"){
+      const r=await hacer("estudio_guardar_whatsapp_prueba",{p_whatsapp:v(f,"tel")});
+      if(r){ YO.whatsapp_prueba=r.whatsapp_prueba; listo("WhatsApp de prueba guardado"); pintarNuevo(); }
+      return;
+    }
+    if(f.id==="msjF3"){
+      leerPaso3(f);
+      if(!MSJ.grupos.length){ aviso("Elige a quién se envía.","mal"); return; }
+      if(MSJ.grupos.includes("manual")&&!MSJ.ids.length){ aviso("Marca al menos una clienta.","mal"); return; }
+      if(!await guardarMsj()) return;
+      const r=await hacer("estudio_campana_destinatarias",{p_id:MSJ.id}); if(!r) return;
+      aviso(""); MSJ_RES=r; pintarResumen(r); return;
+    }
+    if(f.id==="msjF4") enviarMsj(f);
+  });
+}
+
 function eventos(){
   $("#fEntrar").addEventListener("submit",login);
   $("#eOlvido").addEventListener("click",olvido);
@@ -1796,7 +2172,8 @@ function eventos(){
   // Clientas
   $("#qCli").addEventListener("input",()=>{ clearTimeout(qT); qT=setTimeout(buscarClientas,300); });
   $("#fCliFiltro").addEventListener("change",buscarClientas);
-  $("#p-clientas").addEventListener("change",e=>{ const c=e.target.closest("[data-correo-no-entrega]"); if(c) marcarCorreo(c); });
+  $("#p-clientas").addEventListener("change",e=>{ const c=e.target.closest("[data-correo-no-entrega]"); if(c) marcarCorreo(c);
+    const p=e.target.closest("[data-no-promociones]"); if(p) marcarPromociones(p); });
   $("#nuevaCli").addEventListener("click",nuevaClienta);
   $("#p-clientas").addEventListener("change",e=>{ const s=e.target.closest("[data-ctrl]"); if(s&&CTRL){ ctrlF[s.dataset.ctrl]=s.value; pintarControl(); const n=$(`#control [data-ctrl="${s.dataset.ctrl}"]`); if(n) n.focus(); } });
   $("#p-clientas").addEventListener("click",e=>{
@@ -1849,6 +2226,7 @@ function eventos(){
   eventosComunidad();
   eventosNinas();
   eventosForo();
+  eventosMensajes();
 }
 
 /* =========================================================

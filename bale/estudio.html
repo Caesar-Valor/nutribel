@@ -14,12 +14,12 @@
 <link rel="preload" href="fonts/montserrat-latin.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="stylesheet" href="css/base.css?v=3c66c5f9">
 <link rel="stylesheet" href="css/bale.css?v=bb33d517">
-<link rel="stylesheet" href="css/estudio.css?v=d9a20083">
+<link rel="stylesheet" href="css/estudio.css?v=4b825226">
 <script src="js/vendor/supabase.js?v=bb37eb70" defer></script>
 <script src="js/core.js?v=75e2696e" defer></script>
 <script src="js/calendario.js?v=eee2f388" defer></script>
 <script src="js/hojas.js?v=b96436bb" defer></script>
-<script src="js/estudio.js?v=63625666" defer></script>
+<script src="js/estudio.js?v=f032fc9d" defer></script>
 </head>
 <body data-page="bale-estudio">
 <header class="btop">
@@ -61,6 +61,7 @@
 
   <!-- Área (según el rol) -->
   <section id="app" hidden>
+    <div class="alerta-campana" id="alertaCampana" role="alert" hidden></div>
     <div class="tabs" role="tablist" aria-label="Área del estudio" id="tabs"></div>
 
     <section role="tabpanel" id="p-clases" aria-labelledby="t-clases" hidden>
@@ -101,7 +102,7 @@
       <div class="ebox" id="vencen"></div>
       <div class="ebuscar">
         <label class="fld">Buscar clienta (nombre, WhatsApp o correo)<input id="qCli" type="search" autocomplete="off"></label>
-        <label class="fld">Mostrar<select id="fCliFiltro"><option value="">Todas</option><option value="sin_permiso">Sin permiso de WhatsApp</option><option value="falta_whatsapp">Falta WhatsApp</option><option value="falta_correo">Falta correo</option></select></label>
+        <label class="fld">Mostrar<select id="fCliFiltro"><option value="">Todas</option><option value="sin_permiso">Sin permiso de WhatsApp</option><option value="falta_whatsapp">Falta WhatsApp</option><option value="no_promociones">No enviar promociones</option><option value="falta_correo">Falta correo</option></select></label>
         <button class="bbtn line" type="button" id="nuevaCli">Nueva clienta</button>
       </div>
       <div class="vres">
@@ -134,6 +135,12 @@
       <div class="ebox" id="avEstado"></div>
       <div class="ebox" id="avCola"></div>
       <div class="ebox" id="avMiembros" hidden></div>
+    </section>
+
+    <section role="tabpanel" id="p-mensajes" aria-labelledby="t-mensajes" hidden>
+      <div class="ebox" id="msjActiva" hidden></div>
+      <div class="ebox" id="msjNuevo"></div>
+      <div class="ebox" id="msjHistorial"></div>
     </section>
 
     <section role="tabpanel" id="p-comunidad" aria-labelledby="t-comunidad" hidden>
