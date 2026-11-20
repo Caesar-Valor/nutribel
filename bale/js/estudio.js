@@ -564,10 +564,9 @@ async function reservarPara(){
       <ul class="pick-cli" data-res></ul>
       <details class="nueva"><summary>O una clienta nueva</summary>
         <label class="fld">Nombre<input name="nombre" autocomplete="off"></label>
-        <label class="fld">WhatsApp (opcional)<input name="tel" type="tel" inputmode="tel" placeholder="809-000-0000"></label>
+        ${waCampos()}
         <label class="fld">Correo (opcional)<input name="correo" type="email" inputmode="email"></label>
-        <label class="check"><input type="checkbox" name="wa"> Acepta avisos por WhatsApp</label>
-        <p class="privacy">¿No tienes su WhatsApp? Déjalo vacío: el lugar queda apartado igual. Con su correo le llegan los recordatorios de la clase. Cuando te lo dé, ponlo en su ficha.</p>
+        <p class="privacy">Si no tiene WhatsApp, marca «No tiene WhatsApp»: el lugar queda apartado igual y, con su correo, le llegan los recordatorios de la clase.</p>
       </details>
       ${barra?`<p class="steph">Lugar</p>${seatsHTML(s.lugares_ocupados)}`:""}
       <label class="fld">Pago<select name="pago">${PAGO_OPC.map(([k,n])=>opt(k,n,k==="pendiente")).join("")}</select></label>
@@ -575,7 +574,7 @@ async function reservarPara(){
       <label class="check"><input type="checkbox" name="avisar" checked> Avisar a la clienta</label>
       <p class="privacy">Le llega la confirmación a los 30 minutos (si la cancelas o la cambias antes, sale con lo último o no sale): por correo y, si la reserva es después del recordatorio de la noche, un WhatsApp (nunca de noche). Desmárcala al corregir una reserva. Los recordatorios de su clase le llegan igual.</p>`,
     alAbrir:f=>{
-      activarSeats(f);
+      activarSeats(f); waActivar(f);
       const q=f.querySelector('[name="q"]'), ul=f.querySelector("[data-res]");
       q.addEventListener("input",()=>{ clearTimeout(t); t=setTimeout(async()=>{
         const txt=q.value.trim(); if(txt.length<2){ ul.innerHTML=""; return; }
@@ -592,7 +591,8 @@ async function reservarPara(){
       if(barra){ const l=+v(f,"lugar"); if(!l) return "Elige el lugar en la sala."; args.p_lugar=l; }
       if(elegida) args.p_clienta_id=elegida;
       else{ if(!v(f,"nombre")) return "Elige una clienta de la lista o escribe el nombre de una nueva.";
-        Object.assign(args,{p_nombre:v(f,"nombre"),p_telefono:v(f,"tel"),p_correo:v(f,"correo")||null,p_acepta_whatsapp:v(f,"wa")}); }
+        const wa=waLeer(f); if(typeof wa==="string") return wa;
+        Object.assign(args,{p_nombre:v(f,"nombre"),p_correo:v(f,"correo")||null,...wa}); }
       const r=await hacer("estudio_reservar",args,{dlg:true}); if(!r) return null; if(r.ok===false) return r.mensaje;
       const falta=r.sin_whatsapp&&r.sin_correo?" Sin WhatsApp ni correo: no le llegan los recordatorios.":r.sin_whatsapp?" Sin WhatsApp: los recordatorios le llegan por correo.":"";
       const conf=r.confirmacion?" La confirmación le llega en 30 minutos.":"";
@@ -730,11 +730,11 @@ async function renovarTodas(){
 }
 /* Filtros (16/11/2026, DECISIONES §57): «Sin permiso de WhatsApp», «Falta WhatsApp» y «Falta correo», para revisar
    ficha por ficha y marcar el permiso solo a quien sí lo dio. Nada se marca solo. */
-const FILTRO_CLI = {sin_permiso:"sin permiso de WhatsApp", falta_whatsapp:"sin WhatsApp", falta_correo:"sin correo", no_promociones:"que no reciben promociones"};
+const FILTRO_CLI = {sin_permiso:"sin permiso de WhatsApp", sin_respuesta:"sin permiso de WhatsApp (nunca respondieron)", dijo_no:"que dijeron que no a WhatsApp", falta_whatsapp:"sin WhatsApp", falta_correo:"sin correo", no_promociones:"que no reciben promociones"};
 async function buscarClientas(){
   const filtro=$("#fCliFiltro").value||null;
   const r=await hacer("estudio_clientas",{p_buscar:$("#qCli").value.trim()||null,p_limite:filtro?500:60,...(filtro?{p_filtro:filtro}:{})}); if(!r) return;
-  const marcas=c=>[c.telefono&&!c.acepta_whatsapp?"Sin permiso de WhatsApp":"",c.whatsapp_invalido?"WhatsApp no válido":"",c.correo_no_entrega?"Correo no entrega":"",c.no_promociones?"No enviar promociones":""].filter(Boolean);
+  const marcas=c=>[c.whatsapp_rechazo&&!c.acepta_whatsapp?"Dijo que no a WhatsApp":c.telefono&&!c.acepta_whatsapp?"Sin permiso de WhatsApp":"",c.whatsapp_invalido?"WhatsApp no válido":"",c.correo_no_entrega?"Correo no entrega":"",c.no_promociones?"No enviar promociones":""].filter(Boolean);
   $("#cliList").innerHTML=(filtro?`<li class="privacy cli-cuenta">${r.clientas.length} ${r.clientas.length===1?"clienta":"clientas"} ${esc(FILTRO_CLI[filtro])}. Abre cada ficha y marca el permiso solo si ella lo aceptó.</li>`:"")+
     (r.clientas.map(c=>`<li><button type="button" class="vcls cli" data-ficha="${c.id}" aria-pressed="${CLI&&CLI.clienta.id===c.id}">
     <span class="n">${esc(c.nombre)}<small>${[c.telefono||"Sin WhatsApp",c.correo||"Sin correo"].map(esc).join(" · ")}</small>${filtro||marcas(c).length?`<small class="marcas">${marcas(c).map(esc).join(" · ")}</small>`:""}</span>
@@ -780,17 +780,16 @@ const modoDe=id=>((CAT.horario||[]).find(h=>h.id===id)||{}).modo;
 function pintarFicha(){
   const c=CLI.clienta, M=CLI.membresias||[], R=CLI.reservas||[], cargos=R.filter(x=>x.cancelacion_tardia);
   $("#cliDet").innerHTML=`<h2>${esc(c.nombre)}</h2>
-    <p class="meta">${c.telefono?esc(c.telefono):"Sin WhatsApp"}${c.correo?` · ${esc(c.correo)}`:""} · ${c.acepta_whatsapp?"acepta avisos por WhatsApp":"sin avisos por WhatsApp"}</p>
+    <p class="meta">${c.telefono?esc(c.telefono):"Sin WhatsApp"}${c.correo?` · ${esc(c.correo)}`:""} · ${c.acepta_whatsapp?"acepta avisos por WhatsApp":c.whatsapp_rechazo?"dijo que no a los avisos por WhatsApp":"sin avisos por WhatsApp"}</p>
     ${!c.anonimizada&&c.whatsapp_invalido?`<p class="note marca-wa">WhatsApp no válido: ese número no tiene WhatsApp, así que sus avisos salen solo por correo. Si lo corriges, se vuelve a intentar solo.
       <button class="linkbtn" type="button" data-wa-reintentar="${c.id}">Volver a intentar con este número</button></p>`:""}
     ${c.anonimizada?"":`<label class="check marca-correo"><input type="checkbox" data-correo-no-entrega="${c.id}" ${c.correo_no_entrega?"checked":""}> Correo no entrega (rebotó: mientras esté marcado no se le manda ningún correo)</label>
     <label class="check marca-promo"><input type="checkbox" data-no-promociones="${c.id}" ${c.no_promociones?"checked":""}> No enviar promociones (no recibe los mensajes de la sección Mensajes; sí sus recordatorios y avisos)</label>`}
     ${c.anonimizada?`<p class="note">Datos personales borrados. Solo queda el historial anónimo.</p>`:`
     <form class="form efich" id="fCli" novalidate>
-      <div class="two"><label class="fld">Nombre<input name="nombre" value="${esc(c.nombre)}"></label>
-      <label class="fld">WhatsApp<input name="tel" type="tel" value="${esc(c.telefono)}"></label></div>
+      <label class="fld">Nombre<input name="nombre" value="${esc(c.nombre)}"></label>
+      ${waCampos(c)}
       <label class="fld">Correo<input name="correo" type="email" value="${esc(c.correo||"")}"></label>
-      <label class="check"><input type="checkbox" name="wa" ${c.acepta_whatsapp?"checked":""}> Acepta avisos por WhatsApp</label>
       <label class="fld">Notas (solo para el estudio; nada de salud)<textarea name="notas" rows="2" maxlength="500">${esc(c.notas||"")}</textarea></label>
       <div class="eacc"><button class="bbtn line sm" type="submit">Guardar datos</button></div>
     </form>`}
@@ -816,6 +815,7 @@ function pintarFicha(){
     </tbody></table></div>`:`<p class="privacy">Sin reservas.</p>`}
     ${esDuena()&&!c.anonimizada?`<h3>Privacidad</h3><p class="privacy">Si la clienta lo pide (Ley 172-13), se borran su nombre, WhatsApp, correo y notas. Queda solo el historial anónimo.</p>
       <div class="eacc"><button class="bbtn line sm peligro" type="button" data-borrar="${c.id}">Borrar datos personales</button></div>`:""}`;
+  const fc=$("#fCli"); if(fc) waActivar(fc);
 }
 // «Correo no entrega» se guarda al marcarlo (dueña y asistente)
 async function marcarCorreo(el){
@@ -837,19 +837,45 @@ async function reintentarWhatsapp(id){
   const r=await hacer("estudio_marcar_clienta",{p_clienta_id:id,p_whatsapp_valido:true}); if(!r) return;
   listo("Se volverá a intentar por WhatsApp"); abrirFicha(id);
 }
+// §68 (20/11/2026): al crear o editar una ficha, el WhatsApp es obligatorio salvo «No tiene WhatsApp», y la pregunta
+// «¿Acepta recibir avisos por WhatsApp?» (Sí / No, sin nada marcado de entrada) también. Un «No» queda en la ficha.
+function waCampos(c=null){
+  const sin=!!c&&!c.telefono, r=c?(c.acepta_whatsapp?"si":c.whatsapp_rechazo?"no":""):"";
+  return `<label class="fld">WhatsApp<input name="tel" type="tel" inputmode="tel" placeholder="809-000-0000" value="${esc(c&&c.telefono||"")}"></label>
+    <label class="check"><input type="checkbox" name="sinwa" ${sin?"checked":""}> No tiene WhatsApp</label>
+    <fieldset class="opts wa-preg" data-wa-preg><legend>¿Acepta recibir avisos por WhatsApp?</legend>
+      <label class="radio"><input type="radio" name="wa" value="si" ${r==="si"?"checked":""}> Sí</label>
+      <label class="radio"><input type="radio" name="wa" value="no" ${r==="no"?"checked":""}> No</label></fieldset>`;
+}
+function waActivar(f){
+  const sin=f.querySelector('[name="sinwa"]'), tel=f.querySelector('[name="tel"]'), preg=f.querySelector("[data-wa-preg]");
+  if(!sin) return;
+  const pinta=()=>{ tel.disabled=sin.checked; if(sin.checked) tel.value=""; preg.hidden=sin.checked; preg.style.display=sin.checked?"none":""; };
+  sin.addEventListener("change",pinta); pinta();
+}
+// Lo que se manda a la base, o el mensaje si falta algo
+function waLeer(f){
+  if(f.querySelector('[name="sinwa"]').checked) return {p_telefono:"",p_sin_whatsapp:true,p_acepta_whatsapp:false};
+  const tel=v(f,"tel"), r=f.querySelector('[name="wa"]:checked');
+  if(!tel) return "Escribe su WhatsApp o marca «No tiene WhatsApp».";
+  if(!r) return "Responde si acepta avisos por WhatsApp.";
+  return {p_telefono:tel,p_sin_whatsapp:false,p_acepta_whatsapp:r.value==="si"};
+}
 async function guardarCli(f){
-  const r=await hacer("estudio_guardar_clienta",{p_id:CLI.clienta.id,p_nombre:v(f,"nombre"),p_telefono:v(f,"tel"),p_correo:v(f,"correo"),p_notas:v(f,"notas"),p_acepta_whatsapp:v(f,"wa")});
+  const wa=waLeer(f); if(typeof wa==="string"){ aviso(wa,"mal"); return; }
+  const r=await hacer("estudio_guardar_clienta",{p_id:CLI.clienta.id,p_nombre:v(f,"nombre"),p_correo:v(f,"correo"),p_notas:v(f,"notas"),...wa});
   if(r){ listo("Datos guardados"); abrirFicha(CLI.clienta.id); }
 }
 async function nuevaClienta(){
   let id=null;
   const ok=await pedir({titulo:"Nueva clienta", ok:"Crear",
     html:`<label class="fld">Nombre<input name="nombre" autocomplete="off"></label>
-      <label class="fld">WhatsApp (opcional)<input name="tel" type="tel" inputmode="tel" placeholder="809-000-0000"></label>
+      ${waCampos()}
       <label class="fld">Correo (opcional)<input name="correo" type="email" inputmode="email"></label>
-      <label class="check"><input type="checkbox" name="wa"> Acepta avisos por WhatsApp</label>
       <label class="fld">Notas (solo para el estudio; nada de salud)<textarea name="notas" rows="2" maxlength="500"></textarea></label>`,
-    accion:async f=>{ const r=await hacer("estudio_guardar_clienta",{p_nombre:v(f,"nombre"),p_telefono:v(f,"tel"),p_correo:v(f,"correo")||null,p_notas:v(f,"notas"),p_acepta_whatsapp:v(f,"wa")},{dlg:true});
+    alAbrir:waActivar,
+    accion:async f=>{ const wa=waLeer(f); if(typeof wa==="string") return wa;
+      const r=await hacer("estudio_guardar_clienta",{p_nombre:v(f,"nombre"),p_correo:v(f,"correo")||null,p_notas:v(f,"notas"),...wa},{dlg:true});
       if(!r) return null; if(r.ok===false) return r.mensaje; id=r.clienta_id; return true; }});
   if(ok&&id){ listo("Clienta creada"); abrirFicha(id); }
 }

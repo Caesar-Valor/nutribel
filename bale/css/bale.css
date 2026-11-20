@@ -280,6 +280,10 @@ body.no-intro{--base:0s}
 .payf .fld input{background:var(--b-bg)!important}
 .radio,.check{display:flex;align-items:flex-start;gap:10px;font-size:15px;font-weight:600;color:var(--b-ink)}
 .radio input,.check input{width:20px;height:20px;margin:2px 0 0;accent-color:var(--brown);flex:none}
+/* §68: «¿Acepta recibir avisos por WhatsApp?» Sí / No en una línea */
+.wa-preg{border:0;padding:0;margin:4px 0 12px;display:flex;flex-wrap:wrap;gap:8px 24px;min-width:0}
+.wa-preg legend{width:100%;padding:0;margin-bottom:6px;font-size:15px;font-weight:600;color:var(--b-ink)}
+.wa-preg[hidden]{display:none}
 .check{font-weight:500;font-size:14.5px}
 .check small{display:block;color:var(--muted);font-size:12.5px;margin-top:2px}
 .bank{display:flex;flex-wrap:wrap;gap:6px}
